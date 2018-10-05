@@ -62,6 +62,6 @@ RUN make install
 WORKDIR /
 RUN ldconfig
 
-# For testing: after compiling the Golang client, copy the binary to / and make it the entrypoint
+# After compiling the Golang client, copy the binary to / and make it the entrypoint
 COPY ./app /app
 ENTRYPOINT /app

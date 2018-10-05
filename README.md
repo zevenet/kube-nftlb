@@ -50,7 +50,7 @@ user@pc: su
 root@pc: sh build.sh
 ```
 
-1. Once the script has finished, the `nftlb` Pod will be made as [DaemonSet](https://kubernetes.io/docs/concepts/workloads/controllers/daemonset/). Inside `yaml` there's a file ready for this, apply it to the cluster running this:
+3. Once the script has finished, the `nftlb` Pod will be made as [DaemonSet](https://kubernetes.io/docs/concepts/workloads/controllers/daemonset/). Inside `yaml` there's a file ready for this, apply it to the cluster running this:
 ```
 root@pc: kubectl apply -f yaml/create_nftlb_as_daemonset.yaml
 ```
@@ -60,7 +60,7 @@ root@pc: kubectl apply -f yaml/create_nftlb_as_daemonset.yaml
 root@pc: kubectl exec -n kube-system -it nftlb-xxxxx /app
 ```
 
-5. The test will be made with a [Ghost](https://ghost.org/es/) instance, exposing, editing and deleting a Service. Open another terminal as root (like you did in step 1) and run:
+5. The test will be made with a [Ghost](https://ghost.org/) instance, exposing, editing and deleting a Service. Open another terminal as root (like you did in step 1) and run:
 ```
 root@pc: kubectl run ghost --image=ghost --port=2368
 ```
