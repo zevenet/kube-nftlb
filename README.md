@@ -38,7 +38,7 @@ root@pc: kubectl apply -f yaml/authentication_system_level_from_pod.yaml
 
 ## Project test: steps to follow
 
-1. Download the project locally in your computer and get inside the directory. Additionally, log into your terminal as root.
+1. Download the project locally in your computer and get inside the directory. In addition, log into your terminal as root.
 ```
 user@pc: git clone https://github.com/zevenet/kube-nftlb
 user@pc: cd kube-nftlb
@@ -50,7 +50,7 @@ user@pc: su
 root@pc: sh build.sh
 ```
 
-3. Once the script has finished, the `nftlb` Pod will be made as [DaemonSet](https://kubernetes.io/docs/concepts/workloads/controllers/daemonset/). Inside `yaml` there's a file ready for this, apply it to the cluster running this:
+3. Once the script has finished, the `nftlb` Pod will be made as [DaemonSet](https://kubernetes.io/docs/concepts/workloads/controllers/daemonset/). Inside `yaml` there's a file ready for this, apply it to the cluster by running this:
 ```
 root@pc: kubectl apply -f yaml/create_nftlb_as_daemonset.yaml
 ```
