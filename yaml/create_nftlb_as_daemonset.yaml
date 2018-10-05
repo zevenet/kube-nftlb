@@ -1,0 +1,24 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: nftlb
+  namespace: kube-system
+spec:
+  selector:
+      matchLabels:
+        name: nftlb
+  template:
+    metadata:
+      labels:
+        name: nftlb
+    spec:
+      containers:
+      - name: nftlb
+        image: nftlb
+        imagePullPolicy: Never
+        resources:
+          limits:
+            memory: 200Mi
+          requests:
+            cpu: 100m
+            memory: 200Mi
