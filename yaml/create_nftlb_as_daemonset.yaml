@@ -22,3 +22,6 @@ spec:
           requests:
             cpu: 100m
             memory: 200Mi
+        securityContext:
+          allowPrivilegeEscalation: true
+          privileged: true
