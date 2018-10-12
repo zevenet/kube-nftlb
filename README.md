@@ -15,7 +15,7 @@ So far, this project only can request information from the API Server such as ne
 
 * Docker
 * Docker-machine
-* Minikube [**v0.29.0**](https://github.com/kubernetes/minikube/releases/tag/v0.29.0) _(already started)_ 
+* Minikube [**v0.30.0**](https://github.com/kubernetes/minikube/releases/tag/v0.30.0) _(already started with_ `--kubernetes-version="v1.12.0"`_)_ 
 * Golang
 * `client-go`
 
@@ -62,24 +62,24 @@ root@pc: kubectl exec -n kube-system -it nftlb-xxxxx /app
 
 5. The test will be made with a [Ghost](https://ghost.org/) instance, exposing, editing and deleting a Service. Open another terminal as root (like you did in step 1) and run:
 ```
-root@pc: kubectl run ghost --image=ghost --port=2368
+root@pc: kubectl create deployment ghost --image=ghost
 ```
 
 6. The `ghost` Pod will be exposed through a Service with this command (pay attention to the terminal where you are connected to `nftlb`):
 ```
-root@pc: kubectl expose deployment ghost --type=NodePort
+root@pc: kubectl expose deployment ghost --port=2368 --type=NodePort
 ```
 If you see in the `nftlb` terminal a message like `Added Service: ...` followed by a JSON object, congrats! You succeeded.
 
 7. Update the Service with this command, changing the port from 2368 to 2369, and save the file:
 ```
-root@pc: kubectl edit svc ghost
+root@pc: kubectl edit service ghost
 ```
 If you see in the `nftlb` terminal a message like `Updated Service: ...` followed by two JSON objects, congrats! You succeeded.
 
 8. Delete the Service with this command:
 ```
-root@pc: kubectl delete svc ghost
+root@pc: kubectl delete service ghost
 ```
 If you see in the `nftlb` terminal a message like `Deleted Service: ...` followed by a JSON object, congrats! You succeeded.
 
