@@ -1,2 +1,5 @@
 # Compiled binaries
 app
+
+# Don't exclude cmd/app
+!cmd/app/
