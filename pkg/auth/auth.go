@@ -1,4 +1,4 @@
-package pkg
+package auth
 
 import (
 	kubernetes "k8s.io/client-go/kubernetes"
