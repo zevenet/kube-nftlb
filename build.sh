@@ -8,9 +8,9 @@
 #   - client-go libs
 
 # STEP 1: 
-#   Compile go/main.go.
+#   Compile cmd/app/main.go.
 #   The binary will be called "app".
-GOOS=linux go build -o ./app ./go
+GOOS=linux go build -o ./app ./cmd/app
 
 # YOU MUST DO THIS STEP IF YOU DIDN'T STARTED MINIKUBE WITH 'minikube start --vm-driver=none':
 #   Uncomment the line below if you apply.
