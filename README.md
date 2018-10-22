@@ -6,7 +6,7 @@
 
 ## Description
 
-`kube-nftlb` is a local Docker container able to communicate the Kubernetes API Server, using a Debian image with nftlb/nftables installed.
+`kube-nftlb` is a Kubernetes Pod made by two containers (`client` and `daemon`) able to communicate the Kubernetes API Server, using a Debian image with nftlb/nftables installed.
 
 So far, this project only can request information from the API Server such as new, updated or deleted Services, using an official Kubernetes client (known as `client-go`).
 
@@ -54,47 +54,52 @@ user@pc: su
 root@pc: sh build.sh
 ```
 
-3. Once the script has finished, the `nftlb` Pod will be made as [DaemonSet](https://kubernetes.io/docs/concepts/workloads/controllers/daemonset/). Inside `yaml` there's a file ready for this, apply it to the cluster by running this:
+3. Once the script has finished, the `kube-nftlb` Pod will be made as [DaemonSet](https://kubernetes.io/docs/concepts/workloads/controllers/daemonset/). Inside `yaml` there's a file ready for this, apply it to the cluster by running this:
 ```
 root@pc: kubectl apply -f yaml/create_nftlb_as_daemonset.yaml
 ```
 
-4. You must need to know the name of the `nftlb` Pod to do this step. Access to the cluster dashboard, with `Namespace: kube-system`, in `Workloads > Daemon Sets > nftlb`. You will see a name with a pattern similar to `nftlb-xxxxx`. Copy that name and replace it in the following command:
+4. You must need to know the name of the `kube-nftlb` Pod to do this step. Run the following command and remember the name for the next step:
 ```
-root@pc: kubectl exec -n kube-system -it nftlb-xxxxx /app
+root@pc: kubectl get -n kube-system pods | grep nftlb
 ```
 
-5. The test will be made with a [Ghost](https://ghost.org/) instance, exposing, editing and deleting a Service. Open another terminal as root (like you did in step 1) and run:
+5. You will see a name with a pattern similar to `kube-nftlb-xxxxx`. Copy that name and replace it in the following command:
+```
+root@pc: kubectl exec -n kube-system kube-nftlb-xxxxx -c client -it ./app 12345
+```
+
+6. The test will be made with a [Ghost](https://ghost.org/) instance, exposing, editing and deleting a Service. Open another terminal as root (like you did in step 1) and run:
 ```
 root@pc: kubectl create deployment ghost --image=ghost
 ```
 
-6. The `ghost` Pod will be exposed through a Service with this command (pay attention to the terminal where you are connected to `nftlb`):
+7. The `ghost` Pod will be exposed through a Service with this command (pay attention to the terminal where you are connected to `client`):
 ```
 root@pc: kubectl expose deployment ghost --port=2368 --type=NodePort
 ```
-If you see in the `nftlb` terminal a message like `Added Service: ...` followed by a JSON object, congrats! You succeeded.
+If you see in the `client` terminal a message like `Added Service: ...` followed by a JSON object, congrats! You succeeded.
 
-7. Update the Service with this command, changing the port from 2368 to 2369, and save the file:
+8. Update the Service with this command, changing the port from 2368 to 2369, and save the file:
 ```
 root@pc: kubectl edit service ghost
 ```
-If you see in the `nftlb` terminal a message like `Updated Service: ...` followed by two JSON objects, congrats! You succeeded.
+If you see in the `client` terminal a message like `Updated Service: ...` followed by two JSON objects, congrats! You succeeded.
 
-8. Delete the Service with this command:
+9. Delete the Service with this command:
 ```
 root@pc: kubectl delete service ghost
 ```
-If you see in the `nftlb` terminal a message like `Deleted Service: ...` followed by a JSON object, congrats! You succeeded.
+If you see in the `client` terminal a message like `Deleted Service: ...` followed by a JSON object, congrats! You succeeded.
 
 
 ## FAQ
 
-* **I've done everything already, how can I exit `nftlb`?**
+* **I've done everything already, how can I exit `client`?**
 
 Press `Control` + `C`.
 
-* **I have followed the guide and I've got no errors. But, how can I delete the `nftlb` Pod to test the project again from the start?**
+* **I have followed the guide and I've got no errors. But, how can I delete the `kube-nftlb` Pod to test the project again from the start?**
 
 Run this command as root:
 ```

@@ -32,4 +32,4 @@ docker build -t daemon internal/docker/daemon --build-arg KEY=$key
 
 # STEP 4:
 #   Clean residual files.
-rm -f docker/client/app
+rm -f internal/docker/client/app
