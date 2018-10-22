@@ -62,6 +62,9 @@ RUN make install
 WORKDIR /
 RUN ldconfig
 
-# After compiling the Golang client, copy the binary to / and make it the entrypoint
-COPY ./app /app
-ENTRYPOINT /app
+# With --build-arg=KEY, you can change the default key "12345"
+ARG KEY=12345
+ENV KEY_NFTLB=${KEY}
+
+# After compiling everything, make nftlb as the entrypoint
+CMD [ "/bin/bash", "-c", "/usr/local/sbin/nftlb -k $KEY_NFTLB" ]
