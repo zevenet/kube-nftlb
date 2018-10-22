@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	types "github.com/zevenet/kube-nftlb/internal/types"
+	types "github.com/zevenet/kube-nftlb/pkg/types"
 )
 
 // key is not exportable, you must call SetNftlbKey to get a Header struc with the nftlb key

@@ -1,7 +1,7 @@
 package defaults
 
 import (
-	types "github.com/zevenet/kube-nftlb/internal/types"
+	types "github.com/zevenet/kube-nftlb/pkg/types"
 )
 
 // SetNftlbURL sets the default URL to communicate with nftlb
