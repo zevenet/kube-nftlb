@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"time"
 
-	types "github.com/zevenet/kube-nftlb/internal/types"
+	types "github.com/zevenet/kube-nftlb/pkg/types"
 )
 
 // httpClient is a HTTP client with some settings for all requests
