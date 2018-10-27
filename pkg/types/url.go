@@ -4,45 +4,45 @@ import (
 	"fmt"
 )
 
-// Protocol defines which protocols are supported
+// Protocol defines which protocols are supported.
 type Protocol string
 
 const (
-	// HTTP protocol
+	// HTTP protocol.
 	HTTP = Protocol("http")
-	// HTTPS protocol
+	// HTTPS protocol.
 	HTTPS = Protocol("https")
 )
 
-// IPversion defines which IP versions are supported
+// IPversion defines which IP versions are supported.
 type IPversion byte
 
 const (
-	// IPv4 = version 4
+	// IPv4 = version 4.
 	IPv4 = IPversion(4)
 )
 
-// IP defines how to format the IP
+// IP defines how to format the IP.
 type IP []byte
 
 var (
-	// LocalHostIPv4 defines the localhost IP (IPv4)
+	// LocalHostIPv4 defines the localhost IP (IPv4).
 	LocalHostIPv4 = IP{127, 0, 0, 1}
 )
 
-// Port defines which ports are supported
+// Port defines which ports are supported.
 type Port int
 
 const (
-	// NFTLBport defines which port is the default nftlb port
+	// NFTLBport defines which port is the default nftlb port.
 	NFTLBport = Port(5555)
-	// HTTPport defines which port is the default HTTP port
+	// HTTPport defines which port is the default HTTP port.
 	HTTPport = Port(80)
-	// HTTPSport defines which port is the default HTTPS port
+	// HTTPSport defines which port is the default HTTPS port.
 	HTTPSport = Port(443)
 )
 
-// URL has different fields that match any regular URL
+// URL has different fields that match any regular URL.
 type URL struct {
 	Protocol  Protocol
 	IPversion IPversion
@@ -51,11 +51,10 @@ type URL struct {
 	Path      string
 }
 
-// Separators inside the URL (only Separator is exportable)
+// Separators inside the URL.
 const (
 	protocolSeparator = "://"
 	ipPortSeparator   = ':'
-	Separator         = '/'
 )
 
 func (u URL) String() string {
@@ -66,9 +65,10 @@ func (u URL) String() string {
 	default:
 		panic(fmt.Sprintf("IP version %d not supported yet", u.IPversion))
 	}
-	return fmt.Sprintf("%s%s%s%c%d%c%s", u.Protocol, protocolSeparator, IP, ipPortSeparator, u.Port, Separator, u.Path)
+	return fmt.Sprintf("%s%s%s%c%d%s", u.Protocol, protocolSeparator, IP, ipPortSeparator, u.Port, u.Path)
 }
 
+// ToIPv4 returns a string with the referred IP formatted as IPv4.
 func (ip IP) ToIPv4() string {
 	return fmt.Sprintf("%v.%v.%v.%v", ip[0], ip[1], ip[2], ip[3])
 }

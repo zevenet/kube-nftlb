@@ -9,17 +9,17 @@ import (
 	types "github.com/zevenet/kube-nftlb/pkg/types"
 )
 
-// httpClient is a HTTP client with some settings for all requests
+// httpClient is a HTTP client with some settings for all requests.
 var (
 	httpClient *http.Client
 )
 
-// Start httpClient automatically
+// Start httpClient automatically.
 func init() {
 	httpClient = createHTTPClient()
 }
 
-// createHTTPClient configures httpClient
+// createHTTPClient configures httpClient.
 func createHTTPClient() *http.Client {
 	client := &http.Client{
 		Transport: &http.Transport{
@@ -33,7 +33,7 @@ func createHTTPClient() *http.Client {
 	return client
 }
 
-// GetResponse returns the response from any supported request
+// GetResponse returns the response from any supported request.
 func GetResponse(rq *types.Request) string {
 	switch rq.Action {
 	case types.GET:
@@ -47,7 +47,7 @@ func GetResponse(rq *types.Request) string {
 	}
 }
 
-// makeRequest processes the desired "rq" request
+// makeRequest processes the desired "rq" request.
 func makeRequest(rq *types.Request) string {
 	// Prepares the request
 	req, err := http.NewRequest(rq.Action.String(), rq.URL.String(), rq.Payload)

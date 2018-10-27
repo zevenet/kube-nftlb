@@ -4,13 +4,13 @@ import (
 	"io"
 )
 
-// Header is a custom struct that contains a key-value pair as strings
+// Header is a custom struct that contains a key-value pair as strings.
 type Header struct {
 	Key   string
 	Value string
 }
 
-// Action defines the request type (GET, POST, ...)
+// Action defines the request type.
 type Action string
 
 // Action types
@@ -23,10 +23,10 @@ const (
 	DELETE = Action("DELETE")
 )
 
-// Payload is the body in a POST request, and nil otherwise
+// Payload is the body in a POST request, and nil otherwise.
 type Payload io.Reader
 
-// Request is a custom struct that contains the data needed for a regular request
+// Request is a custom struct that contains the data needed for a regular request.
 type Request struct {
 	Header  *Header
 	Action  Action
