@@ -3,8 +3,8 @@ package main
 import (
 	"fmt"
 
-	watchers "github.com/zevenet/kube-nftlb/pkg/watchers"
 	auth "github.com/zevenet/kube-nftlb/pkg/auth"
+	watchers "github.com/zevenet/kube-nftlb/pkg/watchers"
 	wait "k8s.io/apimachinery/pkg/util/wait"
 )
 
