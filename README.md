@@ -1,5 +1,8 @@
 # kube-nftlb
 
+[![GoDoc](https://godoc.org/github.com/zevenet/kube-nftlb?status.svg)](https://godoc.org/github.com/zevenet/kube-nftlb)
+[![Go Report Card](https://goreportcard.com/badge/github.com/zevenet/kube-nftlb)](https://goreportcard.com/report/github.com/zevenet/kube-nftlb)
+
 ##### Author: Víctor Manuel Oliver Acosta
 
 
