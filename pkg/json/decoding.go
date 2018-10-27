@@ -3,7 +3,7 @@ package json
 import (
 	"encoding/json"
 
-	types "github.com/zevenet/kube-nftlb/types"
+	types "github.com/zevenet/kube-nftlb/pkg/types"
 )
 
 // DecodeJSON decodes any encoded JSONnftlb object and returns a JSON string;
