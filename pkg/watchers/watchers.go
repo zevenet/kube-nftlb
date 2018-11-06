@@ -3,6 +3,7 @@ package watchers
 import (
 	"fmt"
 
+	funcs "github.com/zevenet/kube-nftlb/pkg/watchers/funcs"
 	v1 "k8s.io/api/core/v1"
 	fields "k8s.io/apimachinery/pkg/fields"
 	runtime "k8s.io/apimachinery/pkg/runtime"
@@ -31,13 +32,16 @@ func getController(listWatch *cache.ListWatch, resourceStruct runtime.Object, re
 		// Event handler: new, deleted or updated resource
 		cache.ResourceEventHandlerFuncs{
 			AddFunc: func(obj interface{}) {
-				logChannel <- fmt.Sprintf("New %s: %s\n\n", resourceName, obj)
+				funcs.CreateNftlbObject(resourceName, obj)
+				logChannel <- fmt.Sprintf("New %s:\n%s\n\n", resourceName, obj)
 			},
 			DeleteFunc: func(obj interface{}) {
-				logChannel <- fmt.Sprintf("Deleted %s: %s\n\n", resourceName, obj)
+				funcs.DeleteNftlbObject(resourceName, obj)
+				logChannel <- fmt.Sprintf("Deleted %s:\n%s\n\n", resourceName, obj)
 			},
 			UpdateFunc: func(oldObj, newObj interface{}) {
-				logChannel <- fmt.Sprintf("Updated %s:\nBEFORE: %s\nNOW: %s\n\n", resourceName, oldObj, newObj)
+				funcs.UpdateNftlbObject(resourceName, oldObj, newObj)
+				logChannel <- fmt.Sprintf("Updated %s:\nBEFORE:\n%s\nNOW:\n%s\n\n", resourceName, oldObj, newObj)
 			},
 		},
 	)

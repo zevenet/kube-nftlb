@@ -8,9 +8,9 @@ import (
 type Protocol string
 
 const (
-	// HTTP protocol.
+	// HTTP protocol
 	HTTP = Protocol("http")
-	// HTTPS protocol.
+	// HTTPS protocol
 	HTTPS = Protocol("https")
 )
 
@@ -18,7 +18,7 @@ const (
 type IPversion byte
 
 const (
-	// IPv4 = version 4.
+	// IPv4 = version 4
 	IPv4 = IPversion(4)
 )
 
@@ -26,7 +26,7 @@ const (
 type IP []byte
 
 var (
-	// LocalHostIPv4 defines the localhost IP (IPv4).
+	// LocalHostIPv4 defines the localhost IP (IPv4)
 	LocalHostIPv4 = IP{127, 0, 0, 1}
 )
 
@@ -34,11 +34,11 @@ var (
 type Port int
 
 const (
-	// NFTLBport defines which port is the default nftlb port.
+	// NFTLBport defines which port is the default nftlb port
 	NFTLBport = Port(5555)
-	// HTTPport defines which port is the default HTTP port.
+	// HTTPport defines which port is the default HTTP port
 	HTTPport = Port(80)
-	// HTTPSport defines which port is the default HTTPS port.
+	// HTTPSport defines which port is the default HTTPS port
 	HTTPSport = Port(443)
 )
 
