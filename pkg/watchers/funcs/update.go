@@ -36,7 +36,7 @@ func updateNftlbFarm(newSvc interface{}) {
 // updateNftlbFarm updates backends for any farm given its name and the Endpoints objects.
 func updateNftlbBackends(oldEP, newEP interface{}) {
 	// Translates the Endpoints objects into JSONnftlb structs
-	oldJSONnftlb := json.GetJSONnftlbFromEndpoints(oldEP)
+	//oldJSONnftlb := json.GetJSONnftlbFromEndpoints(oldEP)
 	newJSONnftlb := json.GetJSONnftlbFromEndpoints(newEP)
 	/**
 	* TODO: Compare both objects to know which endpoints have changed
