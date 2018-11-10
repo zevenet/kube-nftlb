@@ -8,39 +8,31 @@ import (
 	json "github.com/zevenet/kube-nftlb/pkg/json"
 	request "github.com/zevenet/kube-nftlb/pkg/request"
 	types "github.com/zevenet/kube-nftlb/pkg/types"
+	v1 "k8s.io/api/core/v1"
 )
 
-// CreateNftlbObject creates any object from nftlb (farm or backend) given its Kubernetes resource name.
-func CreateNftlbObject(resourceName string, obj interface{}) {
-	switch resourceName {
-	case "Service":
-		createNftlbFarm(obj)
-	case "Endpoint":
-		createNftlbBackends(obj)
-	default:
-		err := fmt.Sprintf("Resource not recognised: %s", resourceName)
-		panic(err)
+// CreateNftlbFarm creates any nftlb farm given a Service object.
+func CreateNftlbFarm(service *v1.Service) {
+	if !json.Contains(request.BadNames, service.ObjectMeta.Name) {
+		// Translates the Service object into a JSONnftlb struct
+		JSONnftlb := json.GetJSONnftlbFromService(service)
+		// Translates that struct into a JSON string
+		farmJSON := json.DecodeJSON(JSONnftlb)
+		// Makes the request
+		createNftlbRequest(farmJSON)
 	}
 }
 
-// createNftlbFarm creates any nftlb farm given its name and the Service object.
-func createNftlbFarm(service interface{}) {
-	// Translates the Service object into a JSONnftlb struct
-	JSONnftlb := json.GetJSONnftlbFromService(service)
-	// Translates that struct into a JSON string
-	farmJSON := json.DecodeJSON(JSONnftlb)
-	// Makes the request
-	createNftlbRequest(farmJSON)
-}
-
-// createNftlbFarm creates backends for any farm given its name and the Endpoints object.
-func createNftlbBackends(endpoints interface{}) {
-	// Translates the Endpoints object into a JSONnftlb struct
-	JSONnftlb := json.GetJSONnftlbFromEndpoints(endpoints)
-	// Translates that struct into a JSON string
-	backendsJSON := json.DecodeJSON(JSONnftlb)
-	// Makes the request
-	createNftlbRequest(backendsJSON)
+// CreateNftlbBackends creates backends for any farm given a Endpoints object.
+func CreateNftlbBackends(endpoints *v1.Endpoints) {
+	if !json.Contains(request.BadNames, endpoints.ObjectMeta.Name) {
+		// Translates the Endpoints object into a JSONnftlb struct
+		JSONnftlb := json.GetJSONnftlbFromEndpoints(endpoints)
+		// Translates that struct into a JSON string
+		backendsJSON := json.DecodeJSON(JSONnftlb)
+		// Makes the request
+		createNftlbRequest(backendsJSON)
+	}
 }
 
 func createNftlbRequest(json string) {

@@ -8,43 +8,33 @@ import (
 	json "github.com/zevenet/kube-nftlb/pkg/json"
 	request "github.com/zevenet/kube-nftlb/pkg/request"
 	types "github.com/zevenet/kube-nftlb/pkg/types"
+	v1 "k8s.io/api/core/v1"
 )
 
-// UpdateNftlbObject updates any nftlb farm or backend given both (updated and old) objects.
-func UpdateNftlbObject(resourceName string, oldObj, newObj interface{}) {
-	switch resourceName {
-	case "Service":
-		updateNftlbFarm(newObj)
-	case "Endpoint":
-		updateNftlbBackends(oldObj, newObj)
-	default:
-		err := fmt.Sprintf("Resource not recognised: %s", resourceName)
-		panic(err)
+// UpdateNftlbFarm updates any nftlb farm given a Service object.
+func UpdateNftlbFarm(newSvc *v1.Service) {
+	if !json.Contains(request.BadNames, newSvc.ObjectMeta.Name) {
+		// Translates the updated Service object into a JSONnftlb struct
+		newJSONnftlb := json.GetJSONnftlbFromService(newSvc)
+		// Translates that struct into a JSON string
+		farmJSON := json.DecodeJSON(newJSONnftlb)
+		// Makes the request
+		updateNftlbRequest(farmJSON)
 	}
 }
 
-// updateNftlbFarm updates any nftlb farm given its name and the Service object.
-func updateNftlbFarm(newSvc interface{}) {
-	// Translates the updated Service object into a JSONnftlb struct
-	newJSONnftlb := json.GetJSONnftlbFromService(newSvc)
-	// Translates that struct into a JSON string
-	farmJSON := json.DecodeJSON(newJSONnftlb)
-	// Makes the request
-	updateNftlbRequest(farmJSON)
-}
-
-// updateNftlbFarm updates backends for any farm given its name and the Endpoints objects.
-func updateNftlbBackends(oldEP, newEP interface{}) {
-	// Translates the Endpoints objects into JSONnftlb structs
-	//oldJSONnftlb := json.GetJSONnftlbFromEndpoints(oldEP)
-	newJSONnftlb := json.GetJSONnftlbFromEndpoints(newEP)
-	/**
-	* TODO: Compare both objects to know which endpoints have changed
-	 */
-	// Translates that struct into a JSON string
-	backendsJSON := json.DecodeJSON(newJSONnftlb)
-	// Makes the request
-	updateNftlbRequest(backendsJSON)
+// UpdateNftlbBackends updates backends for any farm given a Endpoints object.
+func UpdateNftlbBackends(oldEP, newEP *v1.Endpoints) {
+	if !json.Contains(request.BadNames, newEP.ObjectMeta.Name) {
+		// Deletes all old backends before procceding
+		DeleteNftlbBackends(oldEP)
+		// Translates the Endpoints objects into JSONnftlb structs
+		newJSONnftlb := json.GetJSONnftlbFromEndpoints(newEP)
+		// Translates the struct into a JSON string
+		backendsJSON := json.DecodeJSON(newJSONnftlb)
+		// Makes the request
+		updateNftlbRequest(backendsJSON)
+	}
 }
 
 func updateNftlbRequest(json string) {

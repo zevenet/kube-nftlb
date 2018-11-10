@@ -32,15 +32,39 @@ func getController(listWatch *cache.ListWatch, resourceStruct runtime.Object, re
 		// Event handler: new, deleted or updated resource
 		cache.ResourceEventHandlerFuncs{
 			AddFunc: func(obj interface{}) {
-				funcs.CreateNftlbObject(resourceName, obj)
+				switch tp := obj.(type) {
+				case *v1.Service:
+					funcs.CreateNftlbFarm(obj.(*v1.Service))
+				case *v1.Endpoints:
+					funcs.CreateNftlbBackends(obj.(*v1.Endpoints))
+				default:
+					err := fmt.Sprintf("Object not recognised of type %t", tp)
+					panic(err)
+				}
 				logChannel <- fmt.Sprintf("New %s:\n%s\n\n", resourceName, obj)
 			},
 			DeleteFunc: func(obj interface{}) {
-				funcs.DeleteNftlbObject(resourceName, obj)
+				switch tp := obj.(type) {
+				case *v1.Service:
+					funcs.DeleteNftlbFarm(obj.(*v1.Service))
+				case *v1.Endpoints:
+					funcs.DeleteNftlbBackends(obj.(*v1.Endpoints))
+				default:
+					err := fmt.Sprintf("Object not recognised of type %t", tp)
+					panic(err)
+				}
 				logChannel <- fmt.Sprintf("Deleted %s:\n%s\n\n", resourceName, obj)
 			},
 			UpdateFunc: func(oldObj, newObj interface{}) {
-				funcs.UpdateNftlbObject(resourceName, oldObj, newObj)
+				switch tp := oldObj.(type) {
+				case *v1.Service:
+					funcs.UpdateNftlbFarm(newObj.(*v1.Service))
+				case *v1.Endpoints:
+					funcs.UpdateNftlbBackends(oldObj.(*v1.Endpoints), newObj.(*v1.Endpoints))
+				default:
+					err := fmt.Sprintf("Object not recognised of type %t", tp)
+					panic(err)
+				}
 				logChannel <- fmt.Sprintf("Updated %s:\nBEFORE:\n%s\nNOW:\n%s\n\n", resourceName, oldObj, newObj)
 			},
 		},
