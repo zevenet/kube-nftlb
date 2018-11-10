@@ -26,7 +26,7 @@ func UpdateNftlbFarm(newSvc *v1.Service) {
 // UpdateNftlbBackends updates backends for any farm given a Endpoints object.
 func UpdateNftlbBackends(oldEP, newEP *v1.Endpoints) {
 	if !json.Contains(request.BadNames, newEP.ObjectMeta.Name) {
-		// Deletes all old backends before procceding
+		// Deletes all old backends before proceeding
 		DeleteNftlbBackends(oldEP)
 		// Translates the Endpoints objects into JSONnftlb structs
 		newJSONnftlb := json.GetJSONnftlbFromEndpoints(newEP)
