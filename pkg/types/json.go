@@ -17,11 +17,11 @@ type Farm struct {
 	Name         string   `json:"name"`
 	Iface        string   `json:"iface,omitempty"`
 	Oface        string   `json:"oface,omitempty"`
-	Family       string   `json:"family"`
+	Family       string   `json:"family,omitempty"`
 	EtherAddr    string   `json:"ether-addr,omitempty"`
-	VirtualAddr  string   `json:"virtual-addr"`
-	VirtualPorts string   `json:"virtual-ports"`
-	Mode         string   `json:"mode"`
+	VirtualAddr  string   `json:"virtual-addr,omitempty"`
+	VirtualPorts string   `json:"virtual-ports,omitempty"`
+	Mode         string   `json:"mode,omitempty"`
 	Protocol     string   `json:"protocol,omitempty"`
 	Scheduler    string   `json:"scheduler,omitempty"`
 	Helper       string   `json:"helper,omitempty"`
