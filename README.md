@@ -9,9 +9,9 @@
 
 ## Description
 
-`kube-nftlb` is a Kubernetes Pod made by two containers (`client` and `daemon`) able to communicate the Kubernetes API Server, using a Debian image with nftlb/nftables installed.
+`kube-nftlb` is a Kubernetes Pod made by two containers (`client` and `daemon`) able to communicate the Kubernetes API Server, using a Debian image with `nftlb` / `nftables` installed.
 
-So far, this project only can request information from the API Server such as new, updated or deleted Services, using an official Kubernetes client (known as `client-go`).
+This project can request information from the API Server such as new, updated or deleted Services/Endpoints, and make rules in `nftables` accordingly.
 
 
 ## Software required before proceeding
@@ -21,6 +21,7 @@ So far, this project only can request information from the API Server such as ne
 * Minikube [**v0.30.0**](https://github.com/kubernetes/minikube/releases/tag/v0.30.0) _(already started with_ `--kubernetes-version="v1.12.0"`_)_ 
 * Golang
 * `client-go`
+* `nftables` and `nftlb` installed in the host or VM
 
 `It is assumed that you are able to install everything on your own, following the official installation guides.`
 
@@ -37,7 +38,7 @@ root@pc: go get -u github.com/zevenet/kube-nftlb/...
 ```
 root@pc: kubectl apply -f yaml/give_internet_access_to_pods.yaml
 ```
-* The cluster needs a `nftlb` privileged rol, because in order to use `nftlb` for communicating the API Server, it needs to be recognised and authenticated by the API Server. Run this command:
+* The cluster needs a `kube-nftlb` privileged rol, because in order to use `kube-nftlb` for communicating the API Server, it needs to be recognised and authenticated by the API Server. Run this command:
 ```
 root@pc: kubectl apply -f yaml/authentication_system_level_from_pod.yaml
 ```
@@ -45,60 +46,56 @@ root@pc: kubectl apply -f yaml/authentication_system_level_from_pod.yaml
 
 ## Project test: steps to follow
 
-1. Download the project locally in your computer and get inside the directory. In addition, log into your terminal as root.
+1. The project will be available locally following the above steps. But first, `nftables` rules need to be monitorized in order to notice the changes that are being made. Run these commands and hide the terminal for later:
 ```
-user@pc: git clone https://github.com/zevenet/kube-nftlb
-user@pc: cd kube-nftlb
 user@pc: su
+root@pc: watch -n 1 nft list table nftlb
 ```
 
-2. The script `build.sh` will compile `main.go` and will build a Docker container to put it inside the cluster. **Before running it, you MUST read the script**. Once you have read it and adapted it to your use case, run:
+2. Open another terminal. To get inside the project directory, run these commands:
+```
+user@pc: su
+root@pc: cd ~/go/src/github.com/zevenet/kube-nftlb/
+```
+
+3. The script `build.sh` will compile `main.go` and will build a Docker container to put it inside the cluster. **Before running it, you MUST read the script. And be careful, all `nftables` rules you may have set will be flushed**. Once you have read it and adapted it to your use case, run:
 ```
 root@pc: sh build.sh
 ```
 
-3. Once the script has finished, the `kube-nftlb` Pod will be made as [DaemonSet](https://kubernetes.io/docs/concepts/workloads/controllers/daemonset/). Inside `yaml` there's a file ready for this, apply it to the cluster by running this:
+4. Once the script has finished, the `kube-nftlb` Pod will be made as [DaemonSet](https://kubernetes.io/docs/concepts/workloads/controllers/daemonset/). Inside `yaml` there's a file ready for this, apply it to the cluster by running this:
 ```
 root@pc: kubectl apply -f yaml/create_nftlb_as_daemonset.yaml
 ```
+**Notice how rules are made in the first terminal you opened.**
 
-4. You must need to know the name of the `kube-nftlb` Pod to do this step. Run the following command and remember the name for the next step:
-```
-root@pc: kubectl get -n kube-system pods | grep nftlb
-```
-
-5. You will see a name with a pattern similar to `kube-nftlb-xxxxx`. Copy that name and replace it in the following command:
-```
-root@pc: kubectl exec -n kube-system kube-nftlb-xxxxx -c client -it ./app 12345
-```
-
-6. The test will be made with a [Ghost](https://ghost.org/) instance, exposing, editing and deleting a Service. Open another terminal as root (like you did in step 1) and run:
+5. The test will be made with a [Ghost](https://ghost.org/) instance, exposing, editing and deleting a Service. Run this command:
 ```
 root@pc: kubectl create deployment ghost --image=ghost
 ```
 
-7. The `ghost` Pod will be exposed through a Service with this command (pay attention to the terminal where you are connected to `client`):
+6. The `ghost` Pod will be exposed through a Service with this command:
 ```
-root@pc: kubectl expose deployment ghost --port=2368 --type=NodePort
+root@pc: kubectl expose deployment ghost --port=2368
 ```
-If you see in the `client` terminal a message like `Added Service: ...` followed by a JSON object, congrats! You succeeded.
+**Notice how `ghost` rules are made in the first terminal you opened.**
 
-8. Update the Service with this command, changing the port from 2368 to 2369, and save the file:
+7. Update the Service with this command, changing the port from 2368 to 2369, and save the file:
 ```
 root@pc: kubectl edit service ghost
 ```
-If you see in the `client` terminal a message like `Updated Service: ...` followed by two JSON objects, congrats! You succeeded.
+**Notice how `ghost` port has changed in the first terminal you opened.**
 
-9. Delete the Service with this command:
+8. Delete the Service with this command:
 ```
 root@pc: kubectl delete service ghost
 ```
-If you see in the `client` terminal a message like `Deleted Service: ...` followed by a JSON object, congrats! You succeeded.
+**Notice how `ghost` rules are deleted in the first terminal you opened.**
 
 
 ## FAQ
 
-* **I've done everything already, how can I exit `client`?**
+* **I've done everything already, how can I stop watching `nftables` rules?**
 
 Press `Control` + `C`.
 
