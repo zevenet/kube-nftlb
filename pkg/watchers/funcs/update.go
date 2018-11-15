@@ -26,14 +26,22 @@ func UpdateNftlbFarm(newSvc *v1.Service) {
 // UpdateNftlbBackends updates backends for any farm given a Endpoints object.
 func UpdateNftlbBackends(oldEP, newEP *v1.Endpoints) {
 	if !json.Contains(request.BadNames, newEP.ObjectMeta.Name) {
-		// Deletes all old backends before proceeding
-		DeleteNftlbBackends(oldEP)
+		// Gets the farm name and number of backends for later
+		farmName := oldEP.ObjectMeta.Name
+		oldNumberBackends := json.GetBackendID(farmName)
 		// Translates the Endpoints objects into JSONnftlb structs
 		newJSONnftlb := json.GetJSONnftlbFromEndpoints(newEP)
 		// Translates the struct into a JSON string
 		backendsJSON := json.DecodeJSON(newJSONnftlb)
 		// Makes the request
 		updateNftlbRequest(backendsJSON)
+		// Deletes remaining old backends if any
+		for oldNumberBackends > json.GetBackendID(farmName) {
+			oldNumberBackends--
+			backendName := fmt.Sprintf("%s%d", farmName, oldNumberBackends)
+			fullPath := fmt.Sprintf("%s/backends/%s", farmName, backendName)
+			deleteNftlbRequest(fullPath)
+		}
 	}
 }
 
