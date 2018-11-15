@@ -6,6 +6,7 @@ type Backend struct {
 	IPAddr   string `json:"ip-addr"`
 	Weight   string `json:"weight,omitempty"`
 	Priority string `json:"priority,omitempty"`
+	Mark     string `json:"mark,omitempty"`
 	State    string `json:"state,omitempty"`
 }
 
@@ -26,6 +27,7 @@ type Farm struct {
 	Scheduler    string   `json:"scheduler,omitempty"`
 	Helper       string   `json:"helper,omitempty"`
 	Log          string   `json:"log,omitempty"`
+	Mark         string   `json:"mark,omitempty"`
 	Priority     string   `json:"priority,omitempty"`
 	State        string   `json:"state,omitempty"`
 	Backends     Backends `json:"backends"`
