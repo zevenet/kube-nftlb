@@ -19,7 +19,7 @@ func DecodeJSON(encodedJSON types.JSONnftlb) string {
 // DecodePrettyJSON decodes any encoded JSONnftlb object and returns a JSON string;
 // the JSON string being returned is indented.
 func DecodePrettyJSON(encodedJSON types.JSONnftlb) string {
-	decodedJSON, err := json.MarshalIndent(encodedJSON, "", "\t")
+	decodedJSON, err := json.MarshalIndent(encodedJSON, "", "        ")
 	if err != nil {
 		panic(err.Error())
 	}
