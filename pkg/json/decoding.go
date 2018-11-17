@@ -1,6 +1,7 @@
 package json
 
 import (
+	"strings"
 	"encoding/json"
 
 	types "github.com/zevenet/kube-nftlb/pkg/types"
@@ -19,9 +20,10 @@ func DecodeJSON(encodedJSON types.JSONnftlb) string {
 // DecodePrettyJSON decodes any encoded JSONnftlb object and returns a JSON string;
 // the JSON string being returned is indented.
 func DecodePrettyJSON(encodedJSON types.JSONnftlb) string {
-	decodedJSON, err := json.MarshalIndent(encodedJSON, "", "        ")
+	decodedJSON, err := json.MarshalIndent(encodedJSON, "", "\t")
 	if err != nil {
 		panic(err.Error())
 	}
-	return string(decodedJSON)
+	formattedJSON := string(decodedJSON)
+	return strings.Replace(formattedJSON, "\":", "\" :", -1)
 }
