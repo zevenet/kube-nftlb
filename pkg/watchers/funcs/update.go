@@ -17,7 +17,10 @@ func UpdateNftlbFarm(newSvc *v1.Service) {
 		// Translates the updated Service object into a JSONnftlb struct
 		newJSONnftlb := json.GetJSONnftlbFromService(newSvc)
 		// Translates that struct into a JSON string
-		farmJSON := json.DecodeJSON(newJSONnftlb)
+		farmJSON := json.DecodePrettyJSON(newJSONnftlb)
+		// Logs JSON
+		fmt.Println("\nUpdated Service:")
+		fmt.Println(farmJSON)
 		// Makes the request
 		updateNftlbRequest(farmJSON)
 	}
@@ -32,11 +35,15 @@ func UpdateNftlbBackends(oldEP, newEP *v1.Endpoints) {
 		// Translates the Endpoints objects into JSONnftlb structs
 		newJSONnftlb := json.GetJSONnftlbFromEndpoints(newEP)
 		// Translates the struct into a JSON string
-		backendsJSON := json.DecodeJSON(newJSONnftlb)
+		backendsJSON := json.DecodePrettyJSON(newJSONnftlb)
+		// Logs JSON
+		fmt.Println("\nUpdated Endpoints:")
+		fmt.Println(backendsJSON)
 		// Makes the request
 		updateNftlbRequest(backendsJSON)
 		// Deletes remaining old backends if any
-		for oldNumberBackends > json.GetBackendID(farmName) {
+		newNumberBackends := json.GetBackendID(farmName)
+		for oldNumberBackends > newNumberBackends {
 			oldNumberBackends--
 			backendName := fmt.Sprintf("%s%d", farmName, oldNumberBackends)
 			fullPath := fmt.Sprintf("%s/backends/%s", farmName, backendName)

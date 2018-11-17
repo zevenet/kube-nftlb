@@ -17,5 +17,7 @@ data:
       proxy . /etc/resolv.conf
       forward . 8.8.8.8 8.8.4.4
       cache 30
+      loop
       reload
+      loadbalance
     }

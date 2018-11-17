@@ -11,7 +11,7 @@ key="12345"
 #   - Golang
 #   - client-go libs
 
-# STEP 1: 
+# STEP 1:
 #   Compile cmd/app/main.go.
 #   The binary will be called "app".
 GOOS=linux go build -o ./internal/docker/client/app ./cmd/app
@@ -21,19 +21,20 @@ GOOS=linux go build -o ./internal/docker/client/app ./cmd/app
 #eval $(minikube docker-env)
 
 # STEP 2:
-#   Every nftables rule will be flushed before creating kube-nftlb.
-nft flush ruleset
-
-# STEP 3:
 #   The client container will be created using its Dockerfile.
 #   It will be made for Docker, not for Minikube (this will come later).
 docker build -t client internal/docker/client --build-arg KEY=$key
 
-# STEP 4:
+# STEP 3:
 #   The daemon container will be created using its Dockerfile.
 #   It will be made for Docker, not for Minikube (this will come later).
 docker build -t daemon internal/docker/daemon --build-arg KEY=$key
 
-# STEP 5:
+# STEP 4:
 #   Clean residual files.
 rm -f internal/docker/client/app
+
+# STEP 5:
+#   Every nftables rule should be flushed before creating kube-nftlb.
+#   Do it at your own risk (you will probably have trouble with Docker).
+#nft flush ruleset

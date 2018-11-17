@@ -49,7 +49,8 @@ func GetResponse(rq *types.Request) string {
 	case types.DELETE:
 		return makeRequest(rq)
 	default:
-		panic(fmt.Sprintf("Undefined request: Action %s does not exist", rq.Action))
+		err := fmt.Sprintf("Undefined request: Action %s does not exist", rq.Action)
+		panic(err)
 	}
 }
 

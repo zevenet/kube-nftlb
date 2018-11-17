@@ -1,5 +1,5 @@
 # Download the latest Debian image
-FROM debian:sid
+FROM debian:testing
 
 # Default shell when executing RUN
 SHELL ["/bin/bash", "-c"]

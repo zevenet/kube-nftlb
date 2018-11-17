@@ -63,7 +63,8 @@ func (u URL) String() string {
 	case IPv4:
 		IP = u.IP.ToIPv4()
 	default:
-		panic(fmt.Sprintf("IP version %d not supported yet", u.IPversion))
+		err := fmt.Sprintf("IP version %d not supported yet", u.IPversion)
+		panic(err)
 	}
 	return fmt.Sprintf("%s%s%s%c%d%s", u.Protocol, protocolSeparator, IP, ipPortSeparator, u.Port, u.Path)
 }

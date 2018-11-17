@@ -18,7 +18,7 @@ This project can request information from the API Server such as new, updated or
 
 * Docker
 * Docker-machine
-* Minikube [**v0.30.0**](https://github.com/kubernetes/minikube/releases/tag/v0.30.0) _(already started with_ `--kubernetes-version="v1.12.0"`_)_ 
+* Minikube [**v0.30.0**](https://github.com/kubernetes/minikube/releases/tag/v0.30.0) _(already started with_ `--kubernetes-version="v1.12.0"`_)_
 * Golang
 * `client-go`
 * `nftables` and `nftlb` installed in the host or VM
@@ -58,7 +58,7 @@ user@pc: su
 root@pc: cd ~/go/src/github.com/zevenet/kube-nftlb/
 ```
 
-3. The script `build.sh` will compile `main.go` and will build a Docker container to put it inside the cluster. **Before running it, you MUST read the script. And be careful, all `nftables` rules you may have set will be flushed**. Once you have read it and adapted it to your use case, run:
+3. The script `build.sh` will compile `main.go` and will build a Docker container to put it inside the cluster. **Before running it, you MUST read the script. And be careful, all `nftables` rules you may have set could be flushed**. Once you have read it and adapted it to your use case, run:
 ```
 root@pc: sh build.sh
 ```

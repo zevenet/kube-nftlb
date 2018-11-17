@@ -17,7 +17,10 @@ func CreateNftlbFarm(service *v1.Service) {
 		// Translates the Service object into a JSONnftlb struct
 		JSONnftlb := json.GetJSONnftlbFromService(service)
 		// Translates that struct into a JSON string
-		farmJSON := json.DecodeJSON(JSONnftlb)
+		farmJSON := json.DecodePrettyJSON(JSONnftlb)
+		// Logs JSON
+		fmt.Println("\nNew Service:")
+		fmt.Println(farmJSON)
 		// Makes the request
 		createNftlbRequest(farmJSON)
 	}
@@ -29,7 +32,10 @@ func CreateNftlbBackends(endpoints *v1.Endpoints) {
 		// Translates the Endpoints object into a JSONnftlb struct
 		JSONnftlb := json.GetJSONnftlbFromEndpoints(endpoints)
 		// Translates that struct into a JSON string
-		backendsJSON := json.DecodeJSON(JSONnftlb)
+		backendsJSON := json.DecodePrettyJSON(JSONnftlb)
+		// Logs JSON
+		fmt.Println("\nNew Endpoints:")
+		fmt.Println(backendsJSON)
 		// Makes the request
 		createNftlbRequest(backendsJSON)
 	}

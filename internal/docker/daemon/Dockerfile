@@ -1,5 +1,5 @@
 # Download the latest Debian image
-FROM debian:sid
+FROM debian:testing
 
 # Default shell when executing RUN
 SHELL ["/bin/bash", "-c"]
@@ -21,7 +21,8 @@ RUN apt-get install -y \
     libev-dev \
     cmake \
     curl \
-    dnsutils
+    dnsutils \
+    libxtables-dev
 
 # Download the most recent version of libmnl and install it
 RUN git clone git://git.netfilter.org/libmnl/
@@ -32,7 +33,7 @@ RUN make
 RUN make install
 WORKDIR /
 
-# Download the most recent version of libnftnl and install it 
+# Download the most recent version of libnftnl and install it
 RUN git clone git://git.netfilter.org/libnftnl
 WORKDIR /libnftnl
 RUN sh autogen.sh
@@ -40,9 +41,9 @@ RUN ./configure
 RUN make
 RUN make install
 WORKDIR /
+RUN ldconfig
 
 # Download the most recent versión of nftables and install it
-RUN ldconfig
 RUN git clone git://git.netfilter.org/nftables
 WORKDIR /nftables
 RUN sh autogen.sh
