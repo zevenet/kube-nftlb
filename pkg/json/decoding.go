@@ -1,8 +1,8 @@
 package json
 
 import (
-	"strings"
 	"encoding/json"
+	"strings"
 
 	types "github.com/zevenet/kube-nftlb/pkg/types"
 )

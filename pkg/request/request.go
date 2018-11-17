@@ -23,6 +23,7 @@ var (
 // Start httpClient automatically.
 func init() {
 	httpClient = createHTTPClient()
+	fmt.Println("HTTP client ready")
 }
 
 // createHTTPClient configures httpClient.

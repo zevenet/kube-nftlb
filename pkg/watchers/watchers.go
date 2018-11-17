@@ -41,7 +41,7 @@ func getController(listWatch *cache.ListWatch, resourceStruct runtime.Object, re
 					err := fmt.Sprintf("Object not recognised of type %t", tp)
 					panic(err)
 				}
-				logChannel <- fmt.Sprintf("New %s:\n%s\n\n", resourceName, obj)
+				logChannel <- fmt.Sprintf("\nNew %s:\n%s", resourceName, obj)
 			},
 			DeleteFunc: func(obj interface{}) {
 				switch tp := obj.(type) {
@@ -53,7 +53,7 @@ func getController(listWatch *cache.ListWatch, resourceStruct runtime.Object, re
 					err := fmt.Sprintf("Object not recognised of type %t", tp)
 					panic(err)
 				}
-				logChannel <- fmt.Sprintf("Deleted %s:\n%s\n\n", resourceName, obj)
+				logChannel <- fmt.Sprintf("\nDeleted %s:\n%s", resourceName, obj)
 			},
 			UpdateFunc: func(oldObj, newObj interface{}) {
 				switch tp := oldObj.(type) {
@@ -65,7 +65,7 @@ func getController(listWatch *cache.ListWatch, resourceStruct runtime.Object, re
 					err := fmt.Sprintf("Object not recognised of type %t", tp)
 					panic(err)
 				}
-				logChannel <- fmt.Sprintf("Updated %s:\nBEFORE:\n%s\nNOW:\n%s\n\n", resourceName, oldObj, newObj)
+				logChannel <- fmt.Sprintf("\nUpdated %s:\n* BEFORE: %s\n* NOW: %s", resourceName, oldObj, newObj)
 			},
 		},
 	)

@@ -18,11 +18,10 @@ func UpdateNftlbFarm(newSvc *v1.Service) {
 		newJSONnftlb := json.GetJSONnftlbFromService(newSvc)
 		// Translates that struct into a JSON string
 		farmJSON := json.DecodePrettyJSON(newJSONnftlb)
-		// Logs JSON
-		fmt.Println("\nUpdated Service:")
-		fmt.Println(farmJSON)
 		// Makes the request
-		updateNftlbRequest(farmJSON)
+		response := updateNftlbRequest(farmJSON)
+		// Prints info
+		printUpdated("Farm", farmJSON, response)
 	}
 }
 
@@ -36,23 +35,26 @@ func UpdateNftlbBackends(oldEP, newEP *v1.Endpoints) {
 		newJSONnftlb := json.GetJSONnftlbFromEndpoints(newEP)
 		// Translates the struct into a JSON string
 		backendsJSON := json.DecodePrettyJSON(newJSONnftlb)
-		// Logs JSON
-		fmt.Println("\nUpdated Endpoints:")
-		fmt.Println(backendsJSON)
 		// Makes the request
-		updateNftlbRequest(backendsJSON)
+		response := updateNftlbRequest(backendsJSON)
+		// Prints info
+		printUpdated("Backends", backendsJSON, response)
 		// Deletes remaining old backends if any
 		newNumberBackends := json.GetBackendID(farmName)
 		for oldNumberBackends > newNumberBackends {
+			// Decreases number of old backends
 			oldNumberBackends--
+			// Makes the full path for the request
 			backendName := fmt.Sprintf("%s%d", farmName, oldNumberBackends)
 			fullPath := fmt.Sprintf("%s/backends/%s", farmName, backendName)
-			deleteNftlbRequest(fullPath)
+			response := deleteNftlbRequest(fullPath)
+			// Prints info
+			printDeleted("Backend", farmName, backendName, response)
 		}
 	}
 }
 
-func updateNftlbRequest(json string) {
+func updateNftlbRequest(json string) string {
 	// Makes the URL and its Header
 	farmURL := defaults.SetNftlbURL("")
 	nftlbKey := defaults.SetNftlbKey()
@@ -63,8 +65,11 @@ func updateNftlbRequest(json string) {
 		URL:     farmURL,
 		Payload: strings.NewReader(json),
 	}
-	// Does the request
-	resp := request.GetResponse(rq)
-	// Shows the response
-	fmt.Println(resp)
+	// Returns the response
+	return request.GetResponse(rq)
+}
+
+func printUpdated(object string, json string, response string) {
+	message := fmt.Sprintf("\nUpdated %s:\n%s\n%s", object, json, response)
+	fmt.Println(message)
 }

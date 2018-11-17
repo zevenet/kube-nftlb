@@ -19,6 +19,7 @@ func init() {
 		panic(err)
 	}
 	key = os.Args[1]
+	fmt.Println("Key set")
 }
 
 // SetNftlbKey returns a Header with the KEY_NFTLB configured in build.sh.

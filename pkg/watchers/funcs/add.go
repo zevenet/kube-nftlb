@@ -18,11 +18,10 @@ func CreateNftlbFarm(service *v1.Service) {
 		JSONnftlb := json.GetJSONnftlbFromService(service)
 		// Translates that struct into a JSON string
 		farmJSON := json.DecodePrettyJSON(JSONnftlb)
-		// Logs JSON
-		fmt.Println("\nNew Service:")
-		fmt.Println(farmJSON)
 		// Makes the request
-		createNftlbRequest(farmJSON)
+		response := createNftlbRequest(farmJSON)
+		// Prints info
+		printNew("Farm", farmJSON, response)
 	}
 }
 
@@ -33,15 +32,14 @@ func CreateNftlbBackends(endpoints *v1.Endpoints) {
 		JSONnftlb := json.GetJSONnftlbFromEndpoints(endpoints)
 		// Translates that struct into a JSON string
 		backendsJSON := json.DecodePrettyJSON(JSONnftlb)
-		// Logs JSON
-		fmt.Println("\nNew Endpoints:")
-		fmt.Println(backendsJSON)
 		// Makes the request
-		createNftlbRequest(backendsJSON)
+		response := createNftlbRequest(backendsJSON)
+		// Prints info
+		printNew("Backends", backendsJSON, response)
 	}
 }
 
-func createNftlbRequest(json string) {
+func createNftlbRequest(json string) string {
 	// Makes the URL and its Header
 	farmURL := defaults.SetNftlbURL("")
 	nftlbKey := defaults.SetNftlbKey()
@@ -52,8 +50,11 @@ func createNftlbRequest(json string) {
 		URL:     farmURL,
 		Payload: strings.NewReader(json),
 	}
-	// Does the request
-	resp := request.GetResponse(rq)
-	// Shows the response
-	fmt.Println(resp)
+	// Returns the response
+	return request.GetResponse(rq)
+}
+
+func printNew(object string, json string, response string) {
+	message := fmt.Sprintf("\nNew %s:\n%s\n%s", object, json, response)
+	fmt.Println(message)
 }
