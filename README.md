@@ -23,7 +23,7 @@ This project can request information from the API Server such as new, updated or
 * `client-go`
 * `nftables` and `nftlb` installed in the host or VM
 
-`It is assumed that you are able to install everything on your own, following the official installation guides.`
+... Or you can run `debian_tools_installer.sh` **as root** after a fresh Debian Testing install in a virtualized environment.
 
 
 ## Getting the cluster ready
