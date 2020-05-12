@@ -19,4 +19,4 @@ ARG KEY=12345
 ENV KEY_NFTLB=${KEY}
 
 # After compiling everything, make nftlb as the entrypoint
-CMD [ "/bin/bash", "-c", "/usr/local/sbin/nftlb -k $KEY_NFTLB" ]
+CMD [ "/bin/bash", "-c", "/usr/local/zevenet/app/nftlb/sbin/nftlb -k $KEY_NFTLB" ]
