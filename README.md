@@ -36,6 +36,7 @@ root@pc: git clone https://github.com/zevenet/kube-nftlb
 ```
 * This is a mandatory step if you started Minikube with `--vm-driver=none`, and you mustn't do it if that's not your case. `coredns` won't be able to resolve external hostnames unless you run this command:
 ```
+root@pc: minikube start --vm-driver=none
 root@pc: cd kube-nftlb
 root@pc: kubectl apply -f yaml/give_internet_access_to_pods.yaml
 ```
