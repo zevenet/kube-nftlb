@@ -8,6 +8,7 @@ type Backend struct {
 	Priority string `json:"priority,omitempty"`
 	Mark     string `json:"mark,omitempty"`
 	State    string `json:"state,omitempty"`
+	Port	 string `json:"port,omitempty"`
 }
 
 // Backends defines a group of backends in any farm.
