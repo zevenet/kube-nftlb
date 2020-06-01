@@ -18,7 +18,7 @@ apt-get upgrade -y
 
 
 # 2. Install Docker (latest version)
-apt-get install -y apt-transport-https ca-certificates curl gnupg2 software-properties-common
+apt-get install -y apt-transport-https ca-certificates curl gnupg2 software-properties-common wget
 curl -fsSL https://download.docker.com/linux/debian/gpg | apt-key add -
 add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/debian $(lsb_release -cs) stable"
 apt-get update
@@ -45,15 +45,15 @@ curl -Lo minikube https://storage.googleapis.com/minikube/releases/latest/miniku
 
 # 6. Install Golang (v.1.14.2)
 wget https://dl.google.com/go/go1.14.2.linux-amd64.tar.gz
-tar xvfz go1.14.2.linux-amd64.tar.gz 
+tar xvfz go1.14.2.linux-amd64.tar.gz
 mv go /usr/local/go
 cat << 'EOF' >> ~/.bashrc
 export GOROOT=/usr/local/go
 export GOPATH=$HOME/goProjects
 export PATH=$GOPATH/bin:$GOROOT/bin:$PATH
 EOF
-source ~/.bashrc 
-go version 
+source ~/.bashrc
+go version
 
 # 7. Install nftables
 apt install -y nftables
