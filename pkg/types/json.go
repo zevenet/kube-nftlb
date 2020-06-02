@@ -17,10 +17,7 @@ type Backends []Backend
 // Farm defines any farm with its properties.
 type Farm struct {
 	Name         string   `json:"name"`
-	Iface        string   `json:"iface,omitempty"`
-	Oface        string   `json:"oface,omitempty"`
 	Family       string   `json:"family,omitempty"`
-	EtherAddr    string   `json:"ether-addr,omitempty"`
 	VirtualAddr  string   `json:"virtual-addr,omitempty"`
 	VirtualPorts string   `json:"virtual-ports,omitempty"`
 	Mode         string   `json:"mode,omitempty"`
