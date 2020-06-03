@@ -14,20 +14,8 @@ spec:
     spec:
       hostNetwork: true
       containers:
-      - name: daemon
-        image: daemon
-        imagePullPolicy: Never
-        resources:
-          limits:
-            memory: 200Mi
-          requests:
-            cpu: 100m
-            memory: 200Mi
-        securityContext:
-          allowPrivilegeEscalation: true
-          privileged: true
-      - name: client
-        image: client
+      - name: kube-nftlb
+        image: kube-nftlb
         imagePullPolicy: Never
         resources:
           limits:
