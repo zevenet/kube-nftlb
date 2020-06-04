@@ -24,13 +24,19 @@ COPY ./nftlb.deb /nftlb.deb
 RUN if [ -s "nftlb.deb" ] ; then dpkg -i ./nftlb.deb ; fi
 
 
-# With --build-arg=KEY, you can change the default key "12345"
-ARG KEY=12345
-ENV KEY_NFTLB=${KEY}
+# load container parameters
+COPY ./container_params.conf /container_params.conf
+
 
 # After compiling the Golang client, copy the binary to / and make it the entrypoint
 COPY ./app /goclient
 
 COPY ./start.sh /start.sh
-RUN sed -Ei "s/#KEY/$KEY_NFTLB/g" /start.sh
+RUN source /container_params.conf && \
+	sed -Ei "s/#KEY#/$nftlbKey/g" /start.sh && \
+	sed -Ei "s/#DAEMONCHECKTIMEOUT#/$daemonCheckTimeout/g" /start.sh
+
+RUN cat /start.sh
+
 CMD [ "/bin/bash", "-c", "/start.sh" ]
+

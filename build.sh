@@ -11,10 +11,6 @@ else
 fi
 
 
-# It lets you interact with nftlb.
-# The key must be propagated to the client and the daemon.
-key="12345"
-
 # Before running this script, you MUST BE ROOT and you need to have the following tools installed:
 #   - Docker
 #   - Docker-machine
@@ -34,7 +30,7 @@ GOOS=linux go build -o $DOCKER_PATH/app ./cmd/app
 # STEP 2:
 #   The client container will be created using its Dockerfile.
 #   It will be made for Docker, not for Minikube (this will come later).
-docker build -t kube-nftlb $DOCKER_PATH --build-arg KEY=$key
+docker build -t kube-nftlb $DOCKER_PATH
 
 # STEP 3:
 #   Clean residual files.

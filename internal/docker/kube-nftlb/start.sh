@@ -9,13 +9,14 @@ if [ $status -ne 0 ]; then
   exit $status
 fi
 
-sleep 5
+# waiting a grace time
+sleep 3
 
 # Start the second process
 /goclient #KEY# &
 status=$?
 if [ $status -ne 0 ]; then
-  echo "Failed to start app: $status"
+  echo "Failed to start GO client: $status"
   exit $status
 fi
 
@@ -25,15 +26,20 @@ fi
 # if it detects that either of the processes has exited.
 # Otherwise it loops forever, waking up every 60 seconds
 
-while sleep 60; do
+while sleep #DAEMONCHECKTIMEOUT#; do
   ps aux |grep nftlb |grep -q -v grep
-  PROCESS_1_STATUS=$?
+  PROCESS_NFTLB_STATUS=$?
+  if [ $PROCESS_NFTLB_STATUS -ne ]; then
+    echo "The nftlb process exited with error."
+  fi
+
   ps aux |grep goclient |grep -q -v grep
-  PROCESS_2_STATUS=$?
-  # If the greps above find anything, they exit with 0 status
-  # If they are not both 0, then something is wrong
-  if [ $PROCESS_1_STATUS -ne 0 -o $PROCESS_2_STATUS -ne 0 ]; then
-    echo "One of the processes has already exited."
+  PROCESS_GO_STATUS=$?
+  if [ $PROCESS_GO_STATUS -ne 0 ]; then
+    echo "The GO client exited with error."
+  fi
+
+  if [ $PROCESS_NFTLB_STATUS -ne 0 -o $PROCESS_GO_STATUS -ne 0 ]; then
     exit 1
   fi
 done
