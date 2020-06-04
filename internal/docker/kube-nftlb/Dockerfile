@@ -7,8 +7,11 @@ SHELL ["/bin/bash", "-c"]
 
 RUN cat /etc/apt/sources.list
 
+# Put Debian in not interactive mode
+RUN echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selections
+
 RUN apt-get update
-RUN apt-get install -y gnupg ca-certificates wget libterm-readline-perl-perl supervisor
+RUN apt-get install -y gnupg ca-certificates wget
 
 
 # Install nftlb and dependencies
