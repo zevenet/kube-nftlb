@@ -39,7 +39,5 @@ RUN source /container_params.conf && \
 	sed -Ei "s/#KEY#/$nftlbKey/g" /start.sh && \
 	sed -Ei "s/#DAEMONCHECKTIMEOUT#/$daemonCheckTimeout/g" /start.sh
 
-RUN cat /start.sh
-
 CMD [ "/bin/bash", "-c", "/start.sh" ]
 
