@@ -29,7 +29,7 @@ fi
 while sleep #DAEMONCHECKTIMEOUT#; do
   ps aux |grep nftlb |grep -q -v grep
   PROCESS_NFTLB_STATUS=$?
-  if [ $PROCESS_NFTLB_STATUS -ne ]; then
+  if [ $PROCESS_NFTLB_STATUS -ne 0 ]; then
     echo "The nftlb process exited with error."
   fi
 
