@@ -11,7 +11,7 @@ RUN cat /etc/apt/sources.list
 RUN echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selections
 
 RUN apt-get update
-RUN apt-get install -y gnupg ca-certificates wget
+RUN apt-get install -y gnupg ca-certificates wget procps
 
 
 # Install nftlb and dependencies
