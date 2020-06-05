@@ -19,12 +19,12 @@ RUN wget -O - http://repo.zevenet.com/zevenet.com.gpg.key | apt-key add -
 RUN echo "deb [arch=amd64] http://repo.zevenet.com/ce/v5 buster main" | tee -a /etc/apt/sources.list
 
 RUN apt-get update
-RUN apt-get install -y nftlb
+RUN apt-get install -y libev4 libjansson4 libnftnl11 nftables linux-image-amd64
 
 
 # Replacing nftlb with a devel version
 COPY ./nftlb.deb /nftlb.deb
-RUN if [ -s "nftlb.deb" ] ; then dpkg -i ./nftlb.deb ; fi
+RUN if [ -s "nftlb.deb" ] ; then dpkg -i ./nftlb.deb ; else apt-get install -y nftlb ; fi
 
 
 # load container parameters
@@ -40,4 +40,3 @@ RUN source /container_params.conf && \
 	sed -Ei "s/#DAEMONCHECKTIMEOUT#/$daemonCheckTimeout/g" /start.sh
 
 CMD [ "/bin/bash", "-c", "/start.sh" ]
-
