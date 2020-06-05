@@ -5,8 +5,6 @@ FROM debian:stable
 SHELL ["/bin/bash", "-c"]
 
 
-RUN cat /etc/apt/sources.list
-
 # Put Debian in not interactive mode
 RUN echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selections
 
@@ -37,6 +35,7 @@ COPY ./app /goclient
 COPY ./start.sh /start.sh
 RUN source /container_params.conf && \
 	sed -Ei "s/#KEY#/$nftlbKey/g" /start.sh && \
+	sed -Ei "s/#MASQUERADEMARK#/$masqueradeMark/g" /start.sh && \
 	sed -Ei "s/#DAEMONCHECKTIMEOUT#/$daemonCheckTimeout/g" /start.sh
 
 CMD [ "/bin/bash", "-c", "/start.sh" ]
