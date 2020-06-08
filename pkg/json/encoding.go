@@ -56,6 +56,7 @@ func GetJSONnftlbFromService(service *v1.Service) types.JSONnftlb {
 			Mode:         "snat",
 			Protocol:     protocol,
 			State:        "up",
+			Intraconnect: "on",
 			Backends:     types.Backends{},
 		},
 	}

@@ -28,7 +28,9 @@ type Farm struct {
 	Mark         string   `json:"mark,omitempty"`
 	Priority     string   `json:"priority,omitempty"`
 	State        string   `json:"state,omitempty"`
+	Intraconnect string `json:"intra-connect,omitempty"`
 	Backends     Backends `json:"backends"`
+
 }
 
 // Farms defines a group of farms.
