@@ -36,6 +36,8 @@ COPY ./start.sh /start.sh
 RUN source /container_params.conf && \
 	sed -Ei "s/#KEY#/$nftlbKey/g" /start.sh && \
 	sed -Ei "s/#MASQUERADEMARK#/$masqueradeMark/g" /start.sh && \
-	sed -Ei "s/#DAEMONCHECKTIMEOUT#/$daemonCheckTimeout/g" /start.sh
+	sed -Ei "s/#DAEMONCHECKTIMEOUT#/$daemonCheckTimeout/g" /start.sh && \
+	sed -Ei "s/#LOGSLEVEL#/$logsLevel/g" /start.sh && \
+	sed -Ei "s/#LOGSOUTPUT#/$logsOutput/g" /start.sh
 
 CMD [ "/bin/bash", "-c", "/start.sh" ]
