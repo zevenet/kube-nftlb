@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Start the first process
-/usr/local/zevenet/app/nftlb/sbin/nftlb -L #LOGSOUTPUT# -l #LOGSLEVEL# -k #KEY# -l 7 -d -m #MASQUERADEMARK#
+/usr/local/zevenet/app/nftlb/sbin/nftlb -L #LOGSOUTPUT# -l #LOGSLEVEL# -k #KEY# -d -m #MASQUERADEMARK#
 status=$?
 if [ $status -ne 0 ]; then
   echo "Failed to start nftlb: $status"
