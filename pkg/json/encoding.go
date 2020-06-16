@@ -46,6 +46,23 @@ func GetJSONnftlbFromService(service *v1.Service) types.JSONnftlb {
 	} else if protocolsSlice["UDP"] > 0 {
 		protocol = "udp"
 	}
+	// Gets persistence and Stickiness timeout in seconds
+        persistence := ""
+        if service.Spec.SessionAffinity == "ClientIP"{
+                persistence = "srcip"
+        }else if service.Spec.SessionAffinity == "None"{
+                persistence = "none"
+        }
+        persistence_ttl := ""
+        if service.Spec.SessionAffinityConfig != nil{
+                if service.Spec.SessionAffinityConfig.ClientIP != nil{
+                        if service.Spec.SessionAffinityConfig.ClientIP.TimeoutSeconds != nil{
+				// Value between 0 and 86400 seconds (1 day max)
+                                persistence_ttl = fmt.Sprint(*(service.Spec.SessionAffinityConfig.ClientIP.TimeoutSeconds))
+                        }
+                }
+        }
+
 	// Fills the farm
 	var farm = types.Farms{
 		types.Farm{
@@ -57,6 +74,8 @@ func GetJSONnftlbFromService(service *v1.Service) types.JSONnftlb {
 			Protocol:     protocol,
 			State:        "up",
 			Intraconnect: "on",
+			Persistence:  fmt.Sprint(persistence),
+                        PersistTTL:   fmt.Sprint(persistence_ttl),
 			Backends:     types.Backends{},
 		},
 	}
