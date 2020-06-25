@@ -19,7 +19,7 @@ func EncodeJSON(stringJSON string) types.JSONnftlb {
 }
 
 // GetJSONnftlbFromService returns a JSONnftlb struct filled with any Service data.
-func GetJSONnftlbFromService(service *v1.Service) types.JSONnftlb {
+func GetJSONnftlbFromService(service *v1.Service) types.JSONnftlb{
 	farmName := service.ObjectMeta.Name
 	// Extracts ports and protocols as strings
 	protocolsSlice := map[string]int{"TCP": 0, "UDP": 0}
@@ -87,49 +87,57 @@ func GetJSONnftlbFromService(service *v1.Service) types.JSONnftlb {
 
 // GetJSONnftlbFromEndpoints returns a JSONnftlb struct filled with any Endpoints data.
 func GetJSONnftlbFromEndpoints(endpoints *v1.Endpoints) types.JSONnftlb {
-	farmName := endpoints.ObjectMeta.Name
-	// Extracts individual addresses
-	var addrSlice []string
-	for _, endpoint := range endpoints.Subsets {
-		for _, address := range endpoint.Addresses {
-			addrSlice = append(addrSlice, address.IP)
-		}
-	}
-	// Initializes farm/backends ID
-	CreateFarmID(farmName)
-	// Fills backends
-	var backends types.Backends
-	for _, address := range addrSlice {
-		// Gets backend ID
-		backendID := GetBackendID(farmName)
-
-		// Create backend for each port
-		for _, endpoint2 := range endpoints.Subsets {
-                	for _, port := range endpoint2.Ports {
-				var backend = types.Backend{
-				Name:   fmt.Sprintf("%s%d", farmName, backendID),
-				IPAddr: address,
-				State:  "up",
-				Port: fmt.Sprint(port.Port),
-                	}
-			// Appends backend
-			backends = append(backends, backend)
+        farmName := endpoints.ObjectMeta.Name
+        // Extracts individual addresses
+        var addrSlice []string
+        for _, endpoint := range endpoints.Subsets {
+                for _, address := range endpoint.Addresses {
+                        addrSlice = append(addrSlice, address.IP)
                 }
-		// Increases backend ID
-		IncreaseBackendID(farmName)
-		}
-	}
-	// Fills the farm
-	var farm = types.Farms{
-		types.Farm{
-			Name:     farmName,
-			Backends: backends,
-		},
-	}
-	// Returns the filled struct
-	return types.JSONnftlb{
-		Farms: farm,
-	}
+        }
+        // Initializes farm/backends ID
+        CreateFarmID(farmName)
+        // Fills backends
+        var backends types.Backends
+        for _, endpoint := range endpoints.Subsets {
+                for _, address := range endpoint.Addresses {
+                        // Get ip of the backends
+                        ip := address.IP
+                        // Get name of the backends based on the deployment, if empty take name of the farm
+                        backend_name := ""
+                        if address.TargetRef != nil{
+                                backend_name = address.TargetRef.Name
+                        }else if address.TargetRef == nil{
+                                backend_name = endpoints.ObjectMeta.Name
+                        }
+                        // Create backend for each port
+                        for _, endpoint2 := range endpoints.Subsets {
+                                for _, port := range endpoint2.Ports {
+                                        var backend = types.Backend{
+                                                Name:   fmt.Sprintf("%s", backend_name),
+                                                IPAddr: ip,
+                                                State:  "up",
+                                                Port: fmt.Sprint(port.Port),
+                                        }
+                                        // Appends backend
+                                        backends = append(backends, backend)
+                                }
+                        }
+                        // Increases backend ID
+                        IncreaseBackendID(farmName)
+                }
+        }
+        // Fills the farm
+        var farm = types.Farms{
+                types.Farm{
+                        Name:     farmName,
+                        Backends: backends,
+                },
+        }
+        // Returns the filled struct
+        return types.JSONnftlb{
+                Farms: farm,
+        }
 }
 
 // Contains returns true when "str" string is in "sl" slice.

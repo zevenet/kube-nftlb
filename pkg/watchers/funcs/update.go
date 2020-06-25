@@ -27,31 +27,46 @@ func UpdateNftlbFarm(newSvc *v1.Service) {
 
 // UpdateNftlbBackends updates backends for any farm given a Endpoints object.
 func UpdateNftlbBackends(oldEP, newEP *v1.Endpoints) {
-	if !json.Contains(request.BadNames, newEP.ObjectMeta.Name) {
+	if !json.Contains(request.BadNames, newEP.ObjectMeta.Name){
 		// Gets the farm name and number of backends for later
 		farmName := oldEP.ObjectMeta.Name
-		oldNumberBackends := json.GetBackendID(farmName)
 		// Translates the Endpoints objects into JSONnftlb structs
 		newJSONnftlb := json.GetJSONnftlbFromEndpoints(newEP)
 		// Translates the struct into a JSON string
 		backendsJSON := json.DecodePrettyJSON(newJSONnftlb)
+		var newBackendsNameSlice []string
+        	for _, endpoint := range newEP.Subsets {
+               		for _, address := range endpoint.Addresses {
+               			backend_name := ""
+               			if address.TargetRef != nil{
+               				backend_name = address.TargetRef.Name
+               				newBackendsNameSlice = append(newBackendsNameSlice,backend_name)
+               			}
+               		}
+        	}
 		// Makes the request
 		response := updateNftlbRequest(backendsJSON)
 		// Prints info
 		printUpdated("Backends", backendsJSON, response)
 		// Deletes remaining old backends if any
-		newNumberBackends := json.GetBackendID(farmName)
-		for oldNumberBackends > newNumberBackends {
-			// Decreases number of old backends
-			oldNumberBackends--
-			// Makes the full path for the request
-			backendName := fmt.Sprintf("%s%d", farmName, oldNumberBackends)
-			fullPath := fmt.Sprintf("%s/backends/%s", farmName, backendName)
-			response := deleteNftlbRequest(fullPath)
-			// Prints info
-			printDeleted("Backend", farmName, backendName, response)
+		for _, endpoint := range oldEP.Subsets {
+			backend_name := ""
+			for _, address := range endpoint.Addresses {
+				if address.TargetRef != nil{
+					backend_name = address.TargetRef.Name
+					// Find Missing backends in the slice of backends.
+					// If the farm name is not in the slice it is removed
+    					_, found := Find(newBackendsNameSlice, backend_name)
+    					if !found {
+						backendName := fmt.Sprintf("%s", backend_name)
+						fullPath := fmt.Sprintf("%s/backends/%s", farmName, backendName)
+						response := deleteNftlbRequest(fullPath)
+						printDeleted("Backend", farmName, backendName, response)
+    					}
+    				}
+			}
 		}
-	}
+ 	}
 }
 
 func updateNftlbRequest(json string) string {
@@ -72,4 +87,13 @@ func updateNftlbRequest(json string) string {
 func printUpdated(object string, json string, response string) {
 	message := fmt.Sprintf("\nUpdated %s:\n%s\n%s", object, json, response)
 	fmt.Println(message)
+}
+
+func Find(slice []string, val string) (int, bool) {
+    for i, item := range slice {
+        if item == val {
+            return i, true
+        }
+    }
+    return -1, false
 }
