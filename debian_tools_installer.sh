@@ -55,8 +55,13 @@ EOF
 source ~/.bashrc
 go version
 
-# 7. Install nftables
-apt install -y nftables
+# 7. Install nftables and several necessary libraries
+# The first thing you will have to add the zevenet repository with its corresponding key
+echo "deb [arch=amd64] http://repo.zevenet.com/ce/v5 buster main" | tee -a /etc/apt/sources.list
+wget -O - http://repo.zevenet.com/zevenet.com.gpg.key | apt-key add -
+apt-get update
+apt-get install libnftnl11
+apt-get install nftables
 
 # 8. Install conntrack
 apt-get install conntrack
