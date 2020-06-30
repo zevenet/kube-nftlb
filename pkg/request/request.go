@@ -12,7 +12,7 @@ import (
 // BadNames is a name list of pods/services that shouldn't be doing any requests
 // (they have invalid data).
 var (
-	BadNames = []string{"kube-controller-manager", "kube-scheduler","kube-scheduler-debian","kube-controller-manager-debian"}
+	BadNames = []string{"kube-controller-manager", "kube-scheduler", "kube-scheduler-debian", "kube-controller-manager-debian"}
 )
 
 // httpClient is a HTTP client with some settings for all requests.

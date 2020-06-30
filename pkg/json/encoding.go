@@ -19,8 +19,7 @@ func EncodeJSON(stringJSON string) types.JSONnftlb {
 }
 
 // GetJSONnftlbFromService returns a JSONnftlb struct filled with any Service data.
-func GetJSONnftlbFromService(service *v1.Service) types.JSONnftlb{
-	farmName := service.ObjectMeta.Name
+func GetJSONnftlbFromService(service *v1.Service) types.JSONnftlb {
 	// Extracts ports and protocols as strings
 	protocolsSlice := map[string]int{"TCP": 0, "UDP": 0}
 	var portsSlice []string
@@ -47,25 +46,59 @@ func GetJSONnftlbFromService(service *v1.Service) types.JSONnftlb{
 		protocol = "udp"
 	}
 	// Gets persistence and Stickiness timeout in seconds
-        persistence := ""
-        if service.Spec.SessionAffinity == "ClientIP"{
-                persistence = "srcip"
-        }else if service.Spec.SessionAffinity == "None"{
-                persistence = "none"
-        }
-        persistence_ttl := ""
-        if service.Spec.SessionAffinityConfig != nil{
-                if service.Spec.SessionAffinityConfig.ClientIP != nil{
-                        if service.Spec.SessionAffinityConfig.ClientIP.TimeoutSeconds != nil{
+	persistence := ""
+	if service.Spec.SessionAffinity == "ClientIP" {
+		persistence = "srcip"
+	} else if service.Spec.SessionAffinity == "None" {
+		persistence = "none"
+	}
+	persistenceTTL := ""
+	if service.Spec.SessionAffinityConfig != nil {
+		if service.Spec.SessionAffinityConfig.ClientIP != nil {
+			if service.Spec.SessionAffinityConfig.ClientIP.TimeoutSeconds != nil {
 				// Value between 0 and 86400 seconds (1 day max)
-                                persistence_ttl = fmt.Sprint(*(service.Spec.SessionAffinityConfig.ClientIP.TimeoutSeconds))
-                        }
-                }
-        }
+				persistenceTTL = fmt.Sprint(*(service.Spec.SessionAffinityConfig.ClientIP.TimeoutSeconds))
+			}
+		}
+	}
 
-	// Fills the farm
-	var farm = types.Farms{
-		types.Farm{
+	var farmsSlice []types.Farm
+	serviceName := service.ObjectMeta.Name
+	farmName := ""
+	if len(service.Spec.Ports) > 1 {
+		for _, port := range service.Spec.Ports {
+			// Gets the name of the farm
+			farmName = serviceName + "--" + port.Name
+			// Gets the name of the protocol
+			nameProtocol := strings.ToLower(string(port.Protocol))
+			// Gets the port as string
+			portString := fmt.Sprint(port.Port)
+			// Fills the farm
+			var farm = types.Farm{
+				Name:         farmName,
+				Family:       "ipv4",
+				VirtualAddr:  service.Spec.ClusterIP,
+				VirtualPorts: portString,
+				Mode:         "snat",
+				Protocol:     nameProtocol,
+				State:        "up",
+				Intraconnect: "on",
+				Persistence:  fmt.Sprint(persistence),
+				PersistTTL:   fmt.Sprint(persistenceTTL),
+				Backends:     types.Backends{},
+			}
+			farmsSlice = append(farmsSlice, farm)
+		}
+
+	} else if len(service.Spec.Ports) == 1 {
+		if service.Spec.Ports[0].Name == "" {
+			farmName = serviceName + "--" + "default"
+		} else {
+			farmName = serviceName + "--" + service.Spec.Ports[0].Name
+		}
+
+		// Fills the farm
+		var farm = types.Farm{
 			Name:         farmName,
 			Family:       "ipv4",
 			VirtualAddr:  service.Spec.ClusterIP,
@@ -75,69 +108,70 @@ func GetJSONnftlbFromService(service *v1.Service) types.JSONnftlb{
 			State:        "up",
 			Intraconnect: "on",
 			Persistence:  fmt.Sprint(persistence),
-                        PersistTTL:   fmt.Sprint(persistence_ttl),
+			PersistTTL:   fmt.Sprint(persistenceTTL),
 			Backends:     types.Backends{},
-		},
+		}
+		farmsSlice = append(farmsSlice, farm)
 	}
+
 	// Returns the filled struct
 	return types.JSONnftlb{
-		Farms: farm,
+		Farms: farmsSlice,
 	}
+
 }
 
 // GetJSONnftlbFromEndpoints returns a JSONnftlb struct filled with any Endpoints data.
 func GetJSONnftlbFromEndpoints(endpoints *v1.Endpoints) types.JSONnftlb {
-        farmName := endpoints.ObjectMeta.Name
-        // Extracts individual addresses
-        var addrSlice []string
-        for _, endpoint := range endpoints.Subsets {
-                for _, address := range endpoint.Addresses {
-                        addrSlice = append(addrSlice, address.IP)
-                }
-        }
-        // Initializes farm/backends ID
-        CreateFarmID(farmName)
-        // Fills backends
-        var backends types.Backends
-        for _, endpoint := range endpoints.Subsets {
-                for _, address := range endpoint.Addresses {
-                        // Get ip of the backends
-                        ip := address.IP
-                        // Get name of the backends based on the deployment, if empty take name of the farm
-                        backend_name := ""
-                        if address.TargetRef != nil{
-                                backend_name = address.TargetRef.Name
-                        }else if address.TargetRef == nil{
-                                backend_name = endpoints.ObjectMeta.Name
-                        }
-                        // Create backend for each port
-                        for _, endpoint2 := range endpoints.Subsets {
-                                for _, port := range endpoint2.Ports {
-                                        var backend = types.Backend{
-                                                Name:   fmt.Sprintf("%s", backend_name),
-                                                IPAddr: ip,
-                                                State:  "up",
-                                                Port: fmt.Sprint(port.Port),
-                                        }
-                                        // Appends backend
-                                        backends = append(backends, backend)
-                                }
-                        }
-                        // Increases backend ID
-                        IncreaseBackendID(farmName)
-                }
-        }
-        // Fills the farm
-        var farm = types.Farms{
-                types.Farm{
-                        Name:     farmName,
-                        Backends: backends,
-                },
-        }
-        // Returns the filled struct
-        return types.JSONnftlb{
-                Farms: farm,
-        }
+	farmName := endpoints.ObjectMeta.Name
+	portName := ""
+	// Initializes farm/backends ID
+	CreateFarmID(farmName)
+	var farmsSlice []types.Farm
+	for _, endpoint := range endpoints.Subsets {
+		for _, address := range endpoint.Addresses {
+			// Get ip of the backends
+			ip := address.IP
+			// Get name of the backends based on the deployment, if empty take name of the farm
+			backendName := ""
+			if address.TargetRef != nil {
+				backendName = address.TargetRef.Name
+			} else if address.TargetRef == nil {
+				backendName = endpoints.ObjectMeta.Name
+			}
+			// Create backend for each port
+			for _, port := range endpoint.Ports {
+				var backends types.Backends
+				var backend = types.Backend{
+					Name:   fmt.Sprintf("%s", backendName),
+					IPAddr: ip,
+					State:  "up",
+					Port:   fmt.Sprint(port.Port),
+				}
+				// Appends backend
+				backends = append(backends, backend)
+
+				if port.Name == "" {
+					portName = "default"
+				} else {
+					portName = port.Name
+				}
+
+				var farm = types.Farm{
+					Name:     fmt.Sprintf("%s%s%s", farmName, "--", portName),
+					Backends: backends,
+				}
+				farmsSlice = append(farmsSlice, farm)
+			}
+
+		}
+
+	}
+
+	// Returns the filled struct
+	return types.JSONnftlb{
+		Farms: farmsSlice,
+	}
 }
 
 // Contains returns true when "str" string is in "sl" slice.

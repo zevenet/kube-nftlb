@@ -27,7 +27,7 @@ func UpdateNftlbFarm(newSvc *v1.Service) {
 
 // UpdateNftlbBackends updates backends for any farm given a Endpoints object.
 func UpdateNftlbBackends(oldEP, newEP *v1.Endpoints) {
-	if !json.Contains(request.BadNames, newEP.ObjectMeta.Name){
+	if !json.Contains(request.BadNames, newEP.ObjectMeta.Name) {
 		// Gets the farm name and number of backends for later
 		farmName := oldEP.ObjectMeta.Name
 		// Translates the Endpoints objects into JSONnftlb structs
@@ -35,38 +35,74 @@ func UpdateNftlbBackends(oldEP, newEP *v1.Endpoints) {
 		// Translates the struct into a JSON string
 		backendsJSON := json.DecodePrettyJSON(newJSONnftlb)
 		var newBackendsNameSlice []string
-        	for _, endpoint := range newEP.Subsets {
-               		for _, address := range endpoint.Addresses {
-               			backend_name := ""
-               			if address.TargetRef != nil{
-               				backend_name = address.TargetRef.Name
-               				newBackendsNameSlice = append(newBackendsNameSlice,backend_name)
-               			}
-               		}
-        	}
+		var newServiceNameSlice []string
+		var oldServiceNameSlice []string
+		for _, endpoint := range newEP.Subsets {
+			for _, address := range endpoint.Addresses {
+				if address.TargetRef != nil {
+					newBackendsNameSlice = append(newBackendsNameSlice, address.TargetRef.Name)
+				}
+			}
+			for _, port := range endpoint.Ports {
+				if port.Name != "" {
+					newServiceNameSlice = append(newServiceNameSlice, port.Name)
+				} else if port.Name == "" {
+					newServiceNameSlice = append(newServiceNameSlice, "default")
+				}
+			}
+		}
+
+		for _, endpoint := range oldEP.Subsets {
+			for _, port := range endpoint.Ports {
+				if port.Name != "" {
+					oldServiceNameSlice = append(oldServiceNameSlice, port.Name)
+				} else if port.Name == "" {
+					oldServiceNameSlice = append(oldServiceNameSlice, "default")
+				}
+			}
+		}
 		// Makes the request
 		response := updateNftlbRequest(backendsJSON)
 		// Prints info
 		printUpdated("Backends", backendsJSON, response)
-		// Deletes remaining old backends if any
-		for _, endpoint := range oldEP.Subsets {
-			backend_name := ""
-			for _, address := range endpoint.Addresses {
-				if address.TargetRef != nil{
-					backend_name = address.TargetRef.Name
-					// Find Missing backends in the slice of backends.
-					// If the farm name is not in the slice it is removed
-    					_, found := Find(newBackendsNameSlice, backend_name)
-    					if !found {
-						backendName := fmt.Sprintf("%s", backend_name)
-						fullPath := fmt.Sprintf("%s/backends/%s", farmName, backendName)
-						response := deleteNftlbRequest(fullPath)
-						printDeleted("Backend", farmName, backendName, response)
-    					}
-    				}
+
+		// If a single backend is detected, it proceeds to delete all existing ones based on what had been previously defined
+		if len(newServiceNameSlice) < 1 {
+			for _, endpoint := range oldEP.Subsets {
+				for _, address := range endpoint.Addresses {
+					if address.TargetRef != nil {
+						for _, serviceName := range oldServiceNameSlice {
+							backendName := fmt.Sprintf("%s", address.TargetRef.Name)
+							fullPath := fmt.Sprintf("%s%s%s/backends/%s", farmName, "--", serviceName, backendName)
+							response := deleteNftlbRequest(fullPath)
+							printDeleted("Backend", farmName, backendName, response)
+						}
+					}
+				}
+			}
+			// 	If multiple backends are detected, proceed to remove only the necessary ones
+		} else {
+			for _, endpoint := range oldEP.Subsets {
+				for _, address := range endpoint.Addresses {
+					fmt.Println("-- (loop) dentro del for, address.targetRef.Name")
+					fmt.Println(address.TargetRef.Name)
+					if address.TargetRef != nil {
+						// Find Missing backends in the slice of backends.
+						// If the farm name is not in the slice it is removed
+						_, found := Find(newBackendsNameSlice, address.TargetRef.Name)
+						if !found {
+							for _, serviceName := range newServiceNameSlice {
+								backendName := fmt.Sprintf("%s", address.TargetRef.Name)
+								fullPath := fmt.Sprintf("%s%s%s/backends/%s", farmName, "--", serviceName, backendName)
+								response := deleteNftlbRequest(fullPath)
+								printDeleted("Backend", farmName, backendName, response)
+							}
+						}
+					}
+				}
 			}
 		}
- 	}
+	}
 }
 
 func updateNftlbRequest(json string) string {
@@ -90,10 +126,10 @@ func printUpdated(object string, json string, response string) {
 }
 
 func Find(slice []string, val string) (int, bool) {
-    for i, item := range slice {
-        if item == val {
-            return i, true
-        }
-    }
-    return -1, false
+	for i, item := range slice {
+		if item == val {
+			return i, true
+		}
+	}
+	return -1, false
 }

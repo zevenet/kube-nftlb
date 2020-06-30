@@ -12,24 +12,43 @@ import (
 
 // DeleteNftlbFarm deletes any nftlb farm given a Service object.
 func DeleteNftlbFarm(service *v1.Service) {
-	farmName := service.ObjectMeta.Name
-	response := deleteNftlbRequest(farmName)
-	// Prints info
-	printDeleted("Farm", farmName, "", response)
+	farmName := ""
+	for _, port := range service.Spec.Ports {
+		if port.Name != "" {
+			farmName = service.ObjectMeta.Name + "--" + port.Name
+		} else if port.Name == "" {
+			farmName = service.ObjectMeta.Name + "--" + "default"
+		}
+		response := deleteNftlbRequest(farmName)
+		// Prints info
+		printDeleted("Farm", farmName, "", response)
+	}
 }
 
 // DeleteNftlbBackends deletes all nftlb backends from a farm given a Endpoints object.
 func DeleteNftlbBackends(endpoints *v1.Endpoints) {
 	farmName := endpoints.ObjectMeta.Name
+	var newServiceNameSlice []string
 	for json.GetBackendID(farmName) > 0 {
-		// Makes the full path for the request
-		backendName := fmt.Sprintf("%s%d", farmName, json.GetBackendID(farmName))
-		fullPath := fmt.Sprintf("%s/backends/%s", farmName, backendName)
-		response := deleteNftlbRequest(fullPath)
-		// Prints info
-		printDeleted("Backend", farmName, backendName, response)
-		// Decreases backend ID by 1
-		json.DecreaseBackendID(farmName)
+		for _, endpoint := range endpoints.Subsets {
+			for _, port := range endpoint.Ports {
+				if port.Name != "" {
+					newServiceNameSlice = append(newServiceNameSlice, port.Name)
+				} else if port.Name == "" {
+					newServiceNameSlice = append(newServiceNameSlice, "default")
+				}
+			}
+		}
+		for _, serviceName := range newServiceNameSlice {
+			// Makes the full path for the request
+			backendName := fmt.Sprintf("%s%d", farmName, json.GetBackendID(farmName))
+			fullPath := fmt.Sprintf("%s%s%s/backends/%s", farmName, "--", serviceName, backendName)
+			response := deleteNftlbRequest(fullPath)
+			// Prints info
+			printDeleted("Backend", farmName, backendName, response)
+			// Decreases backend ID by 1
+			json.DecreaseBackendID(farmName)
+		}
 	}
 }
 

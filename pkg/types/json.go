@@ -8,7 +8,7 @@ type Backend struct {
 	Priority string `json:"priority,omitempty"`
 	Mark     string `json:"mark,omitempty"`
 	State    string `json:"state,omitempty"`
-	Port	 string `json:"port,omitempty"`
+	Port     string `json:"port,omitempty"`
 }
 
 // Backends defines a group of backends in any farm.
@@ -30,9 +30,8 @@ type Farm struct {
 	State        string   `json:"state,omitempty"`
 	Intraconnect string   `json:"intra-connect,omitempty"`
 	Persistence  string   `json:"persistence,omitempty"`
-        PersistTTL   string   `json:"persist-ttl,omitempty"`
+	PersistTTL   string   `json:"persist-ttl,omitempty"`
 	Backends     Backends `json:"backends"`
-
 }
 
 // Farms defines a group of farms.
