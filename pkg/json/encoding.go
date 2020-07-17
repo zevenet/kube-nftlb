@@ -3,12 +3,15 @@ package json
 import (
 	"encoding/json"
 	"fmt"
-	"strings"
 	"regexp"
+	"strings"
 
 	types "github.com/zevenet/kube-nftlb/pkg/types"
 	v1 "k8s.io/api/core/v1"
 )
+
+// Check if the service has active nodeports. If the case, thrown to the list.
+var nodePortArray []string
 
 // EncodeJSON returns a JSONnftlb struct with its fields filled with the JSON data.
 func EncodeJSON(stringJSON string) types.JSONnftlb {
@@ -74,15 +77,15 @@ func GetJSONnftlbFromService(service *v1.Service) types.JSONnftlb {
 	if service.ObjectMeta.Annotations != nil {
 		for key, value := range service.ObjectMeta.Annotations {
 			field := rgx.FindStringSubmatch(key)
-			if strings.ToLower(string(field[0])) == "mode"{
+			if strings.ToLower(string(field[0])) == "mode" {
 				mode = value
-			} else if strings.ToLower(string(field[0])) == "scheduler"{
+			} else if strings.ToLower(string(field[0])) == "scheduler" {
 				scheduler = value
-			}else if strings.ToLower(string(field[0])) == "helper"{
+			} else if strings.ToLower(string(field[0])) == "helper" {
 				helper = value
-			}else if strings.ToLower(string(field[0])) == "log"{
+			} else if strings.ToLower(string(field[0])) == "log" {
 				log = value
-			}else if strings.ToLower(string(field[0])) == "logprefix" && log != ""{
+			} else if strings.ToLower(string(field[0])) == "logprefix" && log != "" {
 				logprefix = value
 			}
 		}
@@ -90,6 +93,7 @@ func GetJSONnftlbFromService(service *v1.Service) types.JSONnftlb {
 	var farmsSlice []types.Farm
 	serviceName := service.ObjectMeta.Name
 	farmName := ""
+	// in the case where we only create multiples service in the same conf yaml file
 	if len(service.Spec.Ports) > 1 {
 		for _, port := range service.Spec.Ports {
 			// Gets the name of the farm
@@ -117,15 +121,38 @@ func GetJSONnftlbFromService(service *v1.Service) types.JSONnftlb {
 				Backends:     types.Backends{},
 			}
 			farmsSlice = append(farmsSlice, farm)
+			// Check if the service is type NodePort, if the case, store her name and port in variable global of nodeports.
+			if service.Spec.Type == "NodePort" && port.NodePort >= 0 {
+				// Fills the nodePort farm
+				farmName = serviceName + "--" + port.Name + "--" + "nodePort"
+				var farm = types.Farm{
+					Name:         farmName,
+					Family:       "ipv4",
+					VirtualAddr:  "",
+					VirtualPorts: fmt.Sprint(port.NodePort),
+					Mode:         mode,
+					Protocol:     protocol,
+					Scheduler:    scheduler,
+					Helper:       helper,
+					Log:          log,
+					LogPrefix:    logprefix,
+					State:        "up",
+					Intraconnect: "on",
+					Persistence:  fmt.Sprint(persistence),
+					PersistTTL:   fmt.Sprint(persistenceTTL),
+					Backends:     types.Backends{},
+				}
+				farmsSlice = append(farmsSlice, farm)
+				nodePortArray = append(nodePortArray, farmName)
+			}
 		}
-
+		// in the case where we only create one service
 	} else if len(service.Spec.Ports) == 1 {
 		if service.Spec.Ports[0].Name == "" {
 			farmName = serviceName + "--" + "default"
 		} else {
 			farmName = serviceName + "--" + service.Spec.Ports[0].Name
 		}
-
 		// Fills the farm
 		var farm = types.Farm{
 			Name:         farmName,
@@ -145,21 +172,44 @@ func GetJSONnftlbFromService(service *v1.Service) types.JSONnftlb {
 			Backends:     types.Backends{},
 		}
 		farmsSlice = append(farmsSlice, farm)
+		// Check if the service is type NodePort, if the case, store her name and port in variable global of nodeports.
+		if service.Spec.Type == "NodePort" && service.Spec.Ports[0].NodePort >= 0 {
+			// Fills the nodePort farm
+			farmName = serviceName + "--" + service.Spec.Ports[0].Name + "--" + "nodePort"
+			var farm = types.Farm{
+				Name:         farmName,
+				Family:       "ipv4",
+				VirtualAddr:  "",
+				VirtualPorts: fmt.Sprint(service.Spec.Ports[0].NodePort),
+				Mode:         mode,
+				Protocol:     protocol,
+				Scheduler:    scheduler,
+				Helper:       helper,
+				Log:          log,
+				LogPrefix:    logprefix,
+				State:        "up",
+				Intraconnect: "on",
+				Persistence:  fmt.Sprint(persistence),
+				PersistTTL:   fmt.Sprint(persistenceTTL),
+				Backends:     types.Backends{},
+			}
+			farmsSlice = append(farmsSlice, farm)
+			nodePortArray = append(nodePortArray, farmName)
+		}
 	}
-
 	// Returns the filled struct
 	return types.JSONnftlb{
 		Farms: farmsSlice,
 	}
-
 }
 
 // GetJSONnftlbFromEndpoints returns a JSONnftlb struct filled with any Endpoints data.
 func GetJSONnftlbFromEndpoints(endpoints *v1.Endpoints) types.JSONnftlb {
-	farmName := endpoints.ObjectMeta.Name
+	objName := endpoints.ObjectMeta.Name
 	portName := ""
+	farmName := ""
 	// Initializes farm/backends ID
-	CreateFarmID(farmName)
+	CreateFarmID(objName)
 	var farmsSlice []types.Farm
 	for _, endpoint := range endpoints.Subsets {
 		for _, address := range endpoint.Addresses {
@@ -183,18 +233,26 @@ func GetJSONnftlbFromEndpoints(endpoints *v1.Endpoints) types.JSONnftlb {
 				}
 				// Appends backend
 				backends = append(backends, backend)
-
 				if port.Name == "" {
 					portName = "default"
 				} else {
 					portName = port.Name
 				}
-
+				farmName = objName + "--" + portName
 				var farm = types.Farm{
-					Name:     fmt.Sprintf("%s%s%s", farmName, "--", portName),
+					Name:     fmt.Sprintf("%s", farmName),
 					Backends: backends,
 				}
 				farmsSlice = append(farmsSlice, farm)
+				// if the service has nodeport ports, associate the backends to it
+				farmName = farmName + "--" + "nodePort"
+				if Contains(nodePortArray, farmName) {
+					var farm = types.Farm{
+						Name:     fmt.Sprintf("%s", farmName),
+						Backends: backends,
+					}
+					farmsSlice = append(farmsSlice, farm)
+				}
 			}
 
 		}

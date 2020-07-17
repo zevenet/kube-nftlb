@@ -20,8 +20,16 @@ func DeleteNftlbFarm(service *v1.Service) {
 			farmName = service.ObjectMeta.Name + "--" + "default"
 		}
 		response := deleteNftlbRequest(farmName)
-		// Prints info
+		// Prints info in the logs about the deleted farm
 		printDeleted("Farm", farmName, "", response)
+
+		// check if the farm has a nodeport port associated, if you have it, deleting the service also deletes it.
+		if service.Spec.Type == "NodePort" {
+			farmName = farmName + "--" + "nodePort"
+			response := deleteNftlbRequest(farmName)
+			// Prints info in the logs about the deleted farm
+			printDeleted("Farm", farmName, "", response)
+		}
 	}
 }
 
