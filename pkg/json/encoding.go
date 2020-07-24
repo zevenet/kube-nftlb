@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"strings"
+	"regexp"
 
 	types "github.com/zevenet/kube-nftlb/pkg/types"
 	v1 "k8s.io/api/core/v1"
@@ -62,6 +63,30 @@ func GetJSONnftlbFromService(service *v1.Service) types.JSONnftlb {
 		}
 	}
 
+	// If there are no annotations, default values ​​are established
+	mode := "snat"
+	scheduler := ""
+	helper := ""
+	log := ""
+	logprefix := ""
+	// Get annotations
+	var rgx = regexp.MustCompile(`[a-z]+$`)
+	if service.ObjectMeta.Annotations != nil {
+		for key, value := range service.ObjectMeta.Annotations {
+			field := rgx.FindStringSubmatch(key)
+			if strings.ToLower(string(field[0])) == "mode"{
+				mode = value
+			} else if strings.ToLower(string(field[0])) == "scheduler"{
+				scheduler = value
+			}else if strings.ToLower(string(field[0])) == "helper"{
+				helper = value
+			}else if strings.ToLower(string(field[0])) == "log"{
+				log = value
+			}else if strings.ToLower(string(field[0])) == "logprefix" && log != ""{
+				logprefix = value
+			}
+		}
+	}
 	var farmsSlice []types.Farm
 	serviceName := service.ObjectMeta.Name
 	farmName := ""
@@ -79,8 +104,12 @@ func GetJSONnftlbFromService(service *v1.Service) types.JSONnftlb {
 				Family:       "ipv4",
 				VirtualAddr:  service.Spec.ClusterIP,
 				VirtualPorts: portString,
-				Mode:         "snat",
+				Mode:         mode,
 				Protocol:     nameProtocol,
+				Scheduler:    scheduler,
+				Helper:       helper,
+				Log:          log,
+				LogPrefix:    logprefix,
 				State:        "up",
 				Intraconnect: "on",
 				Persistence:  fmt.Sprint(persistence),
@@ -103,8 +132,12 @@ func GetJSONnftlbFromService(service *v1.Service) types.JSONnftlb {
 			Family:       "ipv4",
 			VirtualAddr:  service.Spec.ClusterIP,
 			VirtualPorts: ports,
-			Mode:         "snat",
+			Mode:         mode,
 			Protocol:     protocol,
+			Scheduler:    scheduler,
+			Helper:       helper,
+			Log:          log,
+			LogPrefix:    logprefix,
 			State:        "up",
 			Intraconnect: "on",
 			Persistence:  fmt.Sprint(persistence),

@@ -25,6 +25,7 @@ type Farm struct {
 	Scheduler    string   `json:"scheduler,omitempty"`
 	Helper       string   `json:"helper,omitempty"`
 	Log          string   `json:"log,omitempty"`
+	LogPrefix    string   `json:"log-prefix,omitempty"`
 	Mark         string   `json:"mark,omitempty"`
 	Priority     string   `json:"priority,omitempty"`
 	State        string   `json:"state,omitempty"`

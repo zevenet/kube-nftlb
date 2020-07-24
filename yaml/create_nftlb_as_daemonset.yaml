@@ -26,3 +26,10 @@ spec:
         securityContext:
           allowPrivilegeEscalation: true
           privileged: true
+        volumeMounts:
+        - mountPath: /var/config-kubernetes
+          name: kubernetesconfig-volumen
+      volumes:
+      - name: kubernetesconfig-volumen
+        hostPath:
+          path: /etc/kubernetes
