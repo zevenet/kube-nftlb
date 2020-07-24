@@ -27,7 +27,7 @@ RUN if [ -s "nftlb.deb" ] ; then dpkg -i ./nftlb.deb ; else apt-get install -y n
 
 # load container parameters
 COPY ./container_params.conf /container_params.conf
-
+COPY ./client_params.conf /client_params.conf
 
 # After compiling the Golang client, copy the binary to / and make it the entrypoint
 COPY ./app /goclient
@@ -38,6 +38,7 @@ RUN source /container_params.conf && \
 	sed -Ei "s/#MASQUERADEMARK#/$masqueradeMark/g" /start.sh && \
 	sed -Ei "s/#DAEMONCHECKTIMEOUT#/$daemonCheckTimeout/g" /start.sh && \
 	sed -Ei "s/#LOGSLEVEL#/$logsLevel/g" /start.sh && \
-	sed -Ei "s/#LOGSOUTPUT#/$logsOutput/g" /start.sh
+	sed -Ei "s/#LOGSOUTPUT#/$logsOutput/g" /start.sh && \
+	sed -Ei "s,#CLIENTCFG#,/client_params.conf,g" /start.sh
 
 CMD [ "/bin/bash", "-c", "/start.sh" ]

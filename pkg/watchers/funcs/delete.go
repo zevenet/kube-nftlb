@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	defaults "github.com/zevenet/kube-nftlb/pkg/defaults"
+	configFarm "github.com/zevenet/kube-nftlb/pkg/farms"
 	json "github.com/zevenet/kube-nftlb/pkg/json"
 	request "github.com/zevenet/kube-nftlb/pkg/request"
 	types "github.com/zevenet/kube-nftlb/pkg/types"
@@ -15,19 +16,24 @@ func DeleteNftlbFarm(service *v1.Service) {
 	farmName := ""
 	for _, port := range service.Spec.Ports {
 		if port.Name != "" {
-			farmName = service.ObjectMeta.Name + "--" + port.Name
+			farmName = configFarm.AssignFarmNameService(service.ObjectMeta.Name, port.Name)
 		} else if port.Name == "" {
-			farmName = service.ObjectMeta.Name + "--" + "default"
+			farmName = configFarm.AssignFarmNameService(service.ObjectMeta.Name, "default")
 		}
-		response := deleteNftlbRequest(farmName)
 		// Prints info in the logs about the deleted farm
+		response := deleteNftlbRequest(farmName)
 		printDeleted("Farm", farmName, "", response)
-
-		// check if the farm has a nodeport port associated, if you have it, deleting the service also deletes it.
+		// Check if the farm is of type nodeport, If that's the case, deleting the original service also deletes the nodePort service.
+		// It also deletes its name from the blobal variable of nodePorts
 		if service.Spec.Type == "NodePort" {
-			farmName = farmName + "--" + "nodePort"
-			response := deleteNftlbRequest(farmName)
+			farmName = configFarm.AssignFarmNameNodePort(farmName, "nodePort")
+			nodePortArray := json.GetNodePortArray()
+			var indexNodePort = indexOf(farmName, nodePortArray) // delete the name of the service nodeport by index name.
+			nodePortArray[indexNodePort] = nodePortArray[len(nodePortArray)-1]
+			nodePortArray[len(nodePortArray)-1] = ""
+			nodePortArray = nodePortArray[:len(nodePortArray)-1]
 			// Prints info in the logs about the deleted farm
+			response := deleteNftlbRequest(farmName)
 			printDeleted("Farm", farmName, "", response)
 		}
 	}
@@ -35,9 +41,9 @@ func DeleteNftlbFarm(service *v1.Service) {
 
 // DeleteNftlbBackends deletes all nftlb backends from a farm given a Endpoints object.
 func DeleteNftlbBackends(endpoints *v1.Endpoints) {
-	farmName := endpoints.ObjectMeta.Name
+	objName := endpoints.ObjectMeta.Name
 	var newServiceNameSlice []string
-	for json.GetBackendID(farmName) > 0 {
+	for json.GetBackendID(objName) > 0 {
 		for _, endpoint := range endpoints.Subsets {
 			for _, port := range endpoint.Ports {
 				if port.Name != "" {
@@ -49,13 +55,13 @@ func DeleteNftlbBackends(endpoints *v1.Endpoints) {
 		}
 		for _, serviceName := range newServiceNameSlice {
 			// Makes the full path for the request
-			backendName := fmt.Sprintf("%s%d", farmName, json.GetBackendID(farmName))
-			fullPath := fmt.Sprintf("%s%s%s/backends/%s", farmName, "--", serviceName, backendName)
+			backendName := fmt.Sprintf("%s%d", objName, json.GetBackendID(objName))
+			fullPath := fmt.Sprintf("%s%s%s/backends/%s", objName, "--", serviceName, backendName)
 			response := deleteNftlbRequest(fullPath)
 			// Prints info
-			printDeleted("Backend", farmName, backendName, response)
+			printDeleted("Backend", objName, backendName, response)
 			// Decreases backend ID by 1
-			json.DecreaseBackendID(farmName)
+			json.DecreaseBackendID(objName)
 		}
 	}
 }
@@ -88,4 +94,13 @@ func printDeleted(object string, farmName string, backendName string, response s
 		panic(err)
 	}
 	fmt.Println(message)
+}
+
+func indexOf(element string, data []string) int {
+	for k, v := range data {
+		if element == v {
+			return k
+		}
+	}
+	return -1 //not found.
 }

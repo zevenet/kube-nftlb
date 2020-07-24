@@ -12,7 +12,7 @@ fi
 sleep 3
 
 # Start the second process
-/goclient #KEY# &
+/goclient #KEY# #CLIENTCFG# &
 status=$?
 if [ $status -ne 0 ]; then
   echo "Failed to start GO client: $status"

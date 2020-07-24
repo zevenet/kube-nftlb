@@ -12,6 +12,7 @@ spec:
       labels:
         name: kube-nftlb
     spec:
+      dnsPolicy: ClusterFirst
       hostNetwork: true
       containers:
       - name: kube-nftlb

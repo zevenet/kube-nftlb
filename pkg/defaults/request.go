@@ -2,6 +2,7 @@ package defaults
 
 import (
 	"fmt"
+	"gopkg.in/gcfg.v1"
 	"os"
 
 	types "github.com/zevenet/kube-nftlb/pkg/types"
@@ -13,13 +14,21 @@ var (
 )
 
 // Check if "app" has been executed with 1 argument only.
-func init() {
-	if len(os.Args) != 2 {
-		err := fmt.Sprintf("Error: you must pass only 1 argument to be interpreted as the nftlb key, args passed: %d", len(os.Args)-1)
+func Init() *types.Config {
+	if len(os.Args) != 3 {
+		err := fmt.Sprintf("Error: kube-nftlb expectes the nftlb key and the configuration file, args passed: %d", len(os.Args)-1)
 		panic(err)
 	}
 	key = os.Args[1]
 	fmt.Println("Key set")
+
+	var cfg types.Config
+	err := gcfg.ReadFileInto(&cfg, os.Args[2])
+	if err != nil {
+		panic(err)
+	}
+
+	return &cfg
 }
 
 // SetNftlbKey returns a Header with the KEY_NFTLB configured in build.sh.

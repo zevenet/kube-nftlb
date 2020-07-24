@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"os"
 	"time"
 
 	types "github.com/zevenet/kube-nftlb/pkg/types"
@@ -12,7 +13,9 @@ import (
 // BadNames is a name list of pods/services that shouldn't be doing any requests
 // (they have invalid data).
 var (
-	BadNames = []string{"kube-controller-manager", "kube-scheduler", "kube-scheduler-debian", "kube-controller-manager-debian"}
+	// We discover the hostname dynamically
+	Hostname, err = os.Hostname()
+	BadNames      = []string{"kube-controller-manager", "kube-scheduler", "kube-scheduler-" + Hostname, "kube-controller-manager-" + Hostname}
 )
 
 // httpClient is a HTTP client with some settings for all requests.

@@ -1,5 +1,7 @@
 #!/bin/sh
 
+set -e
+
 DOCKER_PATH="./internal/docker/kube-nftlb"
 
 # Optionally, use a nftlb devel package
