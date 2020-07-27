@@ -3,12 +3,12 @@ package json
 import (
 	"encoding/json"
 	"fmt"
-	"regexp"
-	"strings"
-
 	configFarm "github.com/zevenet/kube-nftlb/pkg/farms"
 	types "github.com/zevenet/kube-nftlb/pkg/types"
 	v1 "k8s.io/api/core/v1"
+	"net"
+	"regexp"
+	"strings"
 )
 
 // Check if the service has active nodeports. If that's the case, store it in the list.
@@ -28,15 +28,16 @@ func GetJSONnftlbFromService(service *v1.Service) types.JSONnftlb {
 	// Gets persistence and Stickiness timeout in seconds
 	persistence, persistenceTTL := getPersistence(service)
 	// Read the annotations collected in the "annotations" field of the service
-	mode, scheduler, helper, log, logprefix := getAnnotations(service)
+	mode, scheduler, schedulerParam, helper, log, logprefix := getAnnotations(service)
 	// Creates the service
 	var farmsSlice []types.Farm
 	serviceName := service.ObjectMeta.Name
 	farmName := ""
-	// Default values of service (Family, State and Intraconnect)
-	family := "ipv4"
+	// Default values of service (State and Intraconnect)
 	state := "up"
 	intraconnect := "on"
+	// find out the ip family, by default the values ​​is ipv4
+	family := findFamily(service)
 	// When creating services we can create several from the same yaml configuration file
 	// For this we take into account the port field of the yaml configuration file. We create a service for each name field in ports
 	for _, port := range service.Spec.Ports {
@@ -50,7 +51,7 @@ func GetJSONnftlbFromService(service *v1.Service) types.JSONnftlb {
 		portString := fmt.Sprint(port.Port)
 		virtualAddr := service.Spec.ClusterIP
 		// Creates and fill the farm.
-		var farm = createFarm(farmName, family, virtualAddr, portString, mode, nameProtocol, scheduler, helper, log, logprefix, state, intraconnect, persistence, persistenceTTL, types.Backends{})
+		var farm = createFarm(farmName, family, virtualAddr, portString, mode, nameProtocol, scheduler, schedulerParam, helper, log, logprefix, state, intraconnect, persistence, persistenceTTL, types.Backends{})
 		farmsSlice = append(farmsSlice, farm)
 		// Check if the service is type NodePort
 		// If so, modify the name of the original service, modify the port, modify its virtualip and store its name in a global variable to then be able to reference it
@@ -59,7 +60,7 @@ func GetJSONnftlbFromService(service *v1.Service) types.JSONnftlb {
 			virtualAddr = ""
 			portString = fmt.Sprint(port.NodePort)
 			// Creates and fills the NodePort farm
-			var farm = createFarm(farmName, family, virtualAddr, portString, mode, nameProtocol, scheduler, helper, log, logprefix, state, intraconnect, persistence, persistenceTTL, types.Backends{})
+			var farm = createFarm(farmName, family, virtualAddr, portString, mode, nameProtocol, scheduler, schedulerParam, helper, log, logprefix, state, intraconnect, persistence, persistenceTTL, types.Backends{})
 			farmsSlice = append(farmsSlice, farm)
 			nodePortArray = append(nodePortArray, farmName)
 		}
@@ -76,6 +77,7 @@ func GetJSONnftlbFromEndpoints(endpoints *v1.Endpoints) types.JSONnftlb {
 	portName := ""
 	farmName := ""
 	state := "up"
+	//time.Sleep(5 * time.Second)
 	// Initializes farm/backends ID
 	CreateFarmID(objName)
 	var farmsSlice []types.Farm
@@ -139,24 +141,25 @@ func Contains(sl []string, str string) bool {
 	return false
 }
 
-func createFarm(farmName string, family string, virtualAddr string, virtualPorts string, mode string, protocol string, scheduler string, helper string, log string, logPrefix string, state string, intraconnect string, persistence string, persistTTL string, backends types.Backends) types.Farm {
+func createFarm(farmName string, family string, virtualAddr string, virtualPorts string, mode string, protocol string, scheduler string, schedulerParam string, helper string, log string, logPrefix string, state string, intraconnect string, persistence string, persistTTL string, backends types.Backends) types.Farm {
 	// we create the farm based on the types that we have previously defined in types/json
 	var farmCreated = types.Farm{
-		Name:         farmName,
-		Family:       family,
-		VirtualAddr:  fmt.Sprintf("%s", virtualAddr),
-		VirtualPorts: fmt.Sprintf("%s", virtualPorts),
-		Mode:         mode,
-		Protocol:     protocol,
-		Scheduler:    scheduler,
-		Helper:       helper,
-		Log:          log,
-		LogPrefix:    logPrefix,
-		State:        state,
-		Intraconnect: intraconnect,
-		Persistence:  fmt.Sprintf("%s", persistence),
-		PersistTTL:   fmt.Sprintf("%s", persistTTL),
-		Backends:     backends,
+		Name:           farmName,
+		Family:         family,
+		VirtualAddr:    fmt.Sprintf("%s", virtualAddr),
+		VirtualPorts:   fmt.Sprintf("%s", virtualPorts),
+		Mode:           mode,
+		Protocol:       protocol,
+		Scheduler:      scheduler,
+		SchedulerParam: schedulerParam,
+		Helper:         helper,
+		Log:            log,
+		LogPrefix:      logPrefix,
+		State:          state,
+		Intraconnect:   intraconnect,
+		Persistence:    fmt.Sprintf("%s", persistence),
+		PersistTTL:     fmt.Sprintf("%s", persistTTL),
+		Backends:       backends,
 	}
 	return farmCreated
 }
@@ -172,12 +175,27 @@ func createBackend(name string, ipAddr string, state string, port string) types.
 }
 
 func getPersistence(service *v1.Service) (string, string) {
+	// First we get the persistence of our service. By default, annotations have priority ahead of the sessionAffinity and sessionAffinityConfig field.
+	// If there are no annotations, the information in the sessionAffinity and sessionAffinityConfig field is collected.
 	persistence := ""
 	persistenceTTL := ""
-	if service.Spec.SessionAffinity == "ClientIP" {
-		persistence = "srcip"
-	} else if service.Spec.SessionAffinity == "None" {
-		persistence = "none"
+	var rgx = regexp.MustCompile(`[a-z]+$`)
+	if service.ObjectMeta.Annotations != nil {
+		for key, value := range service.ObjectMeta.Annotations {
+			field := rgx.FindStringSubmatch(key)
+			if strings.ToLower(string(field[0])) == "persistence" {
+				if value == "srcip" || value == "dstip" || value == "srcport" || value == "srcport" || value == "dstport" || value == "srcmac" || value == "dstmac" {
+					persistence = value
+				}
+			}
+		}
+	}
+	if persistence == "" {
+		if service.Spec.SessionAffinity == "ClientIP" {
+			persistence = "srcip"
+		} else if service.Spec.SessionAffinity == "None" {
+			persistence = "none"
+		}
 	}
 	if service.Spec.SessionAffinityConfig != nil {
 		if service.Spec.SessionAffinityConfig.ClientIP != nil {
@@ -190,12 +208,13 @@ func getPersistence(service *v1.Service) (string, string) {
 	return persistence, persistenceTTL
 }
 
-func getAnnotations(service *v1.Service) (string, string, string, string, string) {
+func getAnnotations(service *v1.Service) (string, string, string, string, string, string) {
 	// First try reading the annotations for fields that can be configured in the nftlb service
 	// If there are no annotations for all the fields, default values ​​are set.
 	// You don't need to worry about sending empty variables as it is configured so if a variable is sent empty it is not included in the json that configures the nftlb service.
 	mode := "snat"
-	scheduler := ""
+	scheduler := "rr"
+	sched_param := "none"
 	helper := ""
 	log := ""
 	logprefix := ""
@@ -208,7 +227,31 @@ func getAnnotations(service *v1.Service) (string, string, string, string, string
 			if strings.ToLower(string(field[0])) == "mode" {
 				mode = value
 			} else if strings.ToLower(string(field[0])) == "scheduler" {
-				scheduler = value
+				rgx = regexp.MustCompile(`^[a-z]+`)
+				field = rgx.FindStringSubmatch(value)
+				if value == "rr" {
+					scheduler = value
+				} else if value == "symhash" {
+					scheduler = value
+				} else if strings.ToLower(string(field[0])) == "hash" {
+					rgx = regexp.MustCompile(`[a-z]+$`)
+					field = rgx.FindStringSubmatch(value)
+					valueHash := strings.ToLower(string(field[0]))
+					if valueHash == "srcip" {
+						sched_param = valueHash
+					} else if valueHash == "dstip" {
+						sched_param = valueHash
+					} else if valueHash == "srcport" {
+						sched_param = valueHash
+					} else if valueHash == "dstport" {
+						sched_param = valueHash
+					} else if valueHash == "srcmac" {
+						sched_param = valueHash
+					} else if valueHash == "dstmac" {
+						sched_param = valueHash
+					}
+					scheduler = "hash"
+				}
 			} else if strings.ToLower(string(field[0])) == "helper" {
 				helper = value
 			} else if strings.ToLower(string(field[0])) == "log" {
@@ -218,9 +261,21 @@ func getAnnotations(service *v1.Service) (string, string, string, string, string
 			}
 		}
 	}
-	return mode, scheduler, helper, log, logprefix
+	return mode, scheduler, sched_param, helper, log, logprefix
 }
 
 func GetNodePortArray() []string {
 	return nodePortArray
+}
+
+func findFamily(service *v1.Service) string {
+	// Find out what type of version the service IP has, by default the value ​​is ipv4
+	family := "ipv4"
+	localhostIp := net.ParseIP(service.Spec.ClusterIP)
+	if localhostIp.To4() != nil {
+		family = "ipv4"
+	} else if localhostIp.To16() != nil {
+		family = "ipv6"
+	}
+	return family
 }
