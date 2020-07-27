@@ -9,6 +9,7 @@ type Backend struct {
 	Mark     string `json:"mark,omitempty"`
 	State    string `json:"state,omitempty"`
 	Port     string `json:"port,omitempty"`
+	BackendMaxConns string `json:"est-connlimit,omitempty"`
 }
 
 // Backends defines a group of backends in any farm.
@@ -23,6 +24,7 @@ type Farm struct {
 	Mode         string   `json:"mode,omitempty"`
 	Protocol     string   `json:"protocol,omitempty"`
 	Scheduler    string   `json:"scheduler,omitempty"`
+	SchedulerParam string `json:"sched-param,omitempty"`
 	Helper       string   `json:"helper,omitempty"`
 	Log          string   `json:"log,omitempty"`
 	LogPrefix    string   `json:"log-prefix,omitempty"`

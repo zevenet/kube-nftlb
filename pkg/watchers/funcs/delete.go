@@ -23,9 +23,10 @@ func DeleteNftlbFarm(service *v1.Service) {
 		// Prints info in the logs about the deleted farm
 		response := deleteNftlbRequest(farmName)
 		printDeleted("Farm", farmName, "", response)
-		// Check if the farm is of type nodeport, If that's the case, deleting the original service also deletes the nodePort service.
+		json.DeleteMaxConnsMap()
+		// Check if the farm is of type nodeport or LB, If that's the case, deleting the original service also deletes the nodePort service.
 		// It also deletes its name from the blobal variable of nodePorts
-		if service.Spec.Type == "NodePort" {
+		if service.Spec.Type == "NodePort" || service.Spec.Type == "LoadBalancer" {
 			farmName = configFarm.AssignFarmNameNodePort(farmName, "nodePort")
 			nodePortArray := json.GetNodePortArray()
 			var indexNodePort = indexOf(farmName, nodePortArray) // delete the name of the service nodeport by index name.

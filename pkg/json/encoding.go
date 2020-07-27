@@ -13,6 +13,8 @@ import (
 
 // Check if the service has active nodeports. If that's the case, store it in the list.
 var nodePortArray []string
+// Check if the service has active one number of maxconns in the backend
+var maxConnsMap = map[string]string{}
 
 // EncodeJSON returns a JSONnftlb struct with its fields filled with the JSON data.
 func EncodeJSON(stringJSON string) types.JSONnftlb {
@@ -29,6 +31,7 @@ func GetJSONnftlbFromService(service *v1.Service) types.JSONnftlb {
 	persistence, persistenceTTL := getPersistence(service)
 	// Read the annotations collected in the "annotations" field of the service
 	mode, scheduler, schedulerParam, helper, log, logprefix := getAnnotations(service)
+	findMaxConns(service)
 	// Creates the service
 	var farmsSlice []types.Farm
 	serviceName := service.ObjectMeta.Name
@@ -77,7 +80,7 @@ func GetJSONnftlbFromEndpoints(endpoints *v1.Endpoints) types.JSONnftlb {
 	portName := ""
 	farmName := ""
 	state := "up"
-	//time.Sleep(5 * time.Second)
+	maxconns := "0"
 	// Initializes farm/backends ID
 	CreateFarmID(objName)
 	var farmsSlice []types.Farm
@@ -95,18 +98,21 @@ func GetJSONnftlbFromEndpoints(endpoints *v1.Endpoints) types.JSONnftlb {
 			}
 			// We proceed to create each of the backends
 			for _, port := range endpoint.Ports {
-				portBackend := fmt.Sprint(port.Port)
-				var backends types.Backends
-				var backend = createBackend(backendName, ipBackend, state, portBackend)
 				// If the port name field is empty, it is assigned one by default.
 				// Once done, attach the backends to the service.
-				backends = append(backends, backend)
 				if port.Name == "" {
 					portName = "default"
 				} else {
 					portName = port.Name
 				}
 				farmName = configFarm.AssignFarmNameService(objName, portName)
+				portBackend := fmt.Sprint(port.Port)
+				if maxConnsMap[farmName] != "0"{
+					maxconns = maxConnsMap[farmName]
+				}  
+				var backends types.Backends
+				var backend = createBackend(backendName, ipBackend, state, portBackend, maxconns)		
+				backends = append(backends, backend)
 				var farm = types.Farm{
 					Name:     fmt.Sprintf("%s", farmName),
 					Backends: backends,
@@ -116,7 +122,7 @@ func GetJSONnftlbFromEndpoints(endpoints *v1.Endpoints) types.JSONnftlb {
 				// If this is the case, the nodePort service is assigned the same backends as the original service
 				farmName = configFarm.AssignFarmNameNodePort(farmName, "nodePort")
 				if Contains(nodePortArray, farmName) {
-					var farm = types.Farm{
+					var farm = types.Farm {
 						Name:     fmt.Sprintf("%s", farmName),
 						Backends: backends,
 					}
@@ -164,12 +170,13 @@ func createFarm(farmName string, family string, virtualAddr string, virtualPorts
 	return farmCreated
 }
 
-func createBackend(name string, ipAddr string, state string, port string) types.Backend {
+func createBackend(name string, ipAddr string, state string, port string, maxconns string) types.Backend {
 	var backendCreated = types.Backend{
 		Name:   fmt.Sprintf("%s", name),
 		IPAddr: ipAddr,
 		State:  state,
 		Port:   port,
+		BackendMaxConns: maxconns,
 	}
 	return backendCreated
 }
@@ -237,17 +244,7 @@ func getAnnotations(service *v1.Service) (string, string, string, string, string
 					rgx = regexp.MustCompile(`[a-z]+$`)
 					field = rgx.FindStringSubmatch(value)
 					valueHash := strings.ToLower(string(field[0]))
-					if valueHash == "srcip" {
-						sched_param = valueHash
-					} else if valueHash == "dstip" {
-						sched_param = valueHash
-					} else if valueHash == "srcport" {
-						sched_param = valueHash
-					} else if valueHash == "dstport" {
-						sched_param = valueHash
-					} else if valueHash == "srcmac" {
-						sched_param = valueHash
-					} else if valueHash == "dstmac" {
+					if valueHash == "srcip" || valueHash == "dstip" || valueHash == "srcport" || valueHash == "dstport" || valueHash == "srcmac" || valueHash == "dstmac" {
 						sched_param = valueHash
 					}
 					scheduler = "hash"
@@ -264,8 +261,39 @@ func getAnnotations(service *v1.Service) (string, string, string, string, string
 	return mode, scheduler, sched_param, helper, log, logprefix
 }
 
+func findMaxConns(service *v1.Service){
+	var farmSlice []string
+	backendMaxConnsMap := "0"
+	serviceName := service.ObjectMeta.Name
+	var rgx = regexp.MustCompile(`[a-z]+$`)
+	if service.ObjectMeta.Annotations != nil {
+		farmName := ""
+		for _, port := range service.Spec.Ports {
+			if port.Name == "" {
+				farmName = configFarm.AssignFarmNameService(serviceName, "default")
+			} else {
+				farmName = configFarm.AssignFarmNameService(serviceName, port.Name)
+			}
+			farmSlice = append(farmSlice,farmName)
+		}
+		for key, value := range service.ObjectMeta.Annotations {
+			field := rgx.FindStringSubmatch(key)
+			if strings.ToLower(string(field[0])) == "maxconns"{
+				backendMaxConnsMap = value
+			}
+		}
+	}
+	for _, nameFarm := range farmSlice{
+		maxConnsMap[nameFarm] = backendMaxConnsMap
+	}
+}
+
 func GetNodePortArray() []string {
 	return nodePortArray
+}
+
+func DeleteMaxConnsMap() {
+	maxConnsMap = map[string]string{}
 }
 
 func findFamily(service *v1.Service) string {
