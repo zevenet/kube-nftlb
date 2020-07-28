@@ -20,7 +20,6 @@ func Init() *types.Config {
 		panic(err)
 	}
 	key = os.Args[1]
-	fmt.Println("Key set")
 
 	var cfg types.Config
 	err := gcfg.ReadFileInto(&cfg, os.Args[2])

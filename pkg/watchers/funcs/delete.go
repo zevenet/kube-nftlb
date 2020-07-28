@@ -6,13 +6,14 @@ import (
 	defaults "github.com/zevenet/kube-nftlb/pkg/defaults"
 	configFarm "github.com/zevenet/kube-nftlb/pkg/farms"
 	json "github.com/zevenet/kube-nftlb/pkg/json"
+	logs "github.com/zevenet/kube-nftlb/pkg/logs"
 	request "github.com/zevenet/kube-nftlb/pkg/request"
 	types "github.com/zevenet/kube-nftlb/pkg/types"
 	v1 "k8s.io/api/core/v1"
 )
 
 // DeleteNftlbFarm deletes any nftlb farm given a Service object.
-func DeleteNftlbFarm(service *v1.Service) {
+func DeleteNftlbFarm(service *v1.Service, logChannel chan string) {
 	farmName := ""
 	for _, port := range service.Spec.Ports {
 		if port.Name != "" {
@@ -22,7 +23,7 @@ func DeleteNftlbFarm(service *v1.Service) {
 		}
 		// Prints info in the logs about the deleted farm
 		response := deleteNftlbRequest(farmName)
-		printDeleted("Farm", farmName, "", response)
+		printDeleted("Farm", farmName, "", response, logChannel)
 		json.DeleteMaxConnsMap()
 		// Check if the farm is of type nodeport or LB, If that's the case, deleting the original service also deletes the nodePort service.
 		// It also deletes its name from the blobal variable of nodePorts
@@ -35,13 +36,13 @@ func DeleteNftlbFarm(service *v1.Service) {
 			nodePortArray = nodePortArray[:len(nodePortArray)-1]
 			// Prints info in the logs about the deleted farm
 			response := deleteNftlbRequest(farmName)
-			printDeleted("Farm", farmName, "", response)
+			printDeleted("Farm", farmName, "", response, logChannel)
 		}
 	}
 }
 
 // DeleteNftlbBackends deletes all nftlb backends from a farm given a Endpoints object.
-func DeleteNftlbBackends(endpoints *v1.Endpoints) {
+func DeleteNftlbBackends(endpoints *v1.Endpoints, logChannel chan string) {
 	objName := endpoints.ObjectMeta.Name
 	var newServiceNameSlice []string
 	for json.GetBackendID(objName) > 0 {
@@ -60,7 +61,7 @@ func DeleteNftlbBackends(endpoints *v1.Endpoints) {
 			fullPath := fmt.Sprintf("%s%s%s/backends/%s", objName, "--", serviceName, backendName)
 			response := deleteNftlbRequest(fullPath)
 			// Prints info
-			printDeleted("Backend", objName, backendName, response)
+			printDeleted("Backend", objName, backendName, response, logChannel)
 			// Decreases backend ID by 1
 			json.DecreaseBackendID(objName)
 		}
@@ -83,18 +84,20 @@ func deleteNftlbRequest(name string) string {
 	return request.GetResponse(rq)
 }
 
-func printDeleted(object string, farmName string, backendName string, response string) {
+func printDeleted(object string, farmName string, backendName string, response string, logChannel chan string) {
 	var message string
+	levelLog := 0
 	switch object {
 	case "Farm":
 		message = fmt.Sprintf("\nDeleted %s name: %s\n%s", object, farmName, response)
+		logs.PrintLogChannel(levelLog, message, logChannel)
 	case "Backend":
 		message = fmt.Sprintf("\nDeleted %s:\nFarm: %s, Backend:%s\n%s", object, farmName, backendName, response)
+		logs.PrintLogChannel(levelLog, message, logChannel)
 	default:
 		err := fmt.Sprintf("Unknown deleted object of type %s", object)
 		panic(err)
 	}
-	fmt.Println(message)
 }
 
 func indexOf(element string, data []string) int {

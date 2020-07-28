@@ -3,6 +3,7 @@ package watchers
 import (
 	"fmt"
 
+	logs "github.com/zevenet/kube-nftlb/pkg/logs"
 	funcs "github.com/zevenet/kube-nftlb/pkg/watchers/funcs"
 	v1 "k8s.io/api/core/v1"
 	fields "k8s.io/apimachinery/pkg/fields"
@@ -34,38 +35,41 @@ func getController(listWatch *cache.ListWatch, resourceStruct runtime.Object, re
 			AddFunc: func(obj interface{}) {
 				switch tp := obj.(type) {
 				case *v1.Service:
-					funcs.CreateNftlbFarm(obj.(*v1.Service))
+					funcs.CreateNftlbFarm(obj.(*v1.Service), logChannel)
 				case *v1.Endpoints:
-					funcs.CreateNftlbBackends(obj.(*v1.Endpoints))
+					funcs.CreateNftlbBackends(obj.(*v1.Endpoints), logChannel)
 				default:
 					err := fmt.Sprintf("Object not recognised of type %t", tp)
 					panic(err)
 				}
-				logChannel <- fmt.Sprintf("\nNew %s:\n%s", resourceName, obj)
+				levelLog := 3
+				logChannel = logs.PrintLogChannelFuncGeneral(levelLog, "New", resourceName, obj, logChannel)
 			},
 			DeleteFunc: func(obj interface{}) {
 				switch tp := obj.(type) {
 				case *v1.Service:
-					funcs.DeleteNftlbFarm(obj.(*v1.Service))
+					funcs.DeleteNftlbFarm(obj.(*v1.Service), logChannel)
 				case *v1.Endpoints:
-					funcs.DeleteNftlbBackends(obj.(*v1.Endpoints))
+					funcs.DeleteNftlbBackends(obj.(*v1.Endpoints), logChannel)
 				default:
 					err := fmt.Sprintf("Object not recognised of type %t", tp)
 					panic(err)
 				}
-				logChannel <- fmt.Sprintf("\nDeleted %s:\n%s", resourceName, obj)
+				levelLog := 3
+				logChannel = logs.PrintLogChannelFuncGeneral(levelLog, "nDeleted", resourceName, obj, logChannel)
 			},
 			UpdateFunc: func(oldObj, newObj interface{}) {
 				switch tp := oldObj.(type) {
 				case *v1.Service:
-					funcs.UpdateNftlbFarm(newObj.(*v1.Service))
+					funcs.UpdateNftlbFarm(newObj.(*v1.Service), logChannel)
 				case *v1.Endpoints:
-					funcs.UpdateNftlbBackends(oldObj.(*v1.Endpoints), newObj.(*v1.Endpoints))
+					funcs.UpdateNftlbBackends(oldObj.(*v1.Endpoints), newObj.(*v1.Endpoints), logChannel)
 				default:
 					err := fmt.Sprintf("Object not recognised of type %t", tp)
 					panic(err)
 				}
-				logChannel <- fmt.Sprintf("\nUpdated %s:\n* BEFORE: %s\n* NOW: %s", resourceName, oldObj, newObj)
+				levelLog := 3
+				logChannel = logs.PrintLogChannelFuncUpdate(levelLog, "\nUpdated %s:\n* BEFORE: %s\n* NOW: %s", resourceName, oldObj, newObj, logChannel)
 			},
 		},
 	)

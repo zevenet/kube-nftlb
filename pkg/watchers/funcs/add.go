@@ -6,13 +6,14 @@ import (
 
 	defaults "github.com/zevenet/kube-nftlb/pkg/defaults"
 	json "github.com/zevenet/kube-nftlb/pkg/json"
+	logs "github.com/zevenet/kube-nftlb/pkg/logs"
 	request "github.com/zevenet/kube-nftlb/pkg/request"
 	types "github.com/zevenet/kube-nftlb/pkg/types"
 	v1 "k8s.io/api/core/v1"
 )
 
 // CreateNftlbFarm creates any nftlb farm given a Service object.
-func CreateNftlbFarm(service *v1.Service) {
+func CreateNftlbFarm(service *v1.Service, logChannel chan string) {
 	if !json.Contains(request.BadNames, service.ObjectMeta.Name) {
 		// Translates the Service object into a JSONnftlb struct
 		JSONnftlb := json.GetJSONnftlbFromService(service)
@@ -21,12 +22,12 @@ func CreateNftlbFarm(service *v1.Service) {
 		// Makes the request
 		response := createNftlbRequest(farmJSON)
 		// Prints info
-		printNew("Farm", farmJSON, response)
+		printNew("Farm", farmJSON, response, logChannel)
 	}
 }
 
 // CreateNftlbBackends creates backends for any farm given a Endpoints object.
-func CreateNftlbBackends(endpoints *v1.Endpoints) {
+func CreateNftlbBackends(endpoints *v1.Endpoints, logChannel chan string) {
 	if !json.Contains(request.BadNames, endpoints.ObjectMeta.Name) {
 		// Translates the Endpoints object into a JSONnftlb struct
 		JSONnftlb := json.GetJSONnftlbFromEndpoints(endpoints)
@@ -35,7 +36,7 @@ func CreateNftlbBackends(endpoints *v1.Endpoints) {
 		// Makes the request
 		response := createNftlbRequest(backendsJSON)
 		// Prints info
-		printNew("Backends", backendsJSON, response)
+		printNew("Backends", backendsJSON, response, logChannel)
 	}
 }
 
@@ -54,7 +55,8 @@ func createNftlbRequest(json string) string {
 	return request.GetResponse(rq)
 }
 
-func printNew(object string, json string, response string) {
+func printNew(object string, json string, response string, logChannel chan string) {
+	levelLog := 0
 	message := fmt.Sprintf("\nNew %s:\n%s\n%s", object, json, response)
-	fmt.Println(message)
+	logs.PrintLogChannel(levelLog, message, logChannel)
 }
