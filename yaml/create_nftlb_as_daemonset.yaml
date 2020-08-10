@@ -30,7 +30,13 @@ spec:
         volumeMounts:
         - mountPath: /var/config-kubernetes
           name: kubernetesconfig-volumen
+        - mountPath: /var/run/docker.sock
+          name: docker-sock
       volumes:
       - name: kubernetesconfig-volumen
         hostPath:
           path: /etc/kubernetes
+      - name: docker-sock
+        hostPath:
+          path: /var/run/docker.sock
+

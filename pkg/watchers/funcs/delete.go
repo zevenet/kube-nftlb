@@ -25,6 +25,11 @@ func DeleteNftlbFarm(service *v1.Service, logChannel chan string) {
 		response := deleteNftlbRequest(farmName)
 		printDeleted("Farm", farmName, "", response, logChannel)
 		json.DeleteMaxConnsMap()
+		json.DeleteServiceDsr(farmName)
+		// check if the farm has mode dsr, if that's the case, clears its stored value in the value map
+		if _, ok := json.GetDsrArray()[farmName]; ok {
+			json.DeleteServiceDsr(farmName)
+		}
 		// Check if the farm is of type nodeport or LB, If that's the case, deleting the original service also deletes the nodePort service.
 		// It also deletes its name from the blobal variable of nodePorts
 		if service.Spec.Type == "NodePort" || service.Spec.Type == "LoadBalancer" {
@@ -37,6 +42,10 @@ func DeleteNftlbFarm(service *v1.Service, logChannel chan string) {
 			// Prints info in the logs about the deleted farm
 			response := deleteNftlbRequest(farmName)
 			printDeleted("Farm", farmName, "", response, logChannel)
+			// check if the farm type nodeport has mode dsr, if that's the case, clears its stored value in the value map
+			if _, ok := json.GetDsrArray()[farmName]; ok {
+				json.DeleteServiceDsr(farmName)
+			}
 		}
 	}
 }

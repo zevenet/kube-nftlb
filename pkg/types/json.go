@@ -34,6 +34,7 @@ type Farm struct {
 	Intraconnect   string   `json:"intra-connect,omitempty"`
 	Persistence    string   `json:"persistence,omitempty"`
 	PersistTTL     string   `json:"persist-ttl,omitempty"`
+	Iface          string   `json:"iface,omitempty"`
 	Backends       Backends `json:"backends"`
 }
 

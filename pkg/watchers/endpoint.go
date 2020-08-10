@@ -18,6 +18,6 @@ func GetEndpointListWatch(clientset *kubernetes.Clientset) *cache.ListWatch {
 
 // GetEndpointController returns a Controller based on listWatch.
 // Exports every message into logChannel.
-func GetEndpointController(listWatch *cache.ListWatch, logChannel chan string) cache.Controller {
-	return getController(listWatch, &resourceStructEP, "Endpoint", logChannel)
+func GetEndpointController(listWatch *cache.ListWatch, logChannel chan string, clientset *kubernetes.Clientset) cache.Controller {
+	return getController(listWatch, &resourceStructEP, "Endpoint", logChannel, clientset)
 }

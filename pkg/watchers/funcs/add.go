@@ -10,13 +10,14 @@ import (
 	request "github.com/zevenet/kube-nftlb/pkg/request"
 	types "github.com/zevenet/kube-nftlb/pkg/types"
 	v1 "k8s.io/api/core/v1"
+	kubernetes "k8s.io/client-go/kubernetes"
 )
 
 // CreateNftlbFarm creates any nftlb farm given a Service object.
-func CreateNftlbFarm(service *v1.Service, logChannel chan string) {
+func CreateNftlbFarm(service *v1.Service, clientset *kubernetes.Clientset, logChannel chan string) {
 	if !json.Contains(request.BadNames, service.ObjectMeta.Name) {
 		// Translates the Service object into a JSONnftlb struct
-		JSONnftlb := json.GetJSONnftlbFromService(service)
+		JSONnftlb := json.GetJSONnftlbFromService(service, clientset)
 		// Translates that struct into a JSON string
 		farmJSON := json.DecodePrettyJSON(JSONnftlb)
 		// Makes the request
@@ -27,10 +28,10 @@ func CreateNftlbFarm(service *v1.Service, logChannel chan string) {
 }
 
 // CreateNftlbBackends creates backends for any farm given a Endpoints object.
-func CreateNftlbBackends(endpoints *v1.Endpoints, logChannel chan string) {
+func CreateNftlbBackends(endpoints *v1.Endpoints, logChannel chan string, clientset *kubernetes.Clientset) {
 	if !json.Contains(request.BadNames, endpoints.ObjectMeta.Name) {
 		// Translates the Endpoints object into a JSONnftlb struct
-		JSONnftlb := json.GetJSONnftlbFromEndpoints(endpoints)
+		JSONnftlb := json.GetJSONnftlbFromEndpoints(endpoints, clientset)
 		// Translates that struct into a JSON string
 		backendsJSON := json.DecodePrettyJSON(JSONnftlb)
 		// Makes the request

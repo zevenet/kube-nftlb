@@ -25,8 +25,8 @@ func main() {
 	listWatchEndpoint := watchers.GetEndpointListWatch(clientset)
 	go logs.PrintLogChannel(levelLog, fmt.Sprintf("%s", "Watchers ready"), logChannel)
 	// Notify every change into logChannel based on every list watch
-	serviceController := watchers.GetServiceController(listWatchSvc, logChannel)
-	endpointController := watchers.GetEndpointController(listWatchEndpoint, logChannel)
+	serviceController := watchers.GetServiceController(listWatchSvc, logChannel, clientset)
+	endpointController := watchers.GetEndpointController(listWatchEndpoint, logChannel, clientset)
 	go logs.PrintLogChannel(levelLog, fmt.Sprintf("%s", "Controllers ready"), logChannel)
 	// Event loop start, run them as background processes
 	go serviceController.Run(wait.NeverStop)

@@ -11,13 +11,14 @@ import (
 	request "github.com/zevenet/kube-nftlb/pkg/request"
 	types "github.com/zevenet/kube-nftlb/pkg/types"
 	v1 "k8s.io/api/core/v1"
+	kubernetes "k8s.io/client-go/kubernetes"
 )
 
 // UpdateNftlbFarm updates any nftlb farm given a Service object.
-func UpdateNftlbFarm(newSvc *v1.Service, logChannel chan string) {
+func UpdateNftlbFarm(newSvc *v1.Service, clientset *kubernetes.Clientset, logChannel chan string) {
 	if !json.Contains(request.BadNames, newSvc.ObjectMeta.Name) {
 		// Translates the updated Service object into a JSONnftlb struct
-		newJSONnftlb := json.GetJSONnftlbFromService(newSvc)
+		newJSONnftlb := json.GetJSONnftlbFromService(newSvc, clientset)
 		// Translates that struct into a JSON string
 		farmJSON := json.DecodePrettyJSON(newJSONnftlb)
 		// Makes the request
@@ -28,12 +29,12 @@ func UpdateNftlbFarm(newSvc *v1.Service, logChannel chan string) {
 }
 
 // UpdateNftlbBackends updates backends for any farm given a Endpoints object.
-func UpdateNftlbBackends(oldEP, newEP *v1.Endpoints, logChannel chan string) {
+func UpdateNftlbBackends(oldEP, newEP *v1.Endpoints, logChannel chan string, clientset *kubernetes.Clientset) {
 	if !json.Contains(request.BadNames, newEP.ObjectMeta.Name) {
 		// Gets the service and number of backends for later
 		objName := oldEP.ObjectMeta.Name
 		// Translates the Endpoints objects into JSONnftlb structs
-		newJSONnftlb := json.GetJSONnftlbFromEndpoints(newEP)
+		newJSONnftlb := json.GetJSONnftlbFromEndpoints(newEP, clientset)
 		// Translates the struct into a JSON string
 		backendsJSON := json.DecodePrettyJSON(newJSONnftlb)
 		// We create an array with the old object (what was there before updating) and with the current object (after updating)
