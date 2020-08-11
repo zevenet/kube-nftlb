@@ -1,17 +1,18 @@
 #!/bin/bash
 
-# Start the first process
-/usr/local/zevenet/app/nftlb/sbin/nftlb -L #LOGSOUTPUT# -l #LOGSLEVEL# -k #KEY# -d -m #MASQUERADEMARK#
+# Start the first process, nftlb
+# //TODO: -L #LOGSOUTPUT# and -m #MASQUERADEMARK# flags are undocumented, hide them until a new nftlb stable release makes use of it
+/usr/local/zevenet/app/nftlb/sbin/nftlb -l #LOGSLEVEL# -k #KEY# -d
 status=$?
 if [ $status -ne 0 ]; then
   echo "Failed to start nftlb: $status"
   exit $status
 fi
 
-# waiting a grace time
+# Wait a grace time
 sleep 3
 
-# Start the second process
+# Start the second process, goclient
 /goclient #KEY# #CLIENTCFG# &
 status=$?
 if [ $status -ne 0 ]; then
@@ -26,13 +27,13 @@ fi
 # Otherwise it loops forever, waking up every 60 seconds
 
 while sleep #DAEMONCHECKTIMEOUT#; do
-  ps aux |grep nftlb |grep -q -v grep
+  ps aux | grep nftlb | grep -q -v grep
   PROCESS_NFTLB_STATUS=$?
   if [ $PROCESS_NFTLB_STATUS -ne 0 ]; then
     echo "The nftlb process exited with error."
   fi
 
-  ps aux |grep goclient |grep -q -v grep
+  ps aux | grep goclient | grep -q -v grep
   PROCESS_GO_STATUS=$?
   if [ $PROCESS_GO_STATUS -ne 0 ]; then
     echo "The GO client exited with error."
@@ -42,4 +43,3 @@ while sleep #DAEMONCHECKTIMEOUT#; do
     exit 1
   fi
 done
-
