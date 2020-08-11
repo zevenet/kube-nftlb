@@ -1,12 +1,17 @@
 #!/bin/bash
 
-# Start the first process, nftlb
-# //TODO: -L #LOGSOUTPUT# and -m #MASQUERADEMARK# flags are undocumented, hide them until a new nftlb stable release makes use of it
-/usr/local/zevenet/app/nftlb/sbin/nftlb -l #LOGSLEVEL# -k #KEY# -d
+# Start the first process, nftlb, with devel flags
+/usr/local/zevenet/app/nftlb/sbin/nftlb -L #LOGSOUTPUT# -l #LOGSLEVEL# -k #KEY# -d -m #MASQUERADEMARK#
 status=$?
 if [ $status -ne 0 ]; then
-  echo "Failed to start nftlb: $status"
-  exit $status
+  # If that fails, start nftlb without devel flags
+  echo "Failed to start nftlb with devel flags, trying without them..."
+  /usr/local/zevenet/app/nftlb/sbin/nftlb -l #LOGSLEVEL# -k #KEY# -d
+  status=$?
+  if [ $status -ne 0 ]; then
+    echo "Failed to start nftlb: $status"
+    exit $status
+  fi
 fi
 
 # Wait a grace time
