@@ -4,7 +4,7 @@
 
 set -e
 
-DOCKER_PATH="./internal/docker/kube-nftlb"
+DOCKER_PATH="./docker"
 
 # Optionally, use a nftlb devel package
 if [ ! -z $1 ]; then
