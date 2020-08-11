@@ -8,64 +8,34 @@
 #    https://cdimage.debian.org/debian-cd/current/amd64/iso-cd/
 #    debian-10.4.0-amd64-netinst.iso
 
-# 0. Change directory to /root/
+# Change directory to /root/
 cd
 
-
-# 1. Update packages and upgrade them
+# Update packages, upgrade them and install essential tools
 apt-get update
 apt-get upgrade -y
-
-
-# 2. Install Docker (latest version)
 apt-get install -y apt-transport-https ca-certificates curl gnupg2 software-properties-common wget
+
+# Install Docker (latest version)
 curl -fsSL https://download.docker.com/linux/debian/gpg | apt-key add -
 add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/debian $(lsb_release -cs) stable"
 apt-get update
 apt-get install -y docker-ce docker-ce-cli containerd.io
 
-
-# 3. Install Docker Machine (v0.16.2)
-# Releases: https://github.com/docker/machine/releases/
-curl -L https://github.com/docker/machine/releases/download/v0.16.2/docker-machine-`uname -s`-`uname -m` >/tmp/docker-machine &&
-chmod +x /tmp/docker-machine &&
-cp /tmp/docker-machine /usr/local/bin/docker-machine
-
-
-# 4. Install kubectl (no hypervisor)
+# Install kubectl (latest version, no hypervisor)
 curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add -
 echo "deb https://apt.kubernetes.io/ kubernetes-xenial main" | tee -a /etc/apt/sources.list.d/kubernetes.list
 apt-get update
 apt-get install -y kubectl
 
+# Install Minikube (latest version)
+curl -Lo minikube https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
+chmod +x minikube
+cp minikube /usr/local/bin/
+rm minikube
 
-# 5. Install Minikube (latest version)
-curl -Lo minikube https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64 && chmod +x minikube && cp minikube /usr/local/bin/ && rm minikube
-
-
-# 6. Install Golang (v.1.14.2)
-wget https://dl.google.com/go/go1.14.2.linux-amd64.tar.gz
-tar xvfz go1.14.2.linux-amd64.tar.gz
-mv go /usr/local/go
-cat << 'EOF' >> ~/.bashrc
-export GOROOT=/usr/local/go
-export GOPATH=$HOME/goProjects
-export PATH=$GOPATH/bin:$GOROOT/bin:$PATH
-EOF
-source ~/.bashrc
-go version
-
-# 7. Install nftables and several necessary libraries
-# The first thing you will have to add the zevenet repository with its corresponding key
+# Install nftables and several necessary libraries (before that, add the zevenet repository with its corresponding key)
 echo "deb [arch=amd64] http://repo.zevenet.com/ce/v5 buster main" | tee -a /etc/apt/sources.list
 wget -O - http://repo.zevenet.com/zevenet.com.gpg.key | apt-key add -
 apt-get update
-apt-get install libnftnl11
-apt-get install nftables
-
-# 8. Install conntrack
-apt-get install conntrack
-
-# 9. Start Minikube
-  # if you are virtualizing, remember to leave 2 CPU
-minikube start --vm-driver=none
+apt-get install -y libnftnl11 nftables conntrack
