@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: replicas-test-050
+spec:
+  ports:
+    - port: 80
+      targetPort: 8080
+      protocol: TCP
+  selector:
+    app: replicas-test-050
