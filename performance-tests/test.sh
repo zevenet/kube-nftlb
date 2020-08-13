@@ -9,6 +9,23 @@ TIMEOUT=120s
 # Counting rules #
 ##################
 
+function get_count_function {
+    local KUBE_NAME=$1
+
+    case $KUBE_NAME in
+    kube-nftlb)
+        echo -n "count_nftlb_rules"
+        ;;
+    kube-proxy)
+        echo -n "count_iptables_rules"
+        ;;
+    *)
+        echo -e "\n!! Unknown KUBE_NAME $KUBE_NAME, not implemented in timer_rule_count()\n"
+        return 1
+        ;;
+    esac
+}
+
 # kube-nftlb
 function count_nftlb_rules {
     # nft list table ip nftlb   => List ruleset from nftlb table
@@ -56,6 +73,23 @@ function count_iptables_rules {
 # Timers #
 ##########
 
+function get_timer_function {
+    local TIMER_TYPE=$1
+
+    case $TIMER_TYPE in
+    create)
+        echo -n "timer_rule_count_increase"
+        ;;
+    delete)
+        echo -n "timer_rule_count_decrease"
+        ;;
+    *)
+        echo -e "\n!! Unknown TIMER_TYPE $TIMER_TYPE, not implemented in timer_rule_count()\n"
+        return 1
+        ;;
+    esac
+}
+
 function timer_rule_count_increase {
     local COUNT_FUNCTION=$1
     local EXPECTED_RULE_COUNT=$2
@@ -82,28 +116,14 @@ function timer_rule_count {
     local KUBE_NAME=$1
     local RESOURCE_NAME=$2
     local COUNT_NAME=$3
+    local TIMER_TYPE=$(echo "$COUNT_NAME" | sed -e 's/-.*$//g')
 
     # Get expected rule count for this resource
-    local EXPECTED_RULE_COUNT_KUBE_PATH=./testdata/expected-rule-count/$KUBE_NAME
-    local EXPECTED_RULE_COUNT=$(cat $EXPECTED_RULE_COUNT_KUBE_PATH/$RESOURCE_NAME.txt | grep -e "$COUNT_NAME" | sed -e "s/$COUNT_NAME: //")
+    local EXPECTED_RULE_COUNT=$(cat ./testdata/expected-rule-count/$KUBE_NAME/$RESOURCE_NAME.txt | grep -e "$COUNT_NAME" | sed -e "s/$COUNT_NAME: //")
 
-    # Define what counting function is going to be used based on kube name
-    local COUNT_FUNCTION=""
-    case $KUBE_NAME in
-    kube-nftlb)
-        COUNT_FUNCTION="count_nftlb_rules"
-        ;;
-    kube-proxy)
-        COUNT_FUNCTION="count_iptables_rules"
-        ;;
-    *)
-        echo -e "\n!! Unknown KUBE_NAME $KUBE_NAME, not implemented in timer_rule_count()\n"
-        return 1
-        ;;
-    esac
-
-    # Get timer type from count name
-    local TIMER_TYPE=$(echo "$COUNT_NAME" | sed -e 's/-.*$//g')
+    # What functions are going to be executed for counting and timing?
+    local COUNT_FUNCTION=$(get_count_function "$KUBE_NAME")
+    local TIMER_FUNCTION=$(get_timer_function "$TIMER_TYPE")
 
     # Timer explanation:
     # date +%s      =>  Returns seconds without decimals.
@@ -115,13 +135,7 @@ function timer_rule_count {
     #                   so if we keep the first 3 digits from nanoseconds we get milliseconds.
     # date +%s%3N   =>  Returns milliseconds without decimals.
     local TIME_START=$(date +%s%3N)
-    if [ $TIMER_TYPE == 'create' ]
-    then
-        timer_rule_count_increase "$COUNT_FUNCTION" "$EXPECTED_RULE_COUNT"
-    elif [ $TIMER_TYPE == 'delete' ]
-    then
-        timer_rule_count_decrease "$COUNT_FUNCTION" "$EXPECTED_RULE_COUNT"
-    fi
+    "$TIMER_FUNCTION" "$COUNT_FUNCTION" "$EXPECTED_RULE_COUNT"
     local TIME_END=$(date +%s%3N)
 
     # Show results
@@ -133,10 +147,9 @@ function timer_show {
     local KUBE_NAME=$1
     local RESOURCE_NAME=$2
     local COUNT_NAME=$3
-    local TIMER_TYPE=$4
 
-    TT=$(timer_rule_count "$KUBE_NAME" "$RESOURCE_NAME" "$COUNT_NAME" "$TIMER_TYPE")
-    echo "$COUNT_NAME: $TT"
+    RESULTS=$(timer_rule_count "$KUBE_NAME" "$RESOURCE_NAME" "$COUNT_NAME")
+    echo "$COUNT_NAME: $RESULTS"
 }
 
 
