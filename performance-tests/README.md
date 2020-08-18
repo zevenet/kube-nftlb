@@ -12,10 +12,10 @@ root@debian:~# apt-get install gnuplot
 
 ```console
 # Copy and rename expected-rule-count.sh
-root@debian:kubernetes-rules-test# cp expected-rule-count.sh.example expected-rule-count.sh
+root@debian:kube-nftlb/performance-tests# cp expected-rule-count.sh.example expected-rule-count.sh
 
 # Give them execute permissions
-root@debian:kubernetes-rules-test# chmod +x *.sh
+root@debian:kube-nftlb/performance-tests# chmod +x *.sh
 ```
 
 ## Get expected rule count
@@ -24,12 +24,12 @@ root@debian:kubernetes-rules-test# chmod +x *.sh
 
 ```console
 # Pass your kube-test file as the first parameter (this is an example)
-root@debian:kubernetes-rules-test# ./expected-rule-count.sh ./kubes/kube-test.yaml
+root@debian:kube-nftlb/performance-tests# ./expected-rule-count.sh ./kubes/kube-test.yaml
 ```
 
 ```console
 # To specify a single (or several) deployment(s), pass them after specifying the first parameter (this is an example)
-root@debian:kubernetes-rules-test# ./expected-rule-count.sh ./kubes/kube-test.yaml ./testdata/deployments/resource-test.yaml ./testdata/deployments/resource-test-2.yaml
+root@debian:kube-nftlb/performance-tests# ./expected-rule-count.sh ./kubes/kube-test.yaml ./testdata/deployments/resource-test.yaml ./testdata/deployments/resource-test-2.yaml
 ```
 
 ## Test resources
