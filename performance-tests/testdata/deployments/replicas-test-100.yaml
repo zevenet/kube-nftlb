@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: replicas-test-100
+  labels:
+    app: replicas-test-100
+spec:
+  replicas: 100
+  selector:
+    matchLabels:
+      app: replicas-test-100
+  template:
+    metadata:
+      labels:
+        app: replicas-test-100
+    spec:
+      containers:
+        - image: gcr.io/google_containers/echoserver:1.0
+          imagePullPolicy: Always
+          name: echoserver
+          ports:
+            - containerPort: 8080
