@@ -1,0 +1,5 @@
+*
+!.gitignore
+!by-count-type/
+!by-endpoints-number/
+!columns/
