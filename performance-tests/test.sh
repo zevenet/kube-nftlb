@@ -2,7 +2,7 @@
 
 set -e
 
-TIMEOUT=120s
+TIMEOUT=300s
 
 
 ##################
@@ -20,7 +20,7 @@ function get_count_function {
         echo -n "count_iptables_rules"
         ;;
     *)
-        echo -e "\n!! Unknown KUBE_NAME $KUBE_NAME, not implemented in timer_rule_count()\n"
+        echo "!! Unknown KUBE_NAME $KUBE_NAME, not implemented in get_count_function"
         return 1
         ;;
     esac
@@ -44,28 +44,15 @@ function count_nftlb_rules {
 
 # kube-proxy
 function count_iptables_rules {
-    # iptables(_legacy) -L -t <table>   => Get ruleset from that iptables or iptables_legacy table
-    # | sed                             => Pipe ruleset as input text to sed
-    # -e '/^Chain/d'                    => Delete "Chain ..." lines
-    # -e '/^target/d'                   => Delete "target ..." lines
-    # -e '/^$/d'                        => Delete empty lines
-    # | wc                              => Pipe filtered (valid) rules as input text to wc
-    # -l                                => Every rule is a line, so count every line
+    # echo -n "$(table)"    => Get every iptables table as a single ruleset
+    # | sed                 => Pipe ruleset as input text to sed
+    # -e '/^Chain/d'        => Delete "Chain ..." lines
+    # -e '/^target/d'       => Delete "target ..." lines
+    # -e '/^$/d'            => Delete empty lines
+    # | wc                  => Pipe filtered (valid) rules as input text to wc
+    # -l                    => Every rule is a line, so count every line
 
-    # iptables
-    local NAT_RULES=$(iptables -L -t nat | sed -e '/^Chain/d' -e '/^target/d'  -e '/^$/d' | wc -l)
-    local FILTER_RULES=$(iptables -L -t filter | sed -e '/^Chain/d' -e '/^target/d'  -e '/^$/d' | wc -l)
-    local MANGLE_RULES=$(iptables -L -t mangle | sed -e '/^Chain/d' -e '/^target/d'  -e '/^$/d' | wc -l)
-
-    # iptables_legacy
-    local NAT_LEGACY_RULES=$(iptables-legacy -L -t nat | sed -e '/^Chain/d' -e '/^target/d'  -e '/^$/d' | wc -l)
-    local FILTER_LEGACY_RULES=$(iptables-legacy -L -t filter | sed -e '/^Chain/d' -e '/^target/d'  -e '/^$/d' | wc -l)
-    local MANGLE_LEGACY_RULES=$(iptables-legacy -L -t mangle | sed -e '/^Chain/d' -e '/^target/d'  -e '/^$/d' | wc -l)
-
-    # Sum iptables and iptables_legacy rule count
-    local IPTABLES_RESULT=$(( $NAT_RULES + $FILTER_RULES + $MANGLE_RULES ))
-    local IPTABLES_LEGACY_RESULT=$(( $NAT_LEGACY_RULES + $FILTER_LEGACY_RULES + $MANGLE_LEGACY_RULES ))
-    echo -n "$(( $IPTABLES_RESULT + $IPTABLES_LEGACY_RESULT ))"
+    echo -n "$(iptables -L -t nat)$(iptables -L -t filter)$(iptables -L -t mangle)$(iptables-legacy -L -t nat)$(iptables-legacy -L -t filter)$(iptables-legacy -L -t mangle)" | sed -e '/^Chain/d' -e '/^target/d' -e '/^$/d' | wc -l
 }
 
 
@@ -84,7 +71,7 @@ function get_timer_function {
         echo -n "timer_rule_count_decrease"
         ;;
     *)
-        echo -e "\n!! Unknown TIMER_TYPE $TIMER_TYPE, not implemented in timer_rule_count()\n"
+        echo "!! Unknown TIMER_TYPE $TIMER_TYPE, not implemented in get_timer_function"
         return 1
         ;;
     esac
@@ -112,14 +99,14 @@ function timer_rule_count_decrease {
     done
 }
 
-function timer_rule_count {
+function timer_show {
     local KUBE_NAME=$1
     local RESOURCE_NAME=$2
-    local COUNT_NAME=$3
-    local TIMER_TYPE=$(echo "$COUNT_NAME" | sed -e 's/-.*$//g')
+    local COUNT_TYPE=$3
+    local TIMER_TYPE=$(echo "$COUNT_TYPE" | sed 's/-.*$//g')
 
     # Get expected rule count for this resource
-    local EXPECTED_RULE_COUNT=$(cat ./testdata/expected-rule-count/$KUBE_NAME/$RESOURCE_NAME.txt | grep -e "$COUNT_NAME" | sed -e "s/$COUNT_NAME: //")
+    local EXPECTED_RULE_COUNT=$(grep "$COUNT_TYPE" "./testdata/expected-rule-count/$KUBE_NAME/$RESOURCE_NAME.txt" | sed "s/$COUNT_TYPE: //")
 
     # What functions are going to be executed for counting and timing?
     local COUNT_FUNCTION=$(get_count_function "$KUBE_NAME")
@@ -139,17 +126,8 @@ function timer_rule_count {
     local TIME_END=$(date +%s%3N)
 
     # Show results
-    local TIME_RESULT=$(( $TIME_END - $TIME_START ))
-    echo -n "$TIME_RESULT ms ($EXPECTED_RULE_COUNT rules counted)"
-}
-
-function timer_show {
-    local KUBE_NAME=$1
-    local RESOURCE_NAME=$2
-    local COUNT_NAME=$3
-
-    RESULTS=$(timer_rule_count "$KUBE_NAME" "$RESOURCE_NAME" "$COUNT_NAME")
-    echo "$COUNT_NAME: $RESULTS"
+    local TIME_RESULT=$(( TIME_END - TIME_START ))
+    echo "$COUNT_TYPE: $TIME_RESULT ms ($EXPECTED_RULE_COUNT rules counted)"
 }
 
 
@@ -194,21 +172,11 @@ function delete_service {
 # kube: create, test, delete #
 ##############################
 
-function print_kube_banner {
-    local KUBE_NAME=$1
-    local DELIMITER=$(echo "$KUBE_NAME" | sed -e 's/./=/g')
-
-    echo -e "\n$DELIMITER\n$KUBE_NAME\n$DELIMITER"
-}
-
 function create_kube {
     local KUBE_NAME=$1
     local KUBE_PATH=$2
 
-    # Print kube banner (for aesthetic purposes)
-    print_kube_banner "$KUBE_NAME"
-
-    echo -e "\nStarting $KUBE_NAME..."
+    echo "Starting $KUBE_NAME..."
     kubectl apply -f "$KUBE_PATH" --timeout="$TIMEOUT"
     kubectl wait --namespace=kube-system --for=condition=Ready pods -l app="$KUBE_NAME" --timeout="$TIMEOUT"
 }
@@ -217,7 +185,7 @@ function delete_kube {
     local KUBE_NAME=$1
     local KUBE_PATH=$2
 
-    echo -e "\nDeleting $KUBE_NAME..."
+    echo "Deleting $KUBE_NAME..."
     kubectl delete -f "$KUBE_PATH" --timeout="$TIMEOUT"
     kubectl wait --namespace=kube-system --for=delete pods -l app="$KUBE_NAME" --timeout="$TIMEOUT"
 }
@@ -230,13 +198,11 @@ function test_kube {
     for DEPLOYMENT_PATH in ./testdata/deployments/*
     do
         # Useful values as parameters
-        local RESOURCE_NAME=$(echo "$DEPLOYMENT_PATH" | sed -e 's/^[.]\/testdata\/deployments\///' -e 's/[.]yaml$//')
+        local RESOURCE_NAME=$(echo "$DEPLOYMENT_PATH" | sed -e 's/^.*testdata\/deployments\///' -e 's/[.]yaml$//')
         local SERVICE_PATH="./testdata/services/$RESOURCE_NAME.yaml"
 
-        # Start testing deployments and their services
-        echo -e "\n=> Testing: $RESOURCE_NAME"
-
         # Create deployment and wait for it to be created
+        echo -e "\t$RESOURCE_NAME {"
         create_deployment "$DEPLOYMENT_PATH"
 
         # Create service and time it until it reaches the expected (increased) rule count
@@ -249,7 +215,7 @@ function test_kube {
 
         # Delete deployment and wait for it to be deleted, also time it until it reaches the expected (decreased) rule count
         delete_deployment "$DEPLOYMENT_PATH" "$RESOURCE_NAME"
-        timer_show "$KUBE_NAME" "$RESOURCE_NAME" "delete-deployment"
+        echo -e "\t}"
     done
 }
 
@@ -262,12 +228,13 @@ function test_kube {
 for KUBE_PATH in ./kubes/*
 do
     # Main parameter (extract name from kube path)
-    KUBE_NAME=$(echo "$KUBE_PATH" | sed -e 's/^[.]\/kubes\///' -e 's/[.]yaml$//')
+    KUBE_NAME=$(echo "$KUBE_PATH" | sed -e 's/^.*kubes\///' -e 's/[.]yaml$//')
 
     # Create kube daemonset and apply its configuration, and wait for it to be created
+    echo "$KUBE_NAME {"
     create_kube "$KUBE_NAME" "$KUBE_PATH"
 
-    # Grace time
+    # Hardcoded grace time
     sleep 60
 
     # Test deployments and services using this kube
@@ -275,4 +242,5 @@ do
 
     # Delete kube daemonset and its configuration, and wait for it to be deleted
     delete_kube "$KUBE_NAME" "$KUBE_PATH"
+    echo "}"
 done
