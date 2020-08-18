@@ -1,3 +1,0 @@
-create-service: 60
-delete-service: 50
-delete-deployment: 50
