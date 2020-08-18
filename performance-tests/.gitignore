@@ -1,2 +1,3 @@
-expected-rule-count.sh
-!template/expected-rule-count.sh
+filtered-results.txt
+expected-rule-count.*
+!expected-rule-count.sh.example
