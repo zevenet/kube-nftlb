@@ -18,7 +18,7 @@ fi
 #eval $(minikube docker-env)
 
 # The container image will be built using its Dockerfile. Minikube will use this image later to make the container.
-docker build -t kube-nftlb $DOCKER_PATH
+docker image build --no-cache -t kube-nftlb -f $DOCKER_PATH/Dockerfile --build-arg DOCKER_PATH="$DOCKER_PATH" .
 
 # Clean residual files and intermediate containers.
 rm $DOCKER_PATH/nftlb.deb
