@@ -12,7 +12,7 @@ KUBE_NAME_B=ARG6
 set terminal png size 1500,1000
 set output OUTPUT_FILE
 set title TITLE
-set title font "Helvetica,24"
+set title font ",24"
 set key outside
 
 # Chart style
