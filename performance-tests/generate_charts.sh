@@ -60,10 +60,10 @@ function get_chart_title {
 
     case $X_AXIS_DESCRIPTION in
     create-service)
-        X_AXIS_DESCRIPTION="Creating a service"
+        X_AXIS_DESCRIPTION="Creating a Service"
     ;;
     delete-service)
-        X_AXIS_DESCRIPTION="Deleting a service"
+        X_AXIS_DESCRIPTION="Deleting a Service"
     ;;
     esac
 
