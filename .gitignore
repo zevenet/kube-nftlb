@@ -1,3 +1,6 @@
+# Hide enviroment file
+.env
+
 # Compiled binaries, but not the directory
 kube-nftlb-client
 !cmd/kube-nftlb-client
