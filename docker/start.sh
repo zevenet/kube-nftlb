@@ -1,12 +1,12 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # Start the first process, nftlb, with devel flags
-/usr/local/zevenet/app/nftlb/sbin/nftlb -L #LOGSOUTPUT# -l #LOGSLEVEL# -k #KEY# -d -m #MASQUERADEMARK#
+/usr/local/zevenet/app/nftlb/sbin/nftlb -L #LOGS_OUTPUT# -l #LOGS_LEVEL# -k #NFTLB_KEY# -d -m #MASQUERADE_MARK#
 status=$?
 if [ $status -ne 0 ]; then
   # If that fails, start nftlb without devel flags
   echo "Failed to start nftlb with devel flags, trying without them..."
-  /usr/local/zevenet/app/nftlb/sbin/nftlb -l #LOGSLEVEL# -k #KEY# -d
+  /usr/local/zevenet/app/nftlb/sbin/nftlb -l #LOGS_LEVEL# -k #NFTLB_KEY# -d
   status=$?
   if [ $status -ne 0 ]; then
     echo "Failed to start nftlb: $status"
@@ -18,7 +18,7 @@ fi
 sleep 3
 
 # Start the second process, goclient
-/goclient #KEY# #CLIENTCFG# &
+/goclient #NFTLB_KEY# #CLIENT_CFG# &
 status=$?
 if [ $status -ne 0 ]; then
   echo "Failed to start GO client: $status"
@@ -31,7 +31,7 @@ fi
 # if it detects that either of the processes has exited.
 # Otherwise it loops forever, waking up every 60 seconds
 
-while sleep #DAEMONCHECKTIMEOUT#; do
+while sleep #DAEMON_CHECK_TIMEOUT#; do
   ps aux | grep nftlb | grep -q -v grep
   PROCESS_NFTLB_STATUS=$?
   if [ $PROCESS_NFTLB_STATUS -ne 0 ]; then
