@@ -25,7 +25,7 @@ root@debian:kube-nftlb# ./debian_tools_installer.sh
 
 ## Installation 🔧
 
-```
+```console
 # Clone the project
 user@debian:~# git clone https://github.com/zevenet/kube-nftlb
 
