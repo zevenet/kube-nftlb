@@ -1,15 +1,12 @@
-#!/bin/sh
+#!/usr/bin/env sh
 
-# This is a script that helps you set up a fresh Debian Testing system
+# This is a script that helps you set up a fresh Debian Buster system
 # running in a virtualized environment. It installs everything you need
-# before testing kube-nftlb. Don't forget to run this script as root.
+# before deploying kube-nftlb. Don't forget to run this script as root.
 
 # Recommended Debian Buster ISO:
 #    https://cdimage.debian.org/debian-cd/current/amd64/iso-cd/
-#    debian-10.4.0-amd64-netinst.iso
-
-# Change directory to /root/
-cd
+#    debian-10.x.y-amd64-netinst.iso
 
 # Update packages, upgrade them and install essential tools
 apt-get update
@@ -31,8 +28,7 @@ apt-get install -y kubectl
 # Install Minikube (latest version)
 curl -Lo minikube https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
 chmod +x minikube
-cp minikube /usr/local/bin/
-rm minikube
+mv minikube /usr/local/bin/
 
 # Install nftables and several necessary libraries (before that, add the zevenet repository with its corresponding key)
 echo "deb [arch=amd64] http://repo.zevenet.com/ce/v5 buster main" | tee -a /etc/apt/sources.list
