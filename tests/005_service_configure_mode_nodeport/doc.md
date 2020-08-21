@@ -40,3 +40,5 @@ The difference between both is that the nodeport service does not have virtual-a
 It is enough to make a request from outside our local environment to the ip of our machine (where's kubernetes environment is installed) followed by the nodeport port.
 
 If there is connectivity, a message from the server http should appear. If this is not the case it means something went wrong.
+
+PD: In order to run the test you need to configure some parameters in the script. Some of them are the IP of the external client and an ssh key to establish a connection with the client. More information in the script

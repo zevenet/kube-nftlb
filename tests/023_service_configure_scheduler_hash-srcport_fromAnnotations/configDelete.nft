@@ -66,7 +66,7 @@
                         "intra-connect": "on",
                         "backends": [
                                 {
-                                        "name": "coredns-66bff467f8-7hqmk",
+                                        "name": "coredns-66bff467f8-rj8pn",
                                         "ip-addr": "172.17.0.2",
                                         "port": "53",
                                         "weight": "1",
@@ -105,7 +105,7 @@
                         "intra-connect": "on",
                         "backends": [
                                 {
-                                        "name": "coredns-66bff467f8-7hqmk",
+                                        "name": "coredns-66bff467f8-rj8pn",
                                         "ip-addr": "172.17.0.2",
                                         "port": "53",
                                         "weight": "1",
@@ -144,7 +144,7 @@
                         "intra-connect": "on",
                         "backends": [
                                 {
-                                        "name": "coredns-66bff467f8-7hqmk",
+                                        "name": "coredns-66bff467f8-rj8pn",
                                         "ip-addr": "172.17.0.2",
                                         "port": "9153",
                                         "weight": "1",

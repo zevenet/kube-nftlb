@@ -6,10 +6,11 @@ The allowed parameters are listed in the nftlb api documentation: [**nftlb api d
 
 We can also configure persistence using the sessionAffinity field and sessionAffinityConfig from our service.yaml configuration file
 
->sessionAffinity: ClientIP
-  sessionAffinityConfig:
-    clientIP:
-      timeoutSeconds: 10
+>
+	sessionAffinity: ClientIP
+	sessionAffinityConfig:
+    	clientIP:
+      		timeoutSeconds: 10
 
 (more info about sessionAffinity field in kubernetes doc)
 

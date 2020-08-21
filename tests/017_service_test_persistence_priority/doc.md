@@ -9,10 +9,10 @@ The allowed parameters are listed in the nftlb api documentation: [**nftlb api d
 
 Just launch the script and the three examples are launched:
 
-1) priority1: Persistence is configured through annotations
+ - priority 1: Persistence is configured through annotations
 
-2) priority2: The session Affinity field is present but annotations have priority. The session time if the "sessionAfinityConfig" field is not present is the default.
+ - priority 2: The session Affinity field is present but annotations have priority. The session time if the "sessionAfinityConfig" field is not present is the default.
 
-3) prioty3: There is only the session affinity field, it collects the values ​​of those fields.
+ - priority 3: There is only the session affinity field, it collects the values ​​of those fields.
 
 All the tests are in the same file, one below the other.

@@ -12,6 +12,7 @@
 after="after.sh"
 before="before.sh"
 instead="instead.sh"
+NFTLB_KEY=$(grep 'NFTLB_KEY' ../.env | sed 's/NFTLB_KEY=//')
 
 for directory in *; do
     if [ -d "$directory" ]; then
@@ -33,12 +34,15 @@ for directory in *; do
             # Sleeps are defined to leave a space for pods to rise and not cause problems when obtaining logs for non-existent pods.
             # Each creation or deletion process has an action time
             sleep 10
-            curl --silent -H "Key: 12345" http://localhost:5555/farms/ > $directory/configCreation.nft
+            curl --silent -H "Key: $NFTLB_KEY" http://localhost:5555/farms/ > $directory/configCreation.nft
             kubectl delete -f $directory/ &>/dev/null
             sleep 10
-            curl --silent -H "Key: 12345" http://localhost:5555/farms/ > $directory/configDelete.nft
+            curl --silent -H "Key: $NFTLB_KEY" http://localhost:5555/farms/ > $directory/configDelete.nft
             # We apply a format to eliminate all those parameters that may vary from one test to another. That is, all the parameters that kubernetes generates randomly.
             # This then allows us to better appreciate the difference between a correct and an incorrect test once uploaded to the repository.
+            sed -i 's/\("virtual-addr": \)\(.*\)/\1"IP"/' $directory/configCreation.nft
+            sed -i 's/\("ip-addr": \)\(.*\)/\1"IP"/' $directory/configCreation.nft
+            sed -i -r 'N;s/.*(\n(\s*)"ip-addr":)/\2"name": "NAME",\1/;P;D' $directory/configCreation.nft
             sed -i 's/\("virtual-addr": \)\(.*\)/\1"IP"/' $directory/configCreation.nft
             sed -i 's/\("ip-addr": \)\(.*\)/\1"IP"/' $directory/configCreation.nft
             sed -i -r 'N;s/.*(\n(\s*)"ip-addr":)/\2"name": "NAME",\1/;P;D' $directory/configCreation.nft
