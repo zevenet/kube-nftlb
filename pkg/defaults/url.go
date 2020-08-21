@@ -1,22 +1,21 @@
 package defaults
 
 import (
-	"fmt"
-
-	types "github.com/zevenet/kube-nftlb/pkg/types"
+	"github.com/zevenet/kube-nftlb/pkg/env"
+	"github.com/zevenet/kube-nftlb/pkg/types"
 )
 
-const (
-	defaultIndex = "/farms"
+var (
+	protocol = env.GetString("NFTLB_PROTOCOL")
+	host     = env.GetString("NFTLB_HOST")
+	port     = env.GetInt("NFTLB_PORT")
 )
 
-// SetNftlbURL sets the default URL to communicate with nftlb.
-func SetNftlbURL(path string) *types.URL {
+// GetURL returns an already configured URL, except for the path.
+func GetURL() *types.URL {
 	return &types.URL{
-		Protocol:  types.HTTP,
-		IPversion: types.IPv4,
-		IP:        types.LocalHostIPv4,
-		Port:      types.NFTLBport,
-		Path:      fmt.Sprintf("%s%s", defaultIndex, path),
+		Protocol: protocol,
+		IP:       host,
+		Port:     port,
 	}
 }

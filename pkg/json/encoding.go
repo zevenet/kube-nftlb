@@ -4,6 +4,10 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"net"
+	"regexp"
+	"strings"
+
 	dockerTypes "github.com/docker/docker/api/types"
 	dockerClient "github.com/docker/docker/client"
 	defaults "github.com/zevenet/kube-nftlb/pkg/defaults"
@@ -12,9 +16,6 @@ import (
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	kubernetes "k8s.io/client-go/kubernetes"
-	"net"
-	"regexp"
-	"strings"
 )
 
 // Check if the service has active nodeports. If that's the case, store it in the list.
@@ -22,8 +23,8 @@ var nodePortArray []string
 
 // Check if the service has type DSR. If that's the case, store in the list
 type dsrStruct struct {
-	virtualAddr string
-	dockerUid   []string
+	virtualAddr  string
+	dockerUid    []string
 	virtualPorts string
 }
 
@@ -56,7 +57,7 @@ func GetJSONnftlbFromService(service *v1.Service, clientset *kubernetes.Clientse
 	state := "up"
 	intraconnect := "on"
 	iface := ""
-	cfg := defaults.Init()
+	cfg := defaults.GetCfg()
 	// find out the ip family, by default the values ​​is ipv4
 	family := findFamily(service)
 	// When creating services we can create several from the same yaml configuration file
@@ -79,7 +80,7 @@ func GetJSONnftlbFromService(service *v1.Service, clientset *kubernetes.Clientse
 			}
 			serviceDsr[farmName].virtualAddr = virtualAddr
 			serviceDsr[farmName].virtualPorts = portString
-			iface = cfg.Global.InterfaceBridge
+			iface = cfg.DockerInterfaceBridge
 		} else if mode != "dsr" {
 			if _, ok := serviceDsr[farmName]; ok {
 				if service.Spec.Type != "NodePort" {
@@ -104,7 +105,7 @@ func GetJSONnftlbFromService(service *v1.Service, clientset *kubernetes.Clientse
 				}
 				serviceDsr[farmName].virtualAddr = virtualAddr
 				serviceDsr[farmName].virtualPorts = portString
-				iface = cfg.Global.InterfaceBridge
+				iface = cfg.DockerInterfaceBridge
 			} else if mode != "dsr" {
 				if _, ok := serviceDsr[farmName]; ok {
 					if service.Spec.Type != "NodePort" {
@@ -298,7 +299,7 @@ func getAnnotations(service *v1.Service) (string, string, string, string, string
 		for key, value := range service.ObjectMeta.Annotations {
 			field := rgx.FindStringSubmatch(key)
 			if strings.ToLower(string(field[0])) == "mode" {
-				if value == "snat" || value == "dnat" || value == "dsr" || value == "stlsdnat" || value == "local"{
+				if value == "snat" || value == "dnat" || value == "dsr" || value == "stlsdnat" || value == "local" {
 					mode = value
 				}
 			} else if strings.ToLower(string(field[0])) == "scheduler" {
@@ -404,7 +405,6 @@ func deleteInterfaceDsr(farmName string) {
 		exec, err := cli.ContainerExecCreate(context.TODO(), fmt.Sprintf("%s", serviceDsr[farmName].dockerUid[uid]), execConfig)
 		if err != nil {
 			panic(err)
-			panic(exec)
 		}
 		execAttachConfig := dockerTypes.ExecStartCheck{
 			Detach: false,
@@ -423,7 +423,7 @@ func createInterfaceDsr(farmName string, service *v1.Service, clientset *kuberne
 	if _, ok := service.ObjectMeta.Labels["app"]; ok {
 		labelService := service.ObjectMeta.Labels["app"]
 		objPod, _ := clientset.CoreV1().Pods("default").List(context.TODO(), metav1.ListOptions{})
-		if len(objPod.Items) >= 1{
+		if len(objPod.Items) >= 1 {
 			if _, ok := objPod.Items[0].ObjectMeta.Labels["app"]; ok {
 				labelDeployment := objPod.Items[0].ObjectMeta.Labels["app"]
 				if labelService == labelDeployment {
@@ -439,42 +439,41 @@ func createInterfaceDsr(farmName string, service *v1.Service, clientset *kuberne
 
 func addInterfaceDsr(clientset *kubernetes.Clientset, farmName string, backendName string, virtualAddr string) {
 	objContainer, _ := clientset.CoreV1().Pods("default").Get(context.TODO(), backendName, metav1.GetOptions{})
-	if len(objContainer.Status.ContainerStatuses) >= 1{
+	if len(objContainer.Status.ContainerStatuses) >= 1 {
 		dockerUid := objContainer.Status.ContainerStatuses[0].ContainerID
 		uid := strings.SplitAfter(dockerUid, "docker://")
-		if len(uid) >= 1{
-		// We use the docker client to make requests to the docker rest api. From it we get the UID of the pod that we want to apply DSR.
-		// Then we inspect the container and obtain its PID
-		cli, err := dockerClient.NewClientWithOpts(dockerClient.FromEnv)
-		if err != nil {
-			panic(err)
-		}
-		execConfig := dockerTypes.ExecConfig{
-			AttachStderr: true,
-			AttachStdin:  true,
-			AttachStdout: true,
-			Cmd:          []string{"/bin/sh", "-c", "ip ad add " + virtualAddr + "/32 dev lo"},
-			Tty:          true,
-			Detach:       false,
-			Privileged:   true,
-			User:         "root",
-			WorkingDir:   "/",
-		}
-		exec, err := cli.ContainerExecCreate(context.TODO(), uid[1], execConfig)
-		if err != nil {
-			panic(err)
-			panic(exec)
-		}
-		execAttachConfig := dockerTypes.ExecStartCheck{
-			Detach: false,
-			Tty:    true,
-		}
-		err = cli.ContainerExecStart(context.TODO(), exec.ID, execAttachConfig)
-		if err != nil {
-			panic(err)
-		}
-		// Add uid from docker to reference later
-		serviceDsr[farmName].dockerUid = append(serviceDsr[farmName].dockerUid, uid[1])
+		if len(uid) >= 1 {
+			// We use the docker client to make requests to the docker rest api. From it we get the UID of the pod that we want to apply DSR.
+			// Then we inspect the container and obtain its PID
+			cli, err := dockerClient.NewClientWithOpts(dockerClient.FromEnv)
+			if err != nil {
+				panic(err)
+			}
+			execConfig := dockerTypes.ExecConfig{
+				AttachStderr: true,
+				AttachStdin:  true,
+				AttachStdout: true,
+				Cmd:          []string{"/bin/sh", "-c", "ip ad add " + virtualAddr + "/32 dev lo"},
+				Tty:          true,
+				Detach:       false,
+				Privileged:   true,
+				User:         "root",
+				WorkingDir:   "/",
+			}
+			exec, err := cli.ContainerExecCreate(context.TODO(), uid[1], execConfig)
+			if err != nil {
+				panic(err)
+			}
+			execAttachConfig := dockerTypes.ExecStartCheck{
+				Detach: false,
+				Tty:    true,
+			}
+			err = cli.ContainerExecStart(context.TODO(), exec.ID, execAttachConfig)
+			if err != nil {
+				panic(err)
+			}
+			// Add uid from docker to reference later
+			serviceDsr[farmName].dockerUid = append(serviceDsr[farmName].dockerUid, uid[1])
 		}
 	}
 }

@@ -43,11 +43,11 @@ func CreateNftlbBackends(endpoints *v1.Endpoints, logChannel chan string, client
 
 func createNftlbRequest(json string) string {
 	// Makes the URL and its Header
-	farmURL := defaults.SetNftlbURL("")
-	nftlbKey := defaults.SetNftlbKey()
+	farmURL := defaults.GetURL()
+	header := defaults.GetHeader()
 	// Fills the request
 	rq := &types.Request{
-		Header:  nftlbKey,
+		Header:  header,
 		Action:  types.POST,
 		URL:     farmURL,
 		Payload: strings.NewReader(json),

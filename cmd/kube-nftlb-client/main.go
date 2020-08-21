@@ -16,9 +16,9 @@ func main() {
 	logChannel := make(chan string)
 	levelLog := 0
 	// Read config values from the client (can be parameterized)
-	cfg := defaults.Init()
+	cfg := defaults.GetCfg()
 	// Authentication: get access to the API
-	clientset := auth.GetClienset(cfg.Global.KubeCfgPath)
+	clientset := auth.GetClienset(cfg.ClientCfgPath)
 	go logs.PrintLogChannel(levelLog, fmt.Sprintf("%s", "Authentication successful"), logChannel)
 	// Make lists of resources to be observed
 	listWatchSvc := watchers.GetServiceListWatch(clientset)
@@ -32,7 +32,7 @@ func main() {
 	go serviceController.Run(wait.NeverStop)
 	go logs.PrintLogChannel(levelLog, fmt.Sprintf("%s", "Service controller started"), logChannel)
 	// We establish a waiting time for the creation of farms. This value is important or our farms will not be created correctly. Can be parameterized
-	time.Sleep(time.Duration(cfg.Global.TimeStartApp) * time.Second)
+	time.Sleep(cfg.ClientStartDelayTime)
 	go endpointController.Run(wait.NeverStop)
 	go logs.PrintLogChannel(levelLog, fmt.Sprintf("%s", "Endpoints controller started"), logChannel)
 	// Print every message received from the channel

@@ -85,11 +85,12 @@ func deleteNftlbRequest(name string) string {
 	// Makes the farm path
 	farmPath := fmt.Sprintf("/%s", name)
 	// Makes the URL and its Header
-	farmURL := defaults.SetNftlbURL(farmPath)
-	nftlbKey := defaults.SetNftlbKey()
+	farmURL := defaults.GetURL()
+	farmURL.SetPath(farmPath)
+	header := defaults.GetHeader()
 	// Fills the request
 	rq := &types.Request{
-		Header: nftlbKey,
+		Header: header,
 		Action: types.DELETE,
 		URL:    farmURL,
 	}

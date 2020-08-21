@@ -2,6 +2,7 @@ package logs
 
 import (
 	"fmt"
+
 	defaults "github.com/zevenet/kube-nftlb/pkg/defaults"
 )
 
@@ -35,8 +36,8 @@ func PrintLogChannel(levelLog int, message string, logChannel chan string) {
 func checkLevelLogs(levelPrint int) bool {
 	// Reads the level of logs established within the parameterizable values
 	// If the level of logs is less than or equal to the established one, it returns true and gives the green light to print logs.
-	cfg := defaults.Init()
-	logLevel := cfg.Global.LevelLogs
+	cfg := defaults.GetCfg()
+	logLevel := cfg.ClientLevelLogs
 	if levelPrint <= logLevel {
 		return true
 	}

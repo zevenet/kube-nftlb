@@ -45,7 +45,7 @@ func UpdateNftlbBackends(oldEP, newEP *v1.Endpoints, logChannel chan string, cli
 		var oldServiceNameSlice = getOldServiceSlice(oldEP)
 		// Makes the request nftlb
 		response := updateNftlbRequest(backendsJSON)
-		printUpdated("Backends", backendsJSON, response, logChannel)	
+		printUpdated("Backends", backendsJSON, response, logChannel)
 		farmName := ""
 		backendName := ""
 		// There are two possible situations.
@@ -97,11 +97,11 @@ func actionDeleteNftlbRequest(objName string, farmName string, backendName strin
 
 func updateNftlbRequest(json string) string {
 	// Makes the URL and its Header
-	farmURL := defaults.SetNftlbURL("")
-	nftlbKey := defaults.SetNftlbKey()
+	farmURL := defaults.GetURL()
+	header := defaults.GetHeader()
 	// Fills the request
 	rq := &types.Request{
-		Header:  nftlbKey,
+		Header:  header,
 		Action:  types.POST,
 		URL:     farmURL,
 		Payload: strings.NewReader(json),

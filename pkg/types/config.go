@@ -1,10 +1,10 @@
 package types
 
+import "time"
+
 type Config struct {
-	Global struct {
-		KubeCfgPath     string
-		TimeStartApp    int
-		LevelLogs       int
-		InterfaceBridge string
-	}
+	ClientCfgPath         string
+	ClientStartDelayTime  time.Duration
+	ClientLevelLogs       int
+	DockerInterfaceBridge string
 }
