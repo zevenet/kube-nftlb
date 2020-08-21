@@ -3,7 +3,7 @@
                 {
                         "name": "kubernetes--https",
                         "family": "ipv4",
-                        "virtual-addr": "10.96.0.1",
+                        "virtual-addr": "IP"
                         "virtual-ports": "443",
                         "source-addr": "",
                         "mode": "snat",
@@ -27,8 +27,8 @@
                         "intra-connect": "on",
                         "backends": [
                                 {
-                                        "name": "kubernetes",
-                                        "ip-addr": "192.168.0.103",
+                                        "name": "NAME",
+                                        "ip-addr": "IP"
                                         "port": "8443",
                                         "weight": "1",
                                         "priority": "1",
@@ -42,7 +42,7 @@
                 {
                         "name": "kube-dns--dns",
                         "family": "ipv4",
-                        "virtual-addr": "10.96.0.10",
+                        "virtual-addr": "IP"
                         "virtual-ports": "53",
                         "source-addr": "",
                         "mode": "snat",
@@ -66,8 +66,8 @@
                         "intra-connect": "on",
                         "backends": [
                                 {
-                                        "name": "coredns-66bff467f8-rj8pn",
-                                        "ip-addr": "172.17.0.2",
+                                        "name": "NAME",
+                                        "ip-addr": "IP"
                                         "port": "53",
                                         "weight": "1",
                                         "priority": "1",
@@ -81,7 +81,7 @@
                 {
                         "name": "kube-dns--dns-tcp",
                         "family": "ipv4",
-                        "virtual-addr": "10.96.0.10",
+                        "virtual-addr": "IP"
                         "virtual-ports": "53",
                         "source-addr": "",
                         "mode": "snat",
@@ -105,8 +105,8 @@
                         "intra-connect": "on",
                         "backends": [
                                 {
-                                        "name": "coredns-66bff467f8-rj8pn",
-                                        "ip-addr": "172.17.0.2",
+                                        "name": "NAME",
+                                        "ip-addr": "IP"
                                         "port": "53",
                                         "weight": "1",
                                         "priority": "1",
@@ -120,7 +120,7 @@
                 {
                         "name": "kube-dns--metrics",
                         "family": "ipv4",
-                        "virtual-addr": "10.96.0.10",
+                        "virtual-addr": "IP"
                         "virtual-ports": "9153",
                         "source-addr": "",
                         "mode": "snat",
@@ -144,8 +144,8 @@
                         "intra-connect": "on",
                         "backends": [
                                 {
-                                        "name": "coredns-66bff467f8-rj8pn",
-                                        "ip-addr": "172.17.0.2",
+                                        "name": "NAME",
+                                        "ip-addr": "IP"
                                         "port": "9153",
                                         "weight": "1",
                                         "priority": "1",
