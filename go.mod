@@ -10,6 +10,7 @@ require (
 	github.com/docker/go-connections v0.4.0 // indirect
 	github.com/docker/go-units v0.4.0 // indirect
 	github.com/gorilla/mux v1.7.4 // indirect
+	github.com/joho/godotenv v1.3.0
 	github.com/morikuni/aec v1.0.0 // indirect
 	github.com/opencontainers/go-digest v1.0.0 // indirect
 	github.com/opencontainers/image-spec v1.0.1 // indirect
@@ -18,8 +19,6 @@ require (
 	golang.org/x/sys v0.0.0-20200217220822-9197077df867 // indirect
 	golang.org/x/time v0.0.0-20200416051211-89c76fbcd5d1 // indirect
 	google.golang.org/grpc v1.26.0 // indirect
-	gopkg.in/gcfg.v1 v1.2.3
-	gopkg.in/warnings.v0 v0.1.2 // indirect
 	gotest.tools v2.2.0+incompatible // indirect
 	k8s.io/api v0.18.8
 	k8s.io/apimachinery v0.18.8
