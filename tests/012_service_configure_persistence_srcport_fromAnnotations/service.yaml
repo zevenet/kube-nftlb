@@ -1,0 +1,19 @@
+# Yaml Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: my-service
+  labels:
+    app: front
+  annotations:
+    service.kubernetes.io/kube-nftlb-load-balancer-mode: "snat"
+    service.kubernetes.io/kube-nftlb-load-balancer-persistence: "srcport"
+spec:
+  type: ClusterIP
+  selector:
+    app: front
+  ports:
+    - name: http
+      protocol: TCP
+      port: 8080
+      targetPort: 80

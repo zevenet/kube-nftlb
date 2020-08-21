@@ -45,7 +45,7 @@ func UpdateNftlbBackends(oldEP, newEP *v1.Endpoints, logChannel chan string, cli
 		var oldServiceNameSlice = getOldServiceSlice(oldEP)
 		// Makes the request nftlb
 		response := updateNftlbRequest(backendsJSON)
-		printUpdated("Backends", backendsJSON, response, logChannel)
+		printUpdated("Backends", backendsJSON, response, logChannel)	
 		farmName := ""
 		backendName := ""
 		// There are two possible situations.

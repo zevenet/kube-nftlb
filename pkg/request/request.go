@@ -15,7 +15,7 @@ import (
 var (
 	// We discover the hostname dynamically
 	Hostname, err = os.Hostname()
-	BadNames      = []string{"kube-controller-manager", "kube-scheduler", "kube-scheduler-" + Hostname, "kube-controller-manager-" + Hostname}
+	BadNames      = []string{"kube-controller-manager", "kube-scheduler", "kube-scheduler-" + Hostname, "kube-controller-manager-" + Hostname, "k8s.io-minikube-hostpath"}
 )
 
 // httpClient is a HTTP client with some settings for all requests.
