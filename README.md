@@ -60,3 +60,197 @@ root@debian:kube-nftlb# minikube start --vm-driver=none --extra-config=kubeadm.s
 ```console
 root@debian:kube-nftlb# kubectl apply -f yaml
 ```
+
+## Local Configuration :gear:
+
+We have to remove the chains that kubernetes configures by default. To achieve this we have to stop the kubelet service, add a variable to the configuration file and reactivate the service. Follow the following commands:
+
+```console
+systemctl stop kubelet.service
+echo "makeIPTablesUtilChains: false" >> /var/lib/kubelet/config.yaml
+nft delete table ip nat
+nft delete table ip filter
+nft delete table ip mangle
+systemctl start kubelet.service
+```
+If everything has gone well the kubelet service will not create those tables again. Now you will have to apply a rule to recover the connection with your deployments:
+
+```console
+iptables -N POSTROUTING -t filter
+iptables -A POSTROUTING -t nat -s 172.17.0.0/16 ! -o docker0 -j MASQUERADE
+```
+
+## Creation of a simple service :pushpin:
+
+In this section we are going to see the different settings that we can apply to create our service. The first thing we have to know is that it is a service and how we can create a simple one and check that it has been created correctly.
+
+A Service is an abstraction which defines a logical set of Pods and a policy by which to access them. A Service in Kubernetes is a REST object, similar to a Pod. Like all of the REST objects, you can POST a Service definition to the API server to create a new instance. The name of a Service object must be a valid DNS label name. For example:
+
+```console
+# service.yaml configuration creates a service
+apiVersion: v1
+kind: Service
+metadata:
+  name: my-service
+  labels:
+    app: front
+spec:
+  type: ClusterIP
+  selector:
+    app: front
+  ports:
+    - name: http 
+      protocol: TCP
+      port: 8080
+      targetPort: 80
+```
+
+This specification creates a new Service object named “my-service”, which targets TCP port 8080 on any Pod with the app=front label. 
+
+To apply this configuration and verify that our service has been created we have to use the following commands:
+- Apply the configuration contained within the yaml file
+```console
+kubectl apply -f service.yaml 
+```
+- Shows all services, a service called "my-service" should appear
+```console
+kubectl get services -A
+NAMESPACE     NAME         TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)                  AGE
+default       my-service   ClusterIP   IP_cluster      <none>        8080/TCP                 6m12s
+```
+
+Now we are going to check that after the creation of our service our farm has been correctly configured. To do that we need the nftlb key generated during compilation to be able to make requests to the nftlb api. The key in the .env file. You can copy it from there or launch the following commands from the kube-nftlb directory:
+```console
+NFTLB_KEY=$(grep 'NFTLB_KEY' .env | sed 's/NFTLB_KEY=//')
+curl -H "Key: $NFTLB_KEY" http://localhost:5555/farms/my-service--http
+{
+        "farms": [
+                {
+                        "name": "my-service--http",
+                        "family": "ipv4",
+                        "virtual-addr": "IP",
+                        "virtual-ports": "8080",
+                        "source-addr": "",
+                        "mode": "snat",
+                        "protocol": "tcp",
+                        "scheduler": "rr",
+                        "sched-param": "none",
+                        "persistence": "none",
+                        "persist-ttl": "60",
+                        "helper": "none",
+                        "log": "none",
+                        "mark": "0x0",
+                        "priority": "1",
+                        "state": "up",
+                        "new-rtlimit": "0",
+                        "new-rtlimit-burst": "0",
+                        "rst-rtlimit": "0",
+                        "rst-rtlimit-burst": "0",
+                        "est-connlimit": "0",
+                        "tcp-strict": "off",
+                        "queue": "-1",
+                        "intra-connect": "on",
+                        "backends": [],
+                        "policies": []
+                }
+        ]
+}
+```
+*The curl that we have launched returns a json with the information configured in our farms.*
+
+## Creation and assignment of deployments :pushpin:
+
+In this section we will see how to create a deployment and how we can assign it to other pods (our service). But first we have to know what a deployment is.
+
+Deployments represent a set of multiple, identical Pods with no unique identities. A Deployment runs multiple replicas of your application and automatically replaces any instances that fail or become unresponsive. In this way, Deployments help ensure that one or more instances of your application are available to serve user requests. Deployments are managed by the Kubernetes Deployment controller.
+
+Deployments use a Pod template, which contains a specification for its Pods. The Pod specification determines how each Pod should look like: what applications should run inside its containers, which volumes the Pods should mount, its labels, and more. Let's see an example:
+
+```console
+# deployment.yaml configuration, creates a deployment.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: lower-prio
+  labels:
+    app: front
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: front
+  template:
+    metadata:
+      labels:
+        app: front
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:alpine
+```
+Through the "matchlabel" field we can find the pod of our service. We are going to apply our deployment and check that it has been created correctly.
+```code
+kubectl -f apply deployment.yaml
+kubectl get pods --all-namespaces
+NAMESPACE     NAME                             READY   STATUS    RESTARTS   AGE
+default       lower-prio-64588d8b49-jjlvm      1/1     Running   0          12s
+default       lower-prio-64588d8b49-lvk92      1/1     Running   0          12s
+```
+Now we are going to check that after creating our deployment, our farm has the backends configured correctly. We will have as many backends configured as replicas we have specified
+```code
+curl -H "Key: $NFTLB_KEY" http://localhost:5555/farms/my-service--http
+{
+        "farms": [
+                {
+                        "name": "my-service--http",
+                        "family": "ipv4",
+                        "virtual-addr": "IP",
+                        "virtual-ports": "8080",
+                        "source-addr": "",
+                        "mode": "snat",
+                        "protocol": "tcp",
+                        "scheduler": "rr",
+                        "sched-param": "none",
+                        "persistence": "none",
+                        "persist-ttl": "60",
+                        "helper": "none",
+                        "log": "none",
+                        "mark": "0x0",
+                        "priority": "1",
+                        "state": "up",
+                        "new-rtlimit": "0",
+                        "new-rtlimit-burst": "0",
+                        "rst-rtlimit": "0",
+                        "rst-rtlimit-burst": "0",
+                        "est-connlimit": "0",
+                        "tcp-strict": "off",
+                        "queue": "-1",
+                        "intra-connect": "on",
+                        "backends": [
+                                {
+                                        "name": "lower-prio-64588d8b49-lvk92",
+                                        "ip-addr": "IP",
+                                        "port": "80",
+                                        "weight": "1",
+                                        "priority": "1",
+                                        "mark": "0x0",
+                                        "est-connlimit": "0",
+                                        "state": "up"
+                                },
+                                {
+                                        "name": "lower-prio-64588d8b49-jjlvm",
+                                        "ip-addr": "IP",
+                                        "port": "80",
+                                        "weight": "1",
+                                        "priority": "1",
+                                        "mark": "0x0",
+                                        "est-connlimit": "0",
+                                        "state": "up"
+                                }
+                        ],
+
+                        "policies": []
+                }
+        ]
+}
+```
