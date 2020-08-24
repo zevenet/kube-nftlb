@@ -2,19 +2,22 @@ package types
 
 import (
 	"fmt"
+	"io"
 )
 
-// URL has different fields that match any regular URL
+// RequestData contains the data needed for a regular request.
+type RequestData struct {
+	Method string
+	Path   string
+	Body   io.Reader
+}
+
+// URL has different fields that match any regular URL.
 type URL struct {
 	Protocol string
 	IP       string
 	Port     int
 	Path     string
-}
-
-// SetPath
-func (u *URL) SetPath(path string) {
-	u.Path = path
 }
 
 func (u *URL) String() string {
