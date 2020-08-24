@@ -247,7 +247,7 @@ func createBackend(name string, ipAddr string, state string, port string, maxcon
 	return backendCreated
 }
 
-func getPersistence(service *v1.Service) (string, string) {
+func getPersistence(service *v1.Service) (conntrack liststring, string) {
 	// First we get the persistence of our service. By default, annotations have priority ahead of the sessionAffinity and sessionAffinityConfig field.
 	// If there are no annotations, the information in the sessionAffinity and sessionAffinityConfig field is collected.
 	persistence := ""

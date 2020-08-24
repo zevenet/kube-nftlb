@@ -3,12 +3,12 @@ package funcs
 import (
 	"fmt"
 
-	defaults "github.com/zevenet/kube-nftlb/pkg/defaults"
+	"github.com/zevenet/kube-nftlb/pkg/http"
+	"github.com/zevenet/kube-nftlb/pkg/json"
+	"github.com/zevenet/kube-nftlb/pkg/logs"
+	"github.com/zevenet/kube-nftlb/pkg/types"
+
 	configFarm "github.com/zevenet/kube-nftlb/pkg/farms"
-	json "github.com/zevenet/kube-nftlb/pkg/json"
-	logs "github.com/zevenet/kube-nftlb/pkg/logs"
-	request "github.com/zevenet/kube-nftlb/pkg/request"
-	types "github.com/zevenet/kube-nftlb/pkg/types"
 	v1 "k8s.io/api/core/v1"
 )
 
@@ -82,19 +82,19 @@ func DeleteNftlbBackends(endpoints *v1.Endpoints, logChannel chan string) {
 }
 
 func deleteNftlbRequest(name string) string {
-	// Makes the farm path
-	farmPath := fmt.Sprintf("/%s", name)
-	// Makes the URL and its Header
-	farmURL := defaults.SetNftlbURL(farmPath)
-	nftlbKey := defaults.SetNftlbKey()
-	// Fills the request
-	rq := &types.Request{
-		Header: nftlbKey,
-		Action: types.DELETE,
-		URL:    farmURL,
+	// Fills the request data
+	requestData := &types.RequestData{
+		Method: "DELETE",
+		Path:   fmt.Sprintf("/%s", name),
 	}
-	// Returns the response
-	return request.GetResponse(rq)
+
+	// Get the response from that request
+	response, err := http.Send(requestData)
+	if err != nil {
+		panic(err)
+	}
+
+	return string(response)
 }
 
 func printDeleted(object string, farmName string, backendName string, response string, logChannel chan string) {
