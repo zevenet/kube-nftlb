@@ -80,7 +80,7 @@ iptables -N POSTROUTING -t filter
 iptables -A POSTROUTING -t nat -s 172.17.0.0/16 ! -o docker0 -j MASQUERADE
 ```
 
-## Creation of a simple service :pushpin:
+## Creation of a simple service :pencil2:
 
 In this section we are going to see the different settings that we can apply to create our service. The first thing we have to know is that it is a service and how we can create a simple one and check that it has been created correctly.
 
@@ -158,7 +158,7 @@ curl -H "Key: $NFTLB_KEY" http://localhost:5555/farms/my-service--http
 ```
 *The curl that we have launched returns a json with the information configured in our farms.*
 
-## Creation and assignment of deployments :pushpin:
+## Creation and assignment of deployments :pencil2:
 
 In this section we will see how to create a deployment and how we can assign it to other pods (our service). But first we have to know what a deployment is.
 
@@ -189,7 +189,7 @@ spec:
         image: nginx:alpine
 ```
 Through the "matchlabel" field we can find the pod of our service. We are going to apply our deployment and check that it has been created correctly.
-```code
+```console
 kubectl -f apply deployment.yaml
 kubectl get pods --all-namespaces
 NAMESPACE     NAME                             READY   STATUS    RESTARTS   AGE
@@ -197,7 +197,8 @@ default       lower-prio-64588d8b49-jjlvm      1/1     Running   0          12s
 default       lower-prio-64588d8b49-lvk92      1/1     Running   0          12s
 ```
 Now we are going to check that after creating our deployment, our farm has the backends configured correctly. We will have as many backends configured as replicas we have specified
-```code
+```console
+NFTLB_KEY=$(grep 'NFTLB_KEY' .env | sed 's/NFTLB_KEY=//')
 curl -H "Key: $NFTLB_KEY" http://localhost:5555/farms/my-service--http
 {
         "farms": [
@@ -254,3 +255,74 @@ curl -H "Key: $NFTLB_KEY" http://localhost:5555/farms/my-service--http
         ]
 }
 ```
+
+## Setting up our service :pushpin:
+
+We can configure our service with different settings. In general, to configure our service we will use annotations, a field used in our configuration file yaml. In a few words, annotations are a field that will allow us to enter data outside of kubernetes.
+
+Through this field we can configure our service with different values that nftlb supports. For example, we can configure the mode of our service, if our backends have persistence or change our load balancing scheduling. We are going to see all the configuration that we can add using annotations and then we are going to see a small example of the syntax of our annotations.
+
+### Configure Mode
+We can configure how the load balancer layer 4 core is going to operate. The options are: 
+- **snat** the backend responds to the load balancer in order to send the response to the client
+- **dnat** the backend will respond directly to the client, load balancer has to be configured as gateway in the backend server;
+- **dsr (Direct Server Return)** the client connects to the VIP, then the load balancer changes its destination MAC address for the backend MAC address
+- **stlsdnat (Stateless DNAT)** the load balancer switch destination address for the backend address and forward it to the backend as DNAT does, but it doesn’t manage any kind of connection information.
+
+```code
+service.kubernetes.io/kube-nftlb-load-balancer-mode: "snat"
+service.kubernetes.io/kube-nftlb-load-balancer-mode: "dnat"
+service.kubernetes.io/kube-nftlb-load-balancer-mode: "dsr"
+service.kubernetes.io/kube-nftlb-load-balancer-mode: "stlsdnat"
+```
+### Configure Persistence
+We can configure the type of persistence is used in the configured farm. The options are:
+- **srcip** Source IP, will assign the same backend for every incoming connection depending on the source IP address only
+- **srcport** Source Port, will assign the same backend for every incoming connection depending on the source port only. 
+- **srcmac** Source MAC, With this option, the farm will assign the same backend for every incoming connection depending on link-layer MAC address of the packet.
+```code
+service.kubernetes.io/kube-nftlb-load-balancer-persistence: "srcip"
+service.kubernetes.io/kube-nftlb-load-balancer-persistence: "srcport"
+service.kubernetes.io/kube-nftlb-load-balancer-persistence: "srcmac"
+```
+### Configure Scheduler
+We can configure the type of load balancing scheduling used to dispatch the traffic between the backends. The options are:
+- **rr** does a sequential select between the backend pool, each backend will receive the same number of requests.
+- **symhash** balance packets that match the same source IP and port and destination IP and port, so it could hash a connection in both ways (during inbound and outbound).
+- **hash-srcip** balances packets that match the same source IP to the same backend
+```code
+service.kubernetes.io/kube-nftlb-load-balancer-scheduler: "rr"
+service.kubernetes.io/kube-nftlb-load-balancer-persistence: "symhash"
+service.kubernetes.io/kube-nftlb-load-balancer-persistence: "hash-srcip"
+```
+
+### How to set up annotations
+
+It is very simple, all we have to do is add it to the configuration file of our service. Let's see an example:
+```console
+# Yaml Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: my-service
+  labels:
+    app: front
+  annotations:
+    service.kubernetes.io/kube-nftlb-load-balancer-mode: "snat"
+    service.kubernetes.io/kube-nftlb-load-balancer-scheduler: "hash-srcip"
+spec:
+  type: ClusterIP
+  selector:
+    app: front
+  ports:
+    - name: http
+      protocol: TCP
+      port: 8080
+      targetPort: 80
+```
+
+
+
+
+
+
