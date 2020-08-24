@@ -22,8 +22,8 @@ var nodePortArray []string
 
 // Check if the service has type DSR. If that's the case, store in the list
 type dsrStruct struct {
-	virtualAddr string
-	dockerUid   []string
+	virtualAddr  string
+	dockerUid    []string
 	virtualPorts string
 }
 
@@ -257,7 +257,15 @@ func getPersistence(service *v1.Service) (string, string) {
 		for key, value := range service.ObjectMeta.Annotations {
 			field := rgx.FindStringSubmatch(key)
 			if strings.ToLower(string(field[0])) == "persistence" {
-				if value == "srcip" || value == "dstip" || value == "srcport" || value == "srcport" || value == "dstport" || value == "srcmac" || value == "dstmac" {
+				//  check for multiple combination of values. Ej srcip+srcport && srcip+dstport
+				splitField := strings.Split(value,"-")
+				if len(splitField) > 1 {
+					if splitField[0] == "srcip" && splitField[1] == "srcport"{
+						persistence = splitField[0]+ " " + splitField[1]	
+					} else if splitField[0] == "srcip" && splitField[1] == "dstport" {
+						persistence = splitField[0]+ " " + splitField[1]
+					}
+				}else if value == "srcip" || value == "dstip" || value == "srcport" || value == "srcport" || value == "dstport" || value == "srcmac" || value == "dstmac" {
 					persistence = value
 				}
 			}
@@ -298,7 +306,7 @@ func getAnnotations(service *v1.Service) (string, string, string, string, string
 		for key, value := range service.ObjectMeta.Annotations {
 			field := rgx.FindStringSubmatch(key)
 			if strings.ToLower(string(field[0])) == "mode" {
-				if value == "snat" || value == "dnat" || value == "dsr" || value == "stlsdnat" || value == "local"{
+				if value == "snat" || value == "dnat" || value == "dsr" || value == "stlsdnat" || value == "local" {
 					mode = value
 				}
 			} else if strings.ToLower(string(field[0])) == "scheduler" {
@@ -309,13 +317,20 @@ func getAnnotations(service *v1.Service) (string, string, string, string, string
 				} else if value == "symhash" {
 					scheduler = value
 				} else if strings.ToLower(string(field[0])) == "hash" {
-					rgx = regexp.MustCompile(`[a-z]+$`)
-					field = rgx.FindStringSubmatch(value)
-					valueHash := strings.ToLower(string(field[0]))
-					if valueHash == "srcip" || valueHash == "dstip" || valueHash == "srcport" || valueHash == "dstport" || valueHash == "srcmac" || valueHash == "dstmac" {
-						sched_param = valueHash
+					splitField := strings.Split(value,"-")
+					// check for multiple combination of values. Ej srcip+srcport
+					if len(splitField) > 2 {
+						if splitField[1] == "srcip" && splitField[2] == "srcport"{
+							sched_param = splitField[1]+ " " + splitField[2]	
+						}
+					} else{
+						valueHash := splitField[1]
+						if valueHash == "srcip" || valueHash == "dstip" || valueHash == "srcport" || valueHash == "dstport" || valueHash == "srcmac" || valueHash == "dstmac" {
+							sched_param = valueHash
+						}
+						scheduler = "hash"
 					}
-					scheduler = "hash"
+					
 				}
 			} else if strings.ToLower(string(field[0])) == "helper" {
 				helper = value
@@ -423,7 +438,7 @@ func createInterfaceDsr(farmName string, service *v1.Service, clientset *kuberne
 	if _, ok := service.ObjectMeta.Labels["app"]; ok {
 		labelService := service.ObjectMeta.Labels["app"]
 		objPod, _ := clientset.CoreV1().Pods("default").List(context.TODO(), metav1.ListOptions{})
-		if len(objPod.Items) >= 1{
+		if len(objPod.Items) >= 1 {
 			if _, ok := objPod.Items[0].ObjectMeta.Labels["app"]; ok {
 				labelDeployment := objPod.Items[0].ObjectMeta.Labels["app"]
 				if labelService == labelDeployment {
@@ -439,42 +454,42 @@ func createInterfaceDsr(farmName string, service *v1.Service, clientset *kuberne
 
 func addInterfaceDsr(clientset *kubernetes.Clientset, farmName string, backendName string, virtualAddr string) {
 	objContainer, _ := clientset.CoreV1().Pods("default").Get(context.TODO(), backendName, metav1.GetOptions{})
-	if len(objContainer.Status.ContainerStatuses) >= 1{
+	if len(objContainer.Status.ContainerStatuses) >= 1 {
 		dockerUid := objContainer.Status.ContainerStatuses[0].ContainerID
 		uid := strings.SplitAfter(dockerUid, "docker://")
-		if len(uid) >= 1{
-		// We use the docker client to make requests to the docker rest api. From it we get the UID of the pod that we want to apply DSR.
-		// Then we inspect the container and obtain its PID
-		cli, err := dockerClient.NewClientWithOpts(dockerClient.FromEnv)
-		if err != nil {
-			panic(err)
-		}
-		execConfig := dockerTypes.ExecConfig{
-			AttachStderr: true,
-			AttachStdin:  true,
-			AttachStdout: true,
-			Cmd:          []string{"/bin/sh", "-c", "ip ad add " + virtualAddr + "/32 dev lo"},
-			Tty:          true,
-			Detach:       false,
-			Privileged:   true,
-			User:         "root",
-			WorkingDir:   "/",
-		}
-		exec, err := cli.ContainerExecCreate(context.TODO(), uid[1], execConfig)
-		if err != nil {
-			panic(err)
-			panic(exec)
-		}
-		execAttachConfig := dockerTypes.ExecStartCheck{
-			Detach: false,
-			Tty:    true,
-		}
-		err = cli.ContainerExecStart(context.TODO(), exec.ID, execAttachConfig)
-		if err != nil {
-			panic(err)
-		}
-		// Add uid from docker to reference later
-		serviceDsr[farmName].dockerUid = append(serviceDsr[farmName].dockerUid, uid[1])
+		if len(uid) >= 1 {
+			// We use the docker client to make requests to the docker rest api. From it we get the UID of the pod that we want to apply DSR.
+			// Then we inspect the container and obtain its PID
+			cli, err := dockerClient.NewClientWithOpts(dockerClient.FromEnv)
+			if err != nil {
+				panic(err)
+			}
+			execConfig := dockerTypes.ExecConfig{
+				AttachStderr: true,
+				AttachStdin:  true,
+				AttachStdout: true,
+				Cmd:          []string{"/bin/sh", "-c", "ip ad add " + virtualAddr + "/32 dev lo"},
+				Tty:          true,
+				Detach:       false,
+				Privileged:   true,
+				User:         "root",
+				WorkingDir:   "/",
+			}
+			exec, err := cli.ContainerExecCreate(context.TODO(), uid[1], execConfig)
+			if err != nil {
+				panic(err)
+				panic(exec)
+			}
+			execAttachConfig := dockerTypes.ExecStartCheck{
+				Detach: false,
+				Tty:    true,
+			}
+			err = cli.ContainerExecStart(context.TODO(), exec.ID, execAttachConfig)
+			if err != nil {
+				panic(err)
+			}
+			// Add uid from docker to reference later
+			serviceDsr[farmName].dockerUid = append(serviceDsr[farmName].dockerUid, uid[1])
 		}
 	}
 }
