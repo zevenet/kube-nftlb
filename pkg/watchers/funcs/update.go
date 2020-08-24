@@ -4,19 +4,19 @@ import (
 	"fmt"
 	"strings"
 
-	defaults "github.com/zevenet/kube-nftlb/pkg/defaults"
+	"github.com/zevenet/kube-nftlb/pkg/http"
+	"github.com/zevenet/kube-nftlb/pkg/json"
+	"github.com/zevenet/kube-nftlb/pkg/logs"
+	"github.com/zevenet/kube-nftlb/pkg/types"
+	"k8s.io/client-go/kubernetes"
+
 	configFarm "github.com/zevenet/kube-nftlb/pkg/farms"
-	json "github.com/zevenet/kube-nftlb/pkg/json"
-	logs "github.com/zevenet/kube-nftlb/pkg/logs"
-	request "github.com/zevenet/kube-nftlb/pkg/request"
-	types "github.com/zevenet/kube-nftlb/pkg/types"
 	v1 "k8s.io/api/core/v1"
-	kubernetes "k8s.io/client-go/kubernetes"
 )
 
 // UpdateNftlbFarm updates any nftlb farm given a Service object.
 func UpdateNftlbFarm(newSvc *v1.Service, clientset *kubernetes.Clientset, logChannel chan string) {
-	if !json.Contains(request.BadNames, newSvc.ObjectMeta.Name) {
+	if !json.Contains(http.BadNames, newSvc.ObjectMeta.Name) {
 		// Translates the updated Service object into a JSONnftlb struct
 		newJSONnftlb := json.GetJSONnftlbFromService(newSvc, clientset)
 		// Translates that struct into a JSON string
@@ -30,7 +30,7 @@ func UpdateNftlbFarm(newSvc *v1.Service, clientset *kubernetes.Clientset, logCha
 
 // UpdateNftlbBackends updates backends for any farm given a Endpoints object.
 func UpdateNftlbBackends(oldEP, newEP *v1.Endpoints, logChannel chan string, clientset *kubernetes.Clientset) {
-	if !json.Contains(request.BadNames, newEP.ObjectMeta.Name) {
+	if !json.Contains(http.BadNames, newEP.ObjectMeta.Name) {
 		// Gets the service and number of backends for later
 		objName := oldEP.ObjectMeta.Name
 		// Translates the Endpoints objects into JSONnftlb structs
@@ -96,18 +96,19 @@ func actionDeleteNftlbRequest(objName string, farmName string, backendName strin
 }
 
 func updateNftlbRequest(json string) string {
-	// Makes the URL and its Header
-	farmURL := defaults.GetURL()
-	header := defaults.GetHeader()
 	// Fills the request
-	rq := &types.Request{
-		Header:  header,
-		Action:  types.POST,
-		URL:     farmURL,
-		Payload: strings.NewReader(json),
+	requestData := &types.RequestData{
+		Method: "POST",
+		Body:   strings.NewReader(json),
 	}
-	// Returns the response
-	return request.GetResponse(rq)
+
+	// Get the response from that request
+	response, err := http.Send(requestData)
+	if err != nil {
+		panic(err)
+	}
+
+	return string(response)
 }
 
 func printUpdated(object string, json string, response string, logChannel chan string) {

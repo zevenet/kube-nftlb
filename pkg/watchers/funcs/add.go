@@ -4,18 +4,18 @@ import (
 	"fmt"
 	"strings"
 
-	defaults "github.com/zevenet/kube-nftlb/pkg/defaults"
-	json "github.com/zevenet/kube-nftlb/pkg/json"
-	logs "github.com/zevenet/kube-nftlb/pkg/logs"
-	request "github.com/zevenet/kube-nftlb/pkg/request"
-	types "github.com/zevenet/kube-nftlb/pkg/types"
+	"github.com/zevenet/kube-nftlb/pkg/http"
+	"github.com/zevenet/kube-nftlb/pkg/json"
+	"github.com/zevenet/kube-nftlb/pkg/logs"
+	"github.com/zevenet/kube-nftlb/pkg/types"
+	"k8s.io/client-go/kubernetes"
+
 	v1 "k8s.io/api/core/v1"
-	kubernetes "k8s.io/client-go/kubernetes"
 )
 
 // CreateNftlbFarm creates any nftlb farm given a Service object.
 func CreateNftlbFarm(service *v1.Service, clientset *kubernetes.Clientset, logChannel chan string) {
-	if !json.Contains(request.BadNames, service.ObjectMeta.Name) {
+	if !json.Contains(http.BadNames, service.ObjectMeta.Name) {
 		// Translates the Service object into a JSONnftlb struct
 		JSONnftlb := json.GetJSONnftlbFromService(service, clientset)
 		// Translates that struct into a JSON string
@@ -29,7 +29,7 @@ func CreateNftlbFarm(service *v1.Service, clientset *kubernetes.Clientset, logCh
 
 // CreateNftlbBackends creates backends for any farm given a Endpoints object.
 func CreateNftlbBackends(endpoints *v1.Endpoints, logChannel chan string, clientset *kubernetes.Clientset) {
-	if !json.Contains(request.BadNames, endpoints.ObjectMeta.Name) {
+	if !json.Contains(http.BadNames, endpoints.ObjectMeta.Name) {
 		// Translates the Endpoints object into a JSONnftlb struct
 		JSONnftlb := json.GetJSONnftlbFromEndpoints(endpoints, clientset)
 		// Translates that struct into a JSON string
@@ -42,18 +42,19 @@ func CreateNftlbBackends(endpoints *v1.Endpoints, logChannel chan string, client
 }
 
 func createNftlbRequest(json string) string {
-	// Makes the URL and its Header
-	farmURL := defaults.GetURL()
-	header := defaults.GetHeader()
-	// Fills the request
-	rq := &types.Request{
-		Header:  header,
-		Action:  types.POST,
-		URL:     farmURL,
-		Payload: strings.NewReader(json),
+	// Fill the request data
+	requestData := &types.RequestData{
+		Method: "POST",
+		Body:   strings.NewReader(json),
 	}
-	// Returns the response
-	return request.GetResponse(rq)
+
+	// Get the response from that request
+	response, err := http.Send(requestData)
+	if err != nil {
+		panic(err)
+	}
+
+	return string(response)
 }
 
 func printNew(object string, json string, response string, logChannel chan string) {

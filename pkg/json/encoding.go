@@ -8,14 +8,15 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/zevenet/kube-nftlb/pkg/config"
+	"github.com/zevenet/kube-nftlb/pkg/types"
+	"k8s.io/client-go/kubernetes"
+
 	dockerTypes "github.com/docker/docker/api/types"
 	dockerClient "github.com/docker/docker/client"
-	defaults "github.com/zevenet/kube-nftlb/pkg/defaults"
 	configFarm "github.com/zevenet/kube-nftlb/pkg/farms"
-	types "github.com/zevenet/kube-nftlb/pkg/types"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	kubernetes "k8s.io/client-go/kubernetes"
 )
 
 // Check if the service has active nodeports. If that's the case, store it in the list.
@@ -57,7 +58,6 @@ func GetJSONnftlbFromService(service *v1.Service, clientset *kubernetes.Clientse
 	state := "up"
 	intraconnect := "on"
 	iface := ""
-	cfg := defaults.GetCfg()
 	// find out the ip family, by default the values ​​is ipv4
 	family := findFamily(service)
 	// When creating services we can create several from the same yaml configuration file
@@ -80,7 +80,7 @@ func GetJSONnftlbFromService(service *v1.Service, clientset *kubernetes.Clientse
 			}
 			serviceDsr[farmName].virtualAddr = virtualAddr
 			serviceDsr[farmName].virtualPorts = portString
-			iface = cfg.DockerInterfaceBridge
+			iface = config.DockerInterfaceBridge
 		} else if mode != "dsr" {
 			if _, ok := serviceDsr[farmName]; ok {
 				if service.Spec.Type != "NodePort" {
@@ -105,7 +105,7 @@ func GetJSONnftlbFromService(service *v1.Service, clientset *kubernetes.Clientse
 				}
 				serviceDsr[farmName].virtualAddr = virtualAddr
 				serviceDsr[farmName].virtualPorts = portString
-				iface = cfg.DockerInterfaceBridge
+				iface = config.DockerInterfaceBridge
 			} else if mode != "dsr" {
 				if _, ok := serviceDsr[farmName]; ok {
 					if service.Spec.Type != "NodePort" {
@@ -258,7 +258,7 @@ func getPersistence(service *v1.Service) (string, string) {
 		for key, value := range service.ObjectMeta.Annotations {
 			field := rgx.FindStringSubmatch(key)
 			if strings.ToLower(string(field[0])) == "persistence" {
-				if value == "srcip" || value == "dstip" || value == "srcport" || value == "srcport" || value == "dstport" || value == "srcmac" || value == "dstmac" {
+				if value == "srcip" || value == "dstip" || value == "srcport" || value == "dstport" || value == "srcmac" || value == "dstmac" {
 					persistence = value
 				}
 			}
