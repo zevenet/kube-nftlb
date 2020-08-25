@@ -4,17 +4,18 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"net"
+	"regexp"
+	"strings"
+
 	dockerTypes "github.com/docker/docker/api/types"
 	dockerClient "github.com/docker/docker/client"
-	defaults "github.com/zevenet/kube-nftlb/pkg/defaults"
+	config "github.com/zevenet/kube-nftlb/pkg/config"
 	configFarm "github.com/zevenet/kube-nftlb/pkg/farms"
 	types "github.com/zevenet/kube-nftlb/pkg/types"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	kubernetes "k8s.io/client-go/kubernetes"
-	"net"
-	"regexp"
-	"strings"
 )
 
 // Check if the service has active nodeports. If that's the case, store it in the list.
@@ -56,7 +57,6 @@ func GetJSONnftlbFromService(service *v1.Service, clientset *kubernetes.Clientse
 	state := "up"
 	intraconnect := "on"
 	iface := ""
-	cfg := defaults.Init()
 	// find out the ip family, by default the values ​​is ipv4
 	family := findFamily(service)
 	// When creating services we can create several from the same yaml configuration file
@@ -79,7 +79,7 @@ func GetJSONnftlbFromService(service *v1.Service, clientset *kubernetes.Clientse
 			}
 			serviceDsr[farmName].virtualAddr = virtualAddr
 			serviceDsr[farmName].virtualPorts = portString
-			iface = cfg.Global.InterfaceBridge
+			iface = config.DockerInterfaceBridge
 		} else if mode != "dsr" {
 			if _, ok := serviceDsr[farmName]; ok {
 				if service.Spec.Type != "NodePort" {
@@ -104,7 +104,7 @@ func GetJSONnftlbFromService(service *v1.Service, clientset *kubernetes.Clientse
 				}
 				serviceDsr[farmName].virtualAddr = virtualAddr
 				serviceDsr[farmName].virtualPorts = portString
-				iface = cfg.Global.InterfaceBridge
+				iface = config.DockerInterfaceBridge
 			} else if mode != "dsr" {
 				if _, ok := serviceDsr[farmName]; ok {
 					if service.Spec.Type != "NodePort" {
@@ -247,7 +247,7 @@ func createBackend(name string, ipAddr string, state string, port string, maxcon
 	return backendCreated
 }
 
-func getPersistence(service *v1.Service) (conntrack liststring, string) {
+func getPersistence(service *v1.Service) (string, string) {
 	// First we get the persistence of our service. By default, annotations have priority ahead of the sessionAffinity and sessionAffinityConfig field.
 	// If there are no annotations, the information in the sessionAffinity and sessionAffinityConfig field is collected.
 	persistence := ""
@@ -258,14 +258,14 @@ func getPersistence(service *v1.Service) (conntrack liststring, string) {
 			field := rgx.FindStringSubmatch(key)
 			if strings.ToLower(string(field[0])) == "persistence" {
 				//  check for multiple combination of values. Ej srcip+srcport && srcip+dstport
-				splitField := strings.Split(value,"-")
+				splitField := strings.Split(value, "-")
 				if len(splitField) > 1 {
-					if splitField[0] == "srcip" && splitField[1] == "srcport"{
-						persistence = splitField[0]+ " " + splitField[1]	
+					if splitField[0] == "srcip" && splitField[1] == "srcport" {
+						persistence = splitField[0] + " " + splitField[1]
 					} else if splitField[0] == "srcip" && splitField[1] == "dstport" {
-						persistence = splitField[0]+ " " + splitField[1]
+						persistence = splitField[0] + " " + splitField[1]
 					}
-				}else if value == "srcip" || value == "dstip" || value == "srcport" || value == "srcport" || value == "dstport" || value == "srcmac" || value == "dstmac" {
+				} else if value == "srcip" || value == "dstip" || value == "srcport" || value == "dstport" || value == "srcmac" || value == "dstmac" {
 					persistence = value
 				}
 			}
@@ -317,20 +317,20 @@ func getAnnotations(service *v1.Service) (string, string, string, string, string
 				} else if value == "symhash" {
 					scheduler = value
 				} else if strings.ToLower(string(field[0])) == "hash" {
-					splitField := strings.Split(value,"-")
+					splitField := strings.Split(value, "-")
 					// check for multiple combination of values. Ej srcip+srcport
 					if len(splitField) > 2 {
-						if splitField[1] == "srcip" && splitField[2] == "srcport"{
-							sched_param = splitField[1]+ " " + splitField[2]	
+						if splitField[1] == "srcip" && splitField[2] == "srcport" {
+							sched_param = splitField[1] + " " + splitField[2]
 						}
-					} else{
+					} else {
 						valueHash := splitField[1]
 						if valueHash == "srcip" || valueHash == "dstip" || valueHash == "srcport" || valueHash == "dstport" || valueHash == "srcmac" || valueHash == "dstmac" {
 							sched_param = valueHash
 						}
 						scheduler = "hash"
 					}
-					
+
 				}
 			} else if strings.ToLower(string(field[0])) == "helper" {
 				helper = value
@@ -419,7 +419,6 @@ func deleteInterfaceDsr(farmName string) {
 		exec, err := cli.ContainerExecCreate(context.TODO(), fmt.Sprintf("%s", serviceDsr[farmName].dockerUid[uid]), execConfig)
 		if err != nil {
 			panic(err)
-			panic(exec)
 		}
 		execAttachConfig := dockerTypes.ExecStartCheck{
 			Detach: false,
@@ -478,7 +477,6 @@ func addInterfaceDsr(clientset *kubernetes.Clientset, farmName string, backendNa
 			exec, err := cli.ContainerExecCreate(context.TODO(), uid[1], execConfig)
 			if err != nil {
 				panic(err)
-				panic(exec)
 			}
 			execAttachConfig := dockerTypes.ExecStartCheck{
 				Detach: false,
