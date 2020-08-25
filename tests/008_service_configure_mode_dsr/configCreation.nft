@@ -33,7 +33,7 @@ DSR service creation
                                         "port": "8080",
                                         "weight": "1",
                                         "priority": "1",
-                                        "mark": "0x0",
+                                        "mark": "0x2",
                                         "est-connlimit": "0",
                                         "state": "config_error"
                                 },
@@ -43,7 +43,7 @@ DSR service creation
                                         "port": "8080",
                                         "weight": "1",
                                         "priority": "1",
-                                        "mark": "0x0",
+                                        "mark": "0x3",
                                         "est-connlimit": "0",
                                         "state": "config_error"
                                 }
@@ -87,7 +87,7 @@ DSR service creation
                                         "port": "8080",
                                         "weight": "1",
                                         "priority": "1",
-                                        "mark": "0x0",
+                                        "mark": "0x2",
                                         "est-connlimit": "0",
                                         "state": "up"
                                 },
@@ -97,7 +97,7 @@ DSR service creation
                                         "port": "8080",
                                         "weight": "1",
                                         "priority": "1",
-                                        "mark": "0x0",
+                                        "mark": "0x3",
                                         "est-connlimit": "0",
                                         "state": "up"
                                 }

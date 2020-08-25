@@ -15,25 +15,12 @@ results=( $(sed -n 's/.* "name": \([^ ]*\).*/\1/p' configCreation.nft) )
 n=0
 for container in "${results[@]}"
 do
-	if ((n != 0)) 
+	if ((n != 0))
 	then
 		sleep 5
 		# Remove unnecessary characters from text strings
 		temp=$(echo "${container::-2}")
 		temp=$(echo "${temp:1}")
-		if ((n == 1))
-		then
-			# Currently to test persistence you have to add marks to the backends (In the future this will be automatic)
-			# Each marks must be different for each backend. Ej 0x2 & 0x4
-			jsonPath='{"farms" : [ { "name" : "my-service--http", "backends" : [ { "name" : "%s", "mark" : "0x00000002" } ] } ] }\n'
-			jsonCurl=$(printf "$jsonPath" "$temp")
-			curl --silent -H "Key: $NFTLB_KEY" -X POST http://localhost:5555/farms -d "$jsonCurl" &>/dev/null
-		elif ((n == 2))
-		then
-			jsonPath='{"farms" : [ { "name" : "my-service--http", "backends" : [ { "name" : "%s", "mark" : "0x00000004" } ] } ] }\n'
-			jsonCurl=$(printf "$jsonPath" "$temp")
-			curl --silent -H "Key: $NFTLB_KEY" -X POST http://localhost:5555/farms -d "$jsonCurl" &>/dev/null
-		fi
 		# Modify the index.html to know which backend is responding to us
 		kubectl exec -it "$temp" -n "default" -- /bin/sh -c "echo backend$n > /usr/share/nginx/html/index.html"
 	fi

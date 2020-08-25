@@ -3,14 +3,14 @@ Interfaceloopback assign ip service
     link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
     inet 127.0.0.1/8 scope host lo
        valid_lft forever preferred_lft forever
-    inet 10.96.52.218/32 scope global lo
+    inet 10.108.123.240/32 scope global lo
        valid_lft forever preferred_lft forever
 
 1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN qlen 1000
     link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
     inet 127.0.0.1/8 scope host lo
        valid_lft forever preferred_lft forever
-    inet 10.96.52.218/32 scope global lo
+    inet 10.108.123.240/32 scope global lo
        valid_lft forever preferred_lft forever
 
 Interfaceloopback deleted ip service 
