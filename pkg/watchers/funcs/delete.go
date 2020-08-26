@@ -9,12 +9,14 @@ import (
 	"github.com/zevenet/kube-nftlb/pkg/types"
 
 	configFarm "github.com/zevenet/kube-nftlb/pkg/farms"
+	dsr "github.com/zevenet/kube-nftlb/pkg/dsr"
 	v1 "k8s.io/api/core/v1"
 )
 
 func deleteServiceDsr(farmName string) {
-	if _, ok := json.GetDsrArray()[farmName]; ok {
-		json.DeleteServiceDsr(farmName)
+	if _, ok := dsr.GetDsrArray()[farmName]; ok {
+		mapDsr := dsr.GetDsrArray()
+		dsr.DeleteServiceDsr(farmName, mapDsr)
 	}
 }
 

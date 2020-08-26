@@ -1,20 +1,17 @@
 package json
 
 import (
-	"context"
 	"encoding/json"
 	"fmt"
 	"net"
 	"regexp"
 	"strings"
 
-	dockerTypes "github.com/docker/docker/api/types"
-	dockerClient "github.com/docker/docker/client"
 	config "github.com/zevenet/kube-nftlb/pkg/config"
+	dsr "github.com/zevenet/kube-nftlb/pkg/dsr"
 	configFarm "github.com/zevenet/kube-nftlb/pkg/farms"
 	types "github.com/zevenet/kube-nftlb/pkg/types"
 	v1 "k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	kubernetes "k8s.io/client-go/kubernetes"
 )
 
@@ -22,13 +19,7 @@ import (
 var nodePortArray []string
 
 // Check if the service has type DSR. If that's the case, store in the list
-type dsrStruct struct {
-	virtualAddr  string
-	dockerUid    []string
-	virtualPorts string
-}
-
-var serviceDsr = make(map[string]*dsrStruct)
+var serviceDsr = make(map[string]*types.DsrStruct)
 
 // Check if the service has active one number of maxconns in the backend
 var maxConnsMap = map[string]string{}
@@ -74,16 +65,16 @@ func GetJSONnftlbFromService(service *v1.Service, clientset *kubernetes.Clientse
 		// check if the service has mode dsr, if that's the case, append to the list
 		if mode == "dsr" {
 			if _, ok := serviceDsr[farmName]; !ok {
-				serviceDsr[farmName] = &dsrStruct{}
-				createInterfaceDsr(farmName, service, clientset)
+				serviceDsr[farmName] = &types.DsrStruct{}
+				serviceDsr = dsr.CreateInterfaceDsr(farmName, service, clientset, serviceDsr)
 			}
-			serviceDsr[farmName].virtualAddr = virtualAddr
-			serviceDsr[farmName].virtualPorts = portString
+			serviceDsr[farmName].VirtualAddr = virtualAddr
+			serviceDsr[farmName].VirtualPorts = portString
 			iface = config.DockerInterfaceBridge
 		} else if mode != "dsr" {
 			if _, ok := serviceDsr[farmName]; ok {
 				if service.Spec.Type != "NodePort" {
-					deleteInterfaceDsr(farmName)
+					serviceDsr = dsr.DeleteInterfaceDsr(farmName, serviceDsr)
 				}
 			}
 		}
@@ -99,16 +90,16 @@ func GetJSONnftlbFromService(service *v1.Service, clientset *kubernetes.Clientse
 			// check if the service has mode dsr, if that's the case, append to the list
 			if mode == "dsr" {
 				if _, ok := serviceDsr[farmName]; !ok {
-					serviceDsr[farmName] = &dsrStruct{}
-					createInterfaceDsr(farmName, service, clientset)
+					serviceDsr[farmName] = &types.DsrStruct{}
+					serviceDsr = dsr.CreateInterfaceDsr(farmName, service, clientset, serviceDsr)
 				}
-				serviceDsr[farmName].virtualAddr = virtualAddr
-				serviceDsr[farmName].virtualPorts = portString
+				serviceDsr[farmName].VirtualAddr = virtualAddr
+				serviceDsr[farmName].VirtualPorts = portString
 				iface = config.DockerInterfaceBridge
 			} else if mode != "dsr" {
 				if _, ok := serviceDsr[farmName]; ok {
 					if service.Spec.Type != "NodePort" {
-						deleteInterfaceDsr(farmName)
+						serviceDsr = dsr.DeleteInterfaceDsr(farmName, serviceDsr)
 					}
 				}
 			}
@@ -117,7 +108,7 @@ func GetJSONnftlbFromService(service *v1.Service, clientset *kubernetes.Clientse
 			farmsSlice = append(farmsSlice, farm)
 			nodePortArray = append(nodePortArray, farmName)
 		}
-	}
+	}	
 	// Returns the filled struct
 	return types.JSONnftlb{
 		Farms: farmsSlice,
@@ -164,8 +155,8 @@ func GetJSONnftlbFromEndpoints(endpoints *v1.Endpoints, clientset *kubernetes.Cl
 				// check if the current service has mode dsr thanks to the global variable that we have created previously
 				//If this is the case, with the dsr mode activated, the IP of the service is assigned to the loopback network interface of the backends
 				if _, ok := serviceDsr[farmName]; ok {
-					addInterfaceDsr(clientset, farmName, backendName, serviceDsr[farmName].virtualAddr)
-					temp := serviceDsr[farmName].virtualPorts
+					serviceDsr = dsr.AddInterfaceDsr(clientset, farmName, backendName, serviceDsr[farmName].VirtualAddr, serviceDsr)
+					temp := serviceDsr[farmName].VirtualPorts
 					portBackend = temp
 				}
 				var backends types.Backends
@@ -378,15 +369,8 @@ func GetNodePortArray() []string {
 	return nodePortArray
 }
 
-func GetDsrArray() map[string]*dsrStruct {
-	return serviceDsr
-}
-
 func DeleteMaxConnsMap() {
 	maxConnsMap = map[string]string{}
-}
-func DeleteServiceDsr(key string) {
-	delete(serviceDsr, key)
 }
 
 func findFamily(service *v1.Service) string {
@@ -401,96 +385,6 @@ func findFamily(service *v1.Service) string {
 	return family
 }
 
-func deleteInterfaceDsr(farmName string) {
-	for uid := range serviceDsr[farmName].dockerUid {
-		cli, err := dockerClient.NewClientWithOpts(dockerClient.FromEnv)
-		if err != nil {
-			panic(err)
-		}
-		execConfig := dockerTypes.ExecConfig{
-			AttachStderr: true,
-			AttachStdin:  true,
-			AttachStdout: true,
-			Cmd:          []string{"/bin/sh", "-c", "ip ad del " + serviceDsr[farmName].virtualAddr + "/32 dev lo"},
-			Tty:          true,
-			Detach:       false,
-			Privileged:   true,
-			User:         "root",
-			WorkingDir:   "/",
-		}
-
-		exec, err := cli.ContainerExecCreate(context.TODO(), fmt.Sprintf("%s", serviceDsr[farmName].dockerUid[uid]), execConfig)
-		if err != nil {
-			panic(err)
-		}
-		execAttachConfig := dockerTypes.ExecStartCheck{
-			Detach: false,
-			Tty:    true,
-		}
-		err = cli.ContainerExecStart(context.TODO(), exec.ID, execAttachConfig)
-		if err != nil {
-			panic(err)
-		}
-	}
-	DeleteServiceDsr(farmName)
-}
-
-func createInterfaceDsr(farmName string, service *v1.Service, clientset *kubernetes.Clientset) {
-	virtualAddr := service.Spec.ClusterIP
-	if _, ok := service.ObjectMeta.Labels["app"]; ok {
-		labelService := service.ObjectMeta.Labels["app"]
-		objPod, _ := clientset.CoreV1().Pods("default").List(context.TODO(), metav1.ListOptions{})
-		if len(objPod.Items) >= 1 {
-			if _, ok := objPod.Items[0].ObjectMeta.Labels["app"]; ok {
-				labelDeployment := objPod.Items[0].ObjectMeta.Labels["app"]
-				if labelService == labelDeployment {
-					for _, objectMeta := range objPod.Items {
-						backendName := objectMeta.ObjectMeta.Name
-						addInterfaceDsr(clientset, farmName, backendName, virtualAddr)
-					}
-				}
-			}
-		}
-	}
-}
-
-func addInterfaceDsr(clientset *kubernetes.Clientset, farmName string, backendName string, virtualAddr string) {
-	objContainer, _ := clientset.CoreV1().Pods("default").Get(context.TODO(), backendName, metav1.GetOptions{})
-	if len(objContainer.Status.ContainerStatuses) >= 1 {
-		dockerUid := objContainer.Status.ContainerStatuses[0].ContainerID
-		uid := strings.SplitAfter(dockerUid, "docker://")
-		if len(uid) >= 1 {
-			// We use the docker client to make requests to the docker rest api. From it we get the UID of the pod that we want to apply DSR.
-			// Then we inspect the container and obtain its PID
-			cli, err := dockerClient.NewClientWithOpts(dockerClient.FromEnv)
-			if err != nil {
-				panic(err)
-			}
-			execConfig := dockerTypes.ExecConfig{
-				AttachStderr: true,
-				AttachStdin:  true,
-				AttachStdout: true,
-				Cmd:          []string{"/bin/sh", "-c", "ip ad add " + virtualAddr + "/32 dev lo"},
-				Tty:          true,
-				Detach:       false,
-				Privileged:   true,
-				User:         "root",
-				WorkingDir:   "/",
-			}
-			exec, err := cli.ContainerExecCreate(context.TODO(), uid[1], execConfig)
-			if err != nil {
-				panic(err)
-			}
-			execAttachConfig := dockerTypes.ExecStartCheck{
-				Detach: false,
-				Tty:    true,
-			}
-			err = cli.ContainerExecStart(context.TODO(), exec.ID, execAttachConfig)
-			if err != nil {
-				panic(err)
-			}
-			// Add uid from docker to reference later
-			serviceDsr[farmName].dockerUid = append(serviceDsr[farmName].dockerUid, uid[1])
-		}
-	}
+func GetDsrArray() map[string]*types.DsrStruct {
+	return serviceDsr
 }
