@@ -384,7 +384,3 @@ func findFamily(service *v1.Service) string {
 	}
 	return family
 }
-
-func GetDsrArray() map[string]*types.DsrStruct {
-	return serviceDsr
-}
