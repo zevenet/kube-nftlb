@@ -25,7 +25,7 @@ func getListWatch(clientset *kubernetes.Clientset, resource string) *cache.ListW
 
 // getController returns a Controller based on listWatch.
 // Exports every message into logChannel.
-func getController(listWatch *cache.ListWatch, resourceStruct runtime.Object, resourceName string, logChannel chan string, clientset *kubernetes.Clientset) cache.Controller {
+func getController(listWatch *cache.ListWatch, resourceStruct runtime.Object, resourceName string, clientset *kubernetes.Clientset) cache.Controller {
 	_, controller := cache.NewInformer(
 		listWatch,      // Resources to watch for
 		resourceStruct, // Resource struct
@@ -35,41 +35,41 @@ func getController(listWatch *cache.ListWatch, resourceStruct runtime.Object, re
 			AddFunc: func(obj interface{}) {
 				switch tp := obj.(type) {
 				case *v1.Service:
-					funcs.CreateNftlbFarm(obj.(*v1.Service), clientset, logChannel)
+					funcs.CreateNftlbFarm(obj.(*v1.Service), clientset)
 				case *v1.Endpoints:
-					funcs.CreateNftlbBackends(obj.(*v1.Endpoints), logChannel, clientset)
+					funcs.CreateNftlbBackends(obj.(*v1.Endpoints), clientset)
 				default:
 					err := fmt.Sprintf("Object not recognised of type %t", tp)
 					panic(err)
 				}
 				levelLog := 3
-				logChannel = logs.PrintLogChannelFuncGeneral(levelLog, "New", resourceName, obj, logChannel)
+				logs.WriteLogFuncGeneral(levelLog, "New", resourceName, obj)
 			},
 			DeleteFunc: func(obj interface{}) {
 				switch tp := obj.(type) {
 				case *v1.Service:
-					funcs.DeleteNftlbFarm(obj.(*v1.Service), logChannel)
+					funcs.DeleteNftlbFarm(obj.(*v1.Service))
 				case *v1.Endpoints:
-					funcs.DeleteNftlbBackends(obj.(*v1.Endpoints), logChannel)
+					funcs.DeleteNftlbBackends(obj.(*v1.Endpoints))
 				default:
 					err := fmt.Sprintf("Object not recognised of type %t", tp)
 					panic(err)
 				}
 				levelLog := 3
-				logChannel = logs.PrintLogChannelFuncGeneral(levelLog, "nDeleted", resourceName, obj, logChannel)
+				logs.WriteLogFuncGeneral(levelLog, "nDeleted", resourceName, obj)
 			},
 			UpdateFunc: func(oldObj, newObj interface{}) {
 				switch tp := oldObj.(type) {
 				case *v1.Service:
-					funcs.UpdateNftlbFarm(newObj.(*v1.Service), clientset, logChannel)
+					funcs.UpdateNftlbFarm(newObj.(*v1.Service), clientset)
 				case *v1.Endpoints:
-					funcs.UpdateNftlbBackends(oldObj.(*v1.Endpoints), newObj.(*v1.Endpoints), logChannel, clientset)
+					funcs.UpdateNftlbBackends(oldObj.(*v1.Endpoints), newObj.(*v1.Endpoints), clientset)
 				default:
 					err := fmt.Sprintf("Object not recognised of type %t", tp)
 					panic(err)
 				}
 				levelLog := 3
-				logChannel = logs.PrintLogChannelFuncUpdate(levelLog, "\nUpdated %s:\n* BEFORE: %s\n* NOW: %s", resourceName, oldObj, newObj, logChannel)
+				logs.WriteLogFuncUpdate(levelLog, resourceName, oldObj, newObj)
 			},
 		},
 	)

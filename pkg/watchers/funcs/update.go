@@ -15,7 +15,7 @@ import (
 )
 
 // UpdateNftlbFarm updates any nftlb farm given a Service object.
-func UpdateNftlbFarm(newSvc *v1.Service, clientset *kubernetes.Clientset, logChannel chan string) {
+func UpdateNftlbFarm(newSvc *v1.Service, clientset *kubernetes.Clientset) {
 	if !json.Contains(http.BadNames, newSvc.ObjectMeta.Name) {
 		// Translates the updated Service object into a JSONnftlb struct
 		newJSONnftlb := json.GetJSONnftlbFromService(newSvc, clientset)
@@ -24,12 +24,12 @@ func UpdateNftlbFarm(newSvc *v1.Service, clientset *kubernetes.Clientset, logCha
 		// Makes the request
 		response := updateNftlbRequest(farmJSON)
 		// Prints info
-		printUpdated("Farm", farmJSON, response, logChannel)
+		printUpdated("Farm", farmJSON, response)
 	}
 }
 
 // UpdateNftlbBackends updates backends for any farm given a Endpoints object.
-func UpdateNftlbBackends(oldEP, newEP *v1.Endpoints, logChannel chan string, clientset *kubernetes.Clientset) {
+func UpdateNftlbBackends(oldEP, newEP *v1.Endpoints, clientset *kubernetes.Clientset) {
 	if !json.Contains(http.BadNames, newEP.ObjectMeta.Name) {
 		// Gets the service and number of backends for later
 		objName := oldEP.ObjectMeta.Name
@@ -45,7 +45,7 @@ func UpdateNftlbBackends(oldEP, newEP *v1.Endpoints, logChannel chan string, cli
 		var oldServiceNameSlice = getOldServiceSlice(oldEP)
 		// Makes the request nftlb
 		response := updateNftlbRequest(backendsJSON)
-		printUpdated("Backends", backendsJSON, response, logChannel)
+		printUpdated("Backends", backendsJSON, response)
 		farmName := ""
 		backendName := ""
 		// There are two possible situations.
@@ -58,7 +58,7 @@ func UpdateNftlbBackends(oldEP, newEP *v1.Endpoints, logChannel chan string, cli
 						for _, serviceName := range oldServiceNameSlice {
 							farmName = configFarm.AssignFarmNameService(objName, serviceName)
 							backendName = fmt.Sprintf("%s", address.TargetRef.Name)
-							actionDeleteNftlbRequest(objName, farmName, backendName, logChannel)
+							actionDeleteNftlbRequest(objName, farmName, backendName)
 						}
 						// 	The second situation is where multiple backends are defined and some or all of them are removed.
 						//  Both arrays are compared and we check that the backend has been removed. Once detected, all necessary backends are removed.
@@ -70,7 +70,7 @@ func UpdateNftlbBackends(oldEP, newEP *v1.Endpoints, logChannel chan string, cli
 							for _, serviceName := range newServiceNameSlice {
 								farmName = configFarm.AssignFarmNameService(objName, serviceName)
 								backendName = fmt.Sprintf("%s", address.TargetRef.Name)
-								actionDeleteNftlbRequest(objName, farmName, backendName, logChannel)
+								actionDeleteNftlbRequest(objName, farmName, backendName)
 							}
 						}
 					}
@@ -80,18 +80,18 @@ func UpdateNftlbBackends(oldEP, newEP *v1.Endpoints, logChannel chan string, cli
 	}
 }
 
-func actionDeleteNftlbRequest(objName string, farmName string, backendName string, logChannel chan string) {
+func actionDeleteNftlbRequest(objName string, farmName string, backendName string) {
 	// We create the full path to remove the backend. To do this we have to indicate which farm contains the backend
 	fullPath := fmt.Sprintf("%s/backends/%s", farmName, backendName)
 	response := deleteNftlbRequest(fullPath)
-	printDeleted("Backend", objName, backendName, response, logChannel)
+	printDeleted("Backend", objName, backendName, response)
 	// Check if the current service is of type nodeport
 	// If this is the case, delete the backends also next to those of the service
 	farmName = configFarm.AssignFarmNameNodePort(farmName, "nodePort")
 	if json.Contains(json.GetNodePortArray(), farmName) {
 		fullPath = fmt.Sprintf("%s/backends/%s", farmName, backendName)
 		response = deleteNftlbRequest(fullPath)
-		printDeleted("Backend", objName, backendName, response, logChannel)
+		printDeleted("Backend", objName, backendName, response)
 	}
 }
 
@@ -111,10 +111,10 @@ func updateNftlbRequest(json string) string {
 	return string(response)
 }
 
-func printUpdated(object string, json string, response string, logChannel chan string) {
+func printUpdated(object string, json string, response string) {
 	levelLog := 0
 	message := fmt.Sprintf("\nUpdated %s:\n%s\n%s", object, json, response)
-	logs.PrintLogChannel(levelLog, message, logChannel)
+	logs.WriteLog(levelLog, message)
 }
 
 func find(slice []string, val string) (int, bool) {

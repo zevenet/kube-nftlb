@@ -14,7 +14,7 @@ import (
 )
 
 // CreateNftlbFarm creates any nftlb farm given a Service object.
-func CreateNftlbFarm(service *v1.Service, clientset *kubernetes.Clientset, logChannel chan string) {
+func CreateNftlbFarm(service *v1.Service, clientset *kubernetes.Clientset) {
 	if !json.Contains(http.BadNames, service.ObjectMeta.Name) {
 		// Translates the Service object into a JSONnftlb struct
 		JSONnftlb := json.GetJSONnftlbFromService(service, clientset)
@@ -23,12 +23,12 @@ func CreateNftlbFarm(service *v1.Service, clientset *kubernetes.Clientset, logCh
 		// Makes the request
 		response := createNftlbRequest(farmJSON)
 		// Prints info
-		printNew("Farm", farmJSON, response, logChannel)
+		printNew("Farm", farmJSON, response)
 	}
 }
 
 // CreateNftlbBackends creates backends for any farm given a Endpoints object.
-func CreateNftlbBackends(endpoints *v1.Endpoints, logChannel chan string, clientset *kubernetes.Clientset) {
+func CreateNftlbBackends(endpoints *v1.Endpoints, clientset *kubernetes.Clientset) {
 	if !json.Contains(http.BadNames, endpoints.ObjectMeta.Name) {
 		// Translates the Endpoints object into a JSONnftlb struct
 		JSONnftlb := json.GetJSONnftlbFromEndpoints(endpoints, clientset)
@@ -37,7 +37,7 @@ func CreateNftlbBackends(endpoints *v1.Endpoints, logChannel chan string, client
 		// Makes the request
 		response := createNftlbRequest(backendsJSON)
 		// Prints info
-		printNew("Backends", backendsJSON, response, logChannel)
+		printNew("Backends", backendsJSON, response)
 	}
 }
 
@@ -57,8 +57,8 @@ func createNftlbRequest(json string) string {
 	return string(response)
 }
 
-func printNew(object string, json string, response string, logChannel chan string) {
+func printNew(object string, json string, response string) {
 	levelLog := 0
 	message := fmt.Sprintf("\nNew %s:\n%s\n%s", object, json, response)
-	logs.PrintLogChannel(levelLog, message, logChannel)
+	logs.WriteLog(levelLog, message)
 }

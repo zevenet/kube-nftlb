@@ -17,7 +17,6 @@ func GetServiceListWatch(clientset *kubernetes.Clientset) *cache.ListWatch {
 }
 
 // GetServiceController returns a Controller based on listWatch.
-// Exports every message into logChannel.
-func GetServiceController(listWatch *cache.ListWatch, logChannel chan string, clientset *kubernetes.Clientset) cache.Controller {
-	return getController(listWatch, &resourceStructSvc, "Service", logChannel, clientset)
+func GetServiceController(listWatch *cache.ListWatch, clientset *kubernetes.Clientset) cache.Controller {
+	return getController(listWatch, &resourceStructSvc, "Service", clientset)
 }
