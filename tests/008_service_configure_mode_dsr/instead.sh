@@ -76,3 +76,4 @@ sed -i -r 'N;s/.*(\n(\s*)"ip-addr":)/\2"name": "NAME",\1/;P;D' configCreation.nf
 sed -i 's/\("virtual-addr": \)\(.*\)/\1"IP"/' configDelete.nft
 sed -i 's/\("ip-addr": \)\(.*\)/\1"IP"/' configDelete.nft
 sed -i -r 'N;s/.*(\n(\s*)"ip-addr":)/\2"name": "NAME",\1/;P;D' configDelete.nft
+sed -i 's/.*scope global lo.*/       IP_SERVICE/' configInterfaces.nft

@@ -13,7 +13,7 @@ spec:
   externalIPs:
     - 192.168.10.89
     - 192.168.10.90
-    - 192.168.10.92
+    - 192.168.10.91
   selector:
     app: front
   ports:

@@ -208,7 +208,7 @@
                 {
                         "name": "my-service--http--externalIPs1",
                         "family": "ipv4",
-                        "virtual-addr": "IP"
+                        "virtual-addr": "192.168.10.89",
                         "virtual-ports": "8080",
                         "source-addr": "",
                         "mode": "snat",
@@ -257,7 +257,7 @@
                 {
                         "name": "my-service--http--externalIPs2",
                         "family": "ipv4",
-                        "virtual-addr": "IP"
+                        "virtual-addr": "192.168.10.90",
                         "virtual-ports": "8080",
                         "source-addr": "",
                         "mode": "snat",
@@ -306,7 +306,7 @@
                 {
                         "name": "my-service--http--externalIPs3",
                         "family": "ipv4",
-                        "virtual-addr": "IP"
+                        "virtual-addr": "192.168.10.91",
                         "virtual-ports": "8080",
                         "source-addr": "",
                         "mode": "snat",
