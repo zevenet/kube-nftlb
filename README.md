@@ -275,7 +275,9 @@ service.kubernetes.io/kube-nftlb-load-balancer-mode: "dsr"
 service.kubernetes.io/kube-nftlb-load-balancer-mode: "stlsdnat"
 ```
 ### Configure Persistence
-We can configure the type of persistence is used in the configured farm. The options are:
+We can configure the type of persistence that is used on the configured farm. This can be configured in two ways. Via annotations and with the sessionAffinity field. 
+
+Through annotations:
 - **srcip** Source IP, will assign the same backend for every incoming connection depending on the source IP address only
 - **srcport** Source Port, will assign the same backend for every incoming connection depending on the source port only. 
 - **srcmac** Source MAC, With this option, the farm will assign the same backend for every incoming connection depending on link-layer MAC address of the packet.
@@ -287,6 +289,24 @@ service.kubernetes.io/kube-nftlb-load-balancer-persistence: "srcport"
 service.kubernetes.io/kube-nftlb-load-balancer-persistence: "srcip-srcport"
 service.kubernetes.io/kube-nftlb-load-balancer-persistence: "srcip-dstport"
 ```
+
+Through sessionAffinity field:
+
+- **ClientIP** The sessionAffinity ClientIP is equivalent to the "srcip" field in annotations.
+- **sessionAffinityConfig** Through the "timeoutSeconds" field we can configure the stickiness timeout in seconds.
+```code
+spec:
+  type: ClusterIP
+  selector:
+    app: front
+  sessionAffinity: ClientIP
+  sessionAffinityConfig:
+    clientIP:
+      timeoutSeconds: 10
+```
+
+By default, settings made with annotations have priority, even if the sessionAffinity field is defined. The "stickiness timeout in seconds" cannot be configured via annotations. The default value is chosen unless there is a sessionAffinity field and a sessionAffinityConfig where it will collect the value of that field.
+
 ### Configure Scheduler
 We can configure the type of load balancing scheduling used to dispatch the traffic between the backends. The options are:
 - **rr** does a sequential select between the backend pool, each backend will receive the same number of requests.
