@@ -17,3 +17,10 @@ func AssignFarmNameNodePort(serviceName string, nodeportName string) string {
 	farmName := serviceName + "--" + nodeportName
 	return farmName
 }
+
+func AssignFarmNameExternalIPs(serviceName string, externalIPsName string) string {
+	// The nodeport service is called the same as the original service by adding the string node-port
+	// Ej my-service--http, the nodeport service is called my-service--http--externalIPsName
+	farmName := serviceName + "--" + externalIPsName
+	return farmName
+}

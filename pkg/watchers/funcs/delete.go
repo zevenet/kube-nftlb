@@ -20,6 +20,13 @@ func deleteServiceDsr(farmName string) {
 	}
 }
 
+func deleteExternalIpService(farmName string) {
+	if _, ok := json.GetExternalIPsArray()[farmName]; ok {
+		mapExternalIps := json.GetExternalIPsArray()
+		delete(mapExternalIps, farmName)
+	}
+}
+
 // DeleteNftlbFarm deletes any nftlb farm given a Service object.
 func DeleteNftlbFarm(service *v1.Service) {
 	farmName := ""
@@ -52,6 +59,15 @@ func DeleteNftlbFarm(service *v1.Service) {
 			printDeleted("Farm", farmName, "", response)
 			// check if the farm type nodeport has mode dsr, if that's the case, clears its stored value in the value map
 			go deleteServiceDsr(farmName)
+		}
+		// Check if the farm has externalIPS, If that's the case, deleting the original service also deletes the externalIPs
+		if len(service.Spec.ExternalIPs) >= 1 {
+			externalIPsArray := json.GetExternalIPsArray()
+			for _, farmExternalIPs := range externalIPsArray[farmName] {
+				response := deleteNftlbRequest(farmExternalIPs)
+				printDeleted("Farm", farmExternalIPs, "", response)
+				deleteExternalIpService(farmName)
+			}
 		}
 	}
 }

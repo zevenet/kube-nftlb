@@ -87,11 +87,20 @@ func actionDeleteNftlbRequest(objName string, farmName string, backendName strin
 	printDeleted("Backend", objName, backendName, response)
 	// Check if the current service is of type nodeport
 	// If this is the case, delete the backends also next to those of the service
-	farmName = configFarm.AssignFarmNameNodePort(farmName, "nodePort")
-	if json.Contains(json.GetNodePortArray(), farmName) {
-		fullPath = fmt.Sprintf("%s/backends/%s", farmName, backendName)
+	farmNodeport := configFarm.AssignFarmNameNodePort(farmName, "nodePort")
+	if json.Contains(json.GetNodePortArray(), farmNodeport) {
+		fullPath = fmt.Sprintf("%s/backends/%s", farmNodeport, backendName)
 		response = deleteNftlbRequest(fullPath)
 		printDeleted("Backend", objName, backendName, response)
+	}
+	// Check if the current service is of type externalIPs
+	// If this is the case, delete the backends also next to those of the service
+	if _, ok := json.GetExternalIPsArray()[farmName]; ok {
+		for _, farmExternalIPs := range json.GetExternalIPsArray()[farmName] {
+			fullPath = fmt.Sprintf("%s/backends/%s", farmExternalIPs, backendName)
+			response = deleteNftlbRequest(fullPath)
+			printDeleted("Backend", objName, backendName, response)
+		}
 	}
 }
 

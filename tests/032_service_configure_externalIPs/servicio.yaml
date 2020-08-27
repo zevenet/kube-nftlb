@@ -1,4 +1,5 @@
 # Yaml Service
+# ExternalIPs need to be configured in the interface to have external access
 apiVersion: v1
 kind: Service
 metadata:
@@ -7,13 +8,17 @@ metadata:
     app: front
   annotations:
     service.kubernetes.io/kube-nftlb-load-balancer-mode: "snat"
-    service.kubernetes.io/kube-nftlb-load-balancer-persistence: "srcip"
 spec:
   type: ClusterIP
+  externalIPs:
+    - 192.168.10.89
+    - 192.168.10.90
+    - 192.168.10.92
   selector:
     app: front
   ports:
     - name: http
       protocol: TCP
       port: 8080
-      targetPort: 90
+      targetPort: 80
+

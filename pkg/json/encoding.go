@@ -6,6 +6,7 @@ import (
 	"net"
 	"regexp"
 	"strings"
+	"strconv"
 
 	config "github.com/zevenet/kube-nftlb/pkg/config"
 	dsr "github.com/zevenet/kube-nftlb/pkg/dsr"
@@ -23,6 +24,9 @@ var serviceDsr = make(map[string]*types.DsrStruct)
 
 // Check if the service has active one number of maxconns in the backend
 var maxConnsMap = map[string]string{}
+
+// Check if the service has active externalIPs
+var externalIPsMap = map[string][]string{}
 
 // EncodeJSON returns a JSONnftlb struct with its fields filled with the JSON data.
 func EncodeJSON(stringJSON string) types.JSONnftlb {
@@ -108,7 +112,20 @@ func GetJSONnftlbFromService(service *v1.Service, clientset *kubernetes.Clientse
 			farmsSlice = append(farmsSlice, farm)
 			nodePortArray = append(nodePortArray, farmName)
 		}
-	}	
+
+		// Check if the service has externalIPs field
+		// We have to create an externalIPs service for each external ip that has been configured in the configuration file.yaml
+		if len(service.Spec.ExternalIPs) >= 1 {
+			for position, externalIPs := range service.Spec.ExternalIPs {
+				virtualAddr = externalIPs
+				externalIPsName := "externalIPs"+strconv.Itoa(position+1)
+				externalIpFarmName := configFarm.AssignFarmNameExternalIPs(serviceName+"--"+port.Name, externalIPsName)
+				var farm = createFarm(externalIpFarmName, family, virtualAddr, portString, mode, nameProtocol, scheduler, schedulerParam, helper, log, logprefix, state, intraconnect, persistence, persistenceTTL, iface, types.Backends{})
+				farmsSlice = append(farmsSlice, farm)
+				externalIPsMap[farmName] = append(externalIPsMap[farmName], externalIpFarmName)
+			}
+		}
+	}
 	// Returns the filled struct
 	return types.JSONnftlb{
 		Farms: farmsSlice,
@@ -176,13 +193,25 @@ func GetJSONnftlbFromEndpoints(endpoints *v1.Endpoints, clientset *kubernetes.Cl
 				}
 				// Check if the current service is of type nodePort thanks to the global variable that we have created previously
 				// If this is the case, the nodePort service is assigned the same backends as the original service
-				farmName = configFarm.AssignFarmNameNodePort(farmName, "nodePort")
-				if Contains(nodePortArray, farmName) {
+				nodePortFarmName := configFarm.AssignFarmNameNodePort(farmName, "nodePort")
+				if Contains(nodePortArray, nodePortFarmName) {
 					var farm = types.Farm{
-						Name:     fmt.Sprintf("%s", farmName),
+						Name:     fmt.Sprintf("%s", nodePortFarmName),
 						Backends: backends,
 					}
 					farmsSlice = append(farmsSlice, farm)
+				}
+
+				// Check if the current service has externalIPs thanks to the global variable that we have created previously
+				// If this is the case, the externalIPs service is assigned the same backends as the original service
+				if _, ok := externalIPsMap[farmName]; ok {
+					for _, farmExternalIPs := range externalIPsMap[farmName] {
+						var farm = types.Farm{
+							Name:     fmt.Sprintf("%s", farmExternalIPs),
+							Backends: backends,
+						}
+					farmsSlice = append(farmsSlice, farm)
+					}
 				}
 			}
 		}
@@ -366,7 +395,13 @@ func findMaxConns(service *v1.Service) {
 }
 
 func GetNodePortArray() []string {
+	// Returns the list of services that have nodeport. It is used to identify the nodeport services and then delete them together with the main service.
 	return nodePortArray
+}
+
+func GetExternalIPsArray() map[string][]string {
+	// Returns the list of services that have externalIPs. It is used to identify the externalIPs services and then delete them together with the main service.
+	return externalIPsMap
 }
 
 func DeleteMaxConnsMap() {
