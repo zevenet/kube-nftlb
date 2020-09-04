@@ -30,16 +30,8 @@ var (
 
 // Send returns the response from a request.
 func Send(requestData *types.RequestData) ([]byte, error) {
-	// Get URL as a string
-	url := (&types.URL{
-		Protocol: protocol,
-		IP:       host,
-		Port:     port,
-		Path:     requestData.Path,
-	}).String()
-
 	// Prepare the request
-	request, err := http.NewRequest(requestData.Method, url, requestData.Body)
+	request, err := http.NewRequest(requestData.Method, types.URL(protocol, host, port, requestData.Path), requestData.Body)
 	if err != nil {
 		return nil, err
 	}
