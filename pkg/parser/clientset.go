@@ -1,4 +1,4 @@
-package json
+package parser
 
 import (
 	"github.com/zevenet/kube-nftlb/pkg/auth"

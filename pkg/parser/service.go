@@ -1,4 +1,4 @@
-package json
+package parser
 
 import (
 	"fmt"
@@ -95,8 +95,8 @@ func CreateServicePort(service *corev1.Service, servicePort corev1.ServicePort, 
 	return servicePortFarms
 }
 
-// ParseServiceAsFarms
-func ParseServiceAsFarms(service *corev1.Service) types.Farms {
+// ServiceAsFarms
+func ServiceAsFarms(service *corev1.Service) types.Farms {
 	// Make empty Farms struct where farms will be stored
 	farms := types.Farms{
 		Farms: make([]types.Farm, 0),
@@ -130,15 +130,4 @@ func DeleteServiceFarms(service *corev1.Service, farmPathsChan chan<- string) {
 // DeleteMaxConnsMap
 func DeleteMaxConnsMap() {
 	maxConnsMap = map[string]string{}
-}
-
-func indexOf(element string, data []string) int {
-	for k, v := range data {
-		if element == v {
-			return k
-		}
-	}
-
-	// Not found
-	return -1
 }

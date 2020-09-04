@@ -1,4 +1,4 @@
-package json
+package parser
 
 import (
 	"fmt"
@@ -6,8 +6,7 @@ import (
 	"regexp"
 	"strings"
 
-	types "github.com/zevenet/kube-nftlb/pkg/types"
-	v1 "k8s.io/api/core/v1"
+	corev1 "k8s.io/api/core/v1"
 )
 
 // Contains returns true when "str" string is in "sl" slice.
@@ -20,18 +19,7 @@ func Contains(sl []string, str string) bool {
 	return false
 }
 
-func createBackend(name string, ipAddr string, state string, port string, maxconns string) types.Backend {
-	var backendCreated = types.Backend{
-		Name:            fmt.Sprintf("%s", name),
-		IPAddr:          ipAddr,
-		State:           state,
-		Port:            port,
-		BackendMaxConns: maxconns,
-	}
-	return backendCreated
-}
-
-func getPersistence(service *v1.Service) (string, string) {
+func getPersistence(service *corev1.Service) (string, string) {
 	// First we get the persistence of our service. By default, annotations have priority ahead of the sessionAffinity and sessionAffinityConfig field.
 	// If there are no annotations, the information in the sessionAffinity and sessionAffinityConfig field is collected.
 	persistence := ""
@@ -73,7 +61,7 @@ func getPersistence(service *v1.Service) (string, string) {
 	return persistence, persistenceTTL
 }
 
-func getAnnotations(service *v1.Service, farmName string) (string, string, string, string, string, string) {
+func getAnnotations(service *corev1.Service, farmName string) (string, string, string, string, string, string) {
 	// First try reading the annotations for fields that can be configured in the nftlb service
 	// If there are no annotations for all the fields, default values ​​are set.
 	// You don't need to worry about sending empty variables as it is configured so if a variable is sent empty it is not included in the json that configures the nftlb service.
@@ -131,7 +119,7 @@ func getAnnotations(service *v1.Service, farmName string) (string, string, strin
 	return mode, scheduler, schedParam, helper, log, logprefix
 }
 
-func findMaxConns(service *v1.Service) {
+func findMaxConns(service *corev1.Service) {
 	var farmSlice []string
 	backendMaxConnsMap := "0"
 	serviceName := service.ObjectMeta.Name
@@ -158,7 +146,7 @@ func findMaxConns(service *v1.Service) {
 	}
 }
 
-func findFamily(service *v1.Service) string {
+func findFamily(service *corev1.Service) string {
 	// Find out what type of version the service IP has, by default the value ​​is ipv4
 	family := "ipv4"
 	localhostIp := net.ParseIP(service.Spec.ClusterIP)
@@ -193,4 +181,15 @@ func assignFarmNameExternalIPs(serviceName string, externalIPsName string) strin
 	// Ej my-service--http, the nodeport service is called my-service--http--externalIPsName
 	farmName := serviceName + "--" + externalIPsName
 	return farmName
+}
+
+func indexOf(element string, data []string) int {
+	for k, v := range data {
+		if element == v {
+			return k
+		}
+	}
+
+	// Not found
+	return -1
 }

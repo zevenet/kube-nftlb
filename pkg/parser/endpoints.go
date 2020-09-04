@@ -1,4 +1,4 @@
-package json
+package parser
 
 import (
 	"fmt"
@@ -26,8 +26,8 @@ var (
 	maxConnsMap = map[string]string{}
 )
 
-// ParseEndpointsAsFarms
-func ParseEndpointsAsFarms(endpoints *corev1.Endpoints) types.Farms {
+// EndpointsAsFarms
+func EndpointsAsFarms(endpoints *corev1.Endpoints) types.Farms {
 	endpointName := endpoints.ObjectMeta.Name
 	state := "up"
 	maxconns := "0"
@@ -67,7 +67,13 @@ func ParseEndpointsAsFarms(endpoints *corev1.Endpoints) types.Farms {
 				}
 
 				backends := make([]types.Backend, 0)
-				backend := createBackend(backendName, ipBackend, state, portBackend, maxconns)
+				backend := types.Backend{
+					Name:            backendName,
+					IPAddr:          ipBackend,
+					State:           state,
+					Port:            portBackend,
+					BackendMaxConns: maxconns,
+				}
 				backends = append(backends, backend)
 				var farm = types.Farm{
 					Name:     fmt.Sprintf("%s", farmName),
@@ -127,8 +133,4 @@ func DeleteEndpointsBackends(endpoints *corev1.Endpoints, backendPathsChan chan<
 	go delete(externalIPsMap, farmName)
 
 	close(backendPathsChan)
-}
-
-func GetEndpointsFarmName(endpoints *corev1.Endpoints) string {
-	return endpoints.ObjectMeta.Name
 }

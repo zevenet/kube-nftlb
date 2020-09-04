@@ -1,4 +1,4 @@
-package json
+package parser
 
 import (
 	"fmt"
@@ -10,8 +10,8 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// ParseNetworkPolicyNamesAsPolicies
-func ParseNetworkPolicyNamesAsPolicies(nwPolicy *networkingv1.NetworkPolicy) *types.Policies {
+// NetworkPolicyNamesAsPolicies
+func NetworkPolicyNamesAsPolicies(nwPolicy *networkingv1.NetworkPolicy) *types.Policies {
 	policies := make([]types.Policy, 0)
 
 	for _, policyType := range []string{"input", "output"} {
@@ -27,16 +27,16 @@ func ParseNetworkPolicyNamesAsPolicies(nwPolicy *networkingv1.NetworkPolicy) *ty
 	}
 }
 
-// ParseNetworkPolicyAsFarms
-func ParseNetworkPolicyAsFarms(nwPolicy *networkingv1.NetworkPolicy) (*types.Farms, error) {
+// NetworkPolicyAsFarms
+func NetworkPolicyAsFarms(nwPolicy *networkingv1.NetworkPolicy) (*types.Farms, error) {
 	// Get pod IP list
 	//podIPList := getPodIPListFromPodSelector(nwPolicy.Namespace, &nwPolicy.Spec.PodSelector)
 
 	return nil, nil
 }
 
-// ParseNetworkPolicyAsPolicies
-func ParseNetworkPolicyAsPolicies(nwPolicy *networkingv1.NetworkPolicy) (*types.Policies, error) {
+// NetworkPolicyAsPolicies
+func NetworkPolicyAsPolicies(nwPolicy *networkingv1.NetworkPolicy) (*types.Policies, error) {
 	// Error checking
 	if len(nwPolicy.Spec.PolicyTypes) == 0 {
 		return nil, fmt.Errorf("%s: Spec.PolicyTypes is empty", nwPolicy.Name)
