@@ -6,7 +6,6 @@ import (
 	"regexp"
 	"strings"
 
-	configFarm "github.com/zevenet/kube-nftlb/pkg/farms"
 	types "github.com/zevenet/kube-nftlb/pkg/types"
 	v1 "k8s.io/api/core/v1"
 )
@@ -80,7 +79,7 @@ func getAnnotations(service *v1.Service, farmName string) (string, string, strin
 	// You don't need to worry about sending empty variables as it is configured so if a variable is sent empty it is not included in the json that configures the nftlb service.
 	mode := "snat"
 	scheduler := "rr"
-	sched_param := "none"
+	schedParam := "none"
 	helper := ""
 	log := ""
 	logprefix := ""
@@ -106,12 +105,12 @@ func getAnnotations(service *v1.Service, farmName string) (string, string, strin
 					// check for multiple combination of values. Ej srcip+srcport
 					if len(splitField) > 2 {
 						if splitField[1] == "srcip" && splitField[2] == "srcport" {
-							sched_param = splitField[1] + " " + splitField[2]
+							schedParam = splitField[1] + " " + splitField[2]
 						}
 					} else {
 						valueHash := splitField[1]
 						if valueHash == "srcip" || valueHash == "dstip" || valueHash == "srcport" || valueHash == "dstport" || valueHash == "srcmac" || valueHash == "dstmac" {
-							sched_param = valueHash
+							schedParam = valueHash
 						}
 						scheduler = "hash"
 					}
@@ -129,7 +128,7 @@ func getAnnotations(service *v1.Service, farmName string) (string, string, strin
 			}
 		}
 	}
-	return mode, scheduler, sched_param, helper, log, logprefix
+	return mode, scheduler, schedParam, helper, log, logprefix
 }
 
 func findMaxConns(service *v1.Service) {
@@ -141,9 +140,9 @@ func findMaxConns(service *v1.Service) {
 		farmName := ""
 		for _, port := range service.Spec.Ports {
 			if port.Name == "" {
-				farmName = configFarm.AssignFarmNameService(serviceName, "default")
+				farmName = assignFarmNameService(serviceName, "default")
 			} else {
-				farmName = configFarm.AssignFarmNameService(serviceName, port.Name)
+				farmName = assignFarmNameService(serviceName, port.Name)
 			}
 			farmSlice = append(farmSlice, farmName)
 		}
@@ -169,4 +168,29 @@ func findFamily(service *v1.Service) string {
 		family = "ipv6"
 	}
 	return family
+}
+
+func assignFarmNameService(serviceName string, portName string) string {
+	// We assign the name of the farm. Two possibilities are contemplated.
+	// The first possibility is the creation of one or several services. If several are created from the same yaml configuration file we need to differentiate them (because they have the same service name). For this we add the name of the service followed by the name of the port
+	// farmName = service.ObjectMeta.Name + "--" + port.Name
+
+	// The second possibility is when a single service is created and it has not been assigned a port name. It is assigned a default one called "default"
+	// farmName = service.ObjectMeta.Name + "--" + "default"
+	farmName := serviceName + "--" + portName
+	return farmName
+}
+
+func assignFarmNameNodePort(serviceName string, nodeportName string) string {
+	// The nodeport service is called the same as the original service by adding the string node-port
+	// Ej my-service--http, the nodeport service is called my-service--http--nodeport
+	farmName := serviceName + "--" + nodeportName
+	return farmName
+}
+
+func assignFarmNameExternalIPs(serviceName string, externalIPsName string) string {
+	// The nodeport service is called the same as the original service by adding the string node-port
+	// Ej my-service--http, the nodeport service is called my-service--http--externalIPsName
+	farmName := serviceName + "--" + externalIPsName
+	return farmName
 }

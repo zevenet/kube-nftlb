@@ -7,7 +7,6 @@ import (
 	"github.com/zevenet/kube-nftlb/pkg/dsr"
 	"github.com/zevenet/kube-nftlb/pkg/types"
 
-	configFarm "github.com/zevenet/kube-nftlb/pkg/farms"
 	corev1 "k8s.io/api/core/v1"
 )
 
@@ -53,7 +52,7 @@ func ParseEndpointsAsFarms(endpoints *corev1.Endpoints) types.Farms {
 				}
 
 				// Attach the backends to the service
-				farmName := configFarm.AssignFarmNameService(endpointName, port.Name)
+				farmName := assignFarmNameService(endpointName, port.Name)
 
 				// Get backend ports
 				portBackend := fmt.Sprint(port.Port)
@@ -77,7 +76,7 @@ func ParseEndpointsAsFarms(endpoints *corev1.Endpoints) types.Farms {
 				farmsSlice = append(farmsSlice, farm)
 				// Check if the current service is of type nodePort thanks to the global variable that we have created previously
 				// If this is the case, the nodePort service is assigned the same backends as the original service
-				nodePortFarmName := configFarm.AssignFarmNameNodePort(farmName, "nodePort")
+				nodePortFarmName := assignFarmNameNodePort(farmName, "nodePort")
 				if /*Contains(nodePortArray, nodePortFarmName)*/ true {
 					var farm = types.Farm{
 						Name:     fmt.Sprintf("%s", nodePortFarmName),

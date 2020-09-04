@@ -9,7 +9,6 @@ import (
 	"github.com/zevenet/kube-nftlb/pkg/dsr"
 	"github.com/zevenet/kube-nftlb/pkg/types"
 
-	configFarm "github.com/zevenet/kube-nftlb/pkg/farms"
 	corev1 "k8s.io/api/core/v1"
 )
 
@@ -23,7 +22,7 @@ func CreateServicePort(service *corev1.Service, servicePort corev1.ServicePort, 
 	if servicePort.Name == "" {
 		servicePort.Name = "default"
 	}
-	farmName := configFarm.AssignFarmNameService(service.ObjectMeta.Name, servicePort.Name)
+	farmName := assignFarmNameService(service.ObjectMeta.Name, servicePort.Name)
 
 	// Read the annotations collected in the "annotations" field of the service
 	mode, scheduler, schedulerParam, helper, log, logPrefix := getAnnotations(service, farmName)
@@ -67,7 +66,7 @@ func CreateServicePort(service *corev1.Service, servicePort corev1.ServicePort, 
 
 	// If the service type is NodePort, modify the name of the original service, its VP and its VIP
 	if service.Spec.Type == "NodePort" || service.Spec.Type == "LoadBalancer" && servicePort.NodePort >= 0 {
-		farm.Name = configFarm.AssignFarmNameNodePort(service.ObjectMeta.Name+"--"+servicePort.Name, "nodePort")
+		farm.Name = assignFarmNameNodePort(service.ObjectMeta.Name+"--"+servicePort.Name, "nodePort")
 		farm.VirtualAddr = ""
 		farm.VirtualPorts = fmt.Sprint(servicePort.NodePort)
 
@@ -84,7 +83,7 @@ func CreateServicePort(service *corev1.Service, servicePort corev1.ServicePort, 
 
 	// Check if the service has externalIPs field
 	for position, externalIPs := range service.Spec.ExternalIPs {
-		farm.Name = configFarm.AssignFarmNameExternalIPs(service.ObjectMeta.Name+"--"+servicePort.Name, "externalIPs"+strconv.Itoa(position+1))
+		farm.Name = assignFarmNameExternalIPs(service.ObjectMeta.Name+"--"+servicePort.Name, "externalIPs"+strconv.Itoa(position+1))
 		farm.VirtualAddr = externalIPs
 
 		farmsMap[service.ObjectMeta.Name] = append(farmsMap[service.ObjectMeta.Name], farm.Name)
