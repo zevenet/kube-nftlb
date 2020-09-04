@@ -4,10 +4,10 @@ import (
 	"strings"
 
 	"github.com/zevenet/kube-nftlb/pkg/http"
-	"github.com/zevenet/kube-nftlb/pkg/json"
-	"github.com/zevenet/kube-nftlb/pkg/logs"
+	"github.com/zevenet/kube-nftlb/pkg/log"
+	"github.com/zevenet/kube-nftlb/pkg/parser"
 	"github.com/zevenet/kube-nftlb/pkg/types"
-	"github.com/zevenet/kube-nftlb/pkg/watchers"
+	"github.com/zevenet/kube-nftlb/pkg/watcher"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/cache"
 
@@ -16,7 +16,7 @@ import (
 
 // NewServiceController
 func NewServiceController(clientset *kubernetes.Clientset) cache.Controller {
-	listWatch := watchers.NewServiceListWatch(clientset)
+	listWatch := watcher.NewServiceListWatch(clientset)
 
 	eventHandler := cache.ResourceEventHandlerFuncs{
 		AddFunc:    AddNftlbFarms,
@@ -37,27 +37,27 @@ func NewServiceController(clientset *kubernetes.Clientset) cache.Controller {
 // AddNftlbFarms
 func AddNftlbFarms(obj interface{}) {
 	// Parse this Service struct as a Farms struct
-	farms := json.ParseServiceAsFarms(obj.(*corev1.Service))
+	farms := parser.ServiceAsFarms(obj.(*corev1.Service))
 
 	// Don't accept empty farms
 	if farms.Farms == nil || len(farms.Farms) == 0 {
 		return
 	}
 
-	// Parse Farms struct as a JSON string
-	farmsJSON, err := json.ParseStruct(farms)
+	// Parse Farms struct as a parser string
+	farmsparser, err := parser.StructAsJSON(farms)
 	if err != nil {
 		// Log error if it couldn't be parsed
 		return
 	}
 
-	go logs.WriteLog(0, farmsJSON)
+	go log.WriteLog(0, farmsparser)
 
 	// Fill the request data for farms
 	requestData := &types.RequestData{
 		Method: "POST",
 		Path:   "farms",
-		Body:   strings.NewReader(farmsJSON),
+		Body:   strings.NewReader(farmsparser),
 	}
 
 	// Get the response from that request
@@ -73,8 +73,8 @@ func DeleteNftlbFarms(obj interface{}) {
 	farmPathsChan := make(chan string, 1)
 
 	// Handle shared channel
-	go json.DeleteMaxConnsMap()
-	go json.DeleteServiceFarms(obj.(*corev1.Service), farmPathsChan)
+	go parser.DeleteMaxConnsMap()
+	go parser.DeleteServiceFarms(obj.(*corev1.Service), farmPathsChan)
 
 	for farmPath := range farmPathsChan {
 		// Fill the request data

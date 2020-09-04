@@ -4,10 +4,10 @@ import (
 	"strings"
 
 	"github.com/zevenet/kube-nftlb/pkg/http"
-	"github.com/zevenet/kube-nftlb/pkg/json"
-	"github.com/zevenet/kube-nftlb/pkg/logs"
+	"github.com/zevenet/kube-nftlb/pkg/log"
+	"github.com/zevenet/kube-nftlb/pkg/parser"
 	"github.com/zevenet/kube-nftlb/pkg/types"
-	"github.com/zevenet/kube-nftlb/pkg/watchers"
+	"github.com/zevenet/kube-nftlb/pkg/watcher"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/cache"
 
@@ -16,7 +16,7 @@ import (
 
 // NewEndpointsController
 func NewEndpointsController(clientset *kubernetes.Clientset) cache.Controller {
-	listWatch := watchers.NewEndpointListWatch(clientset)
+	listWatch := watcher.NewEndpointListWatch(clientset)
 
 	eventHandler := cache.ResourceEventHandlerFuncs{
 		AddFunc:    AddNftlbBackends,
@@ -37,7 +37,7 @@ func NewEndpointsController(clientset *kubernetes.Clientset) cache.Controller {
 // AddNftlbBackends
 func AddNftlbBackends(obj interface{}) {
 	// Parse this Service struct as a Farms struct
-	farms := json.ParseEndpointsAsFarms(obj.(*corev1.Endpoints))
+	farms := parser.EndpointsAsFarms(obj.(*corev1.Endpoints))
 
 	// Don't accept empty farms
 	if farms.Farms == nil || len(farms.Farms) == 0 {
@@ -45,13 +45,13 @@ func AddNftlbBackends(obj interface{}) {
 	}
 
 	// Parse Farms struct as a JSON string
-	farmsJSON, err := json.ParseStruct(farms)
+	farmsJSON, err := parser.StructAsJSON(farms)
 	if err != nil {
 		// Log error if it couldn't be parsed
 		return
 	}
 
-	go logs.WriteLog(0, farmsJSON)
+	go log.WriteLog(0, farmsJSON)
 
 	// Fill the request data for farms
 	requestData := &types.RequestData{
@@ -71,7 +71,7 @@ func AddNftlbBackends(obj interface{}) {
 func DeleteNftlbBackends(obj interface{}) {
 	backendsChan := make(chan string, 1)
 
-	go json.DeleteEndpointsBackends(obj.(*corev1.Endpoints), backendsChan)
+	go parser.DeleteEndpointsBackends(obj.(*corev1.Endpoints), backendsChan)
 
 	for backendPath := range backendsChan {
 		// Fills the request data
@@ -88,7 +88,7 @@ func DeleteNftlbBackends(obj interface{}) {
 		}
 
 		// Log response
-		logs.WriteLog(0, string(response))
+		log.WriteLog(0, string(response))
 	}
 }
 

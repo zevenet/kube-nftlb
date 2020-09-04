@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	"github.com/zevenet/kube-nftlb/pkg/config"
-	"github.com/zevenet/kube-nftlb/pkg/logs"
+	"github.com/zevenet/kube-nftlb/pkg/log"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/clientcmd"
 )
@@ -35,7 +35,7 @@ func authenticate(cfg string) *kubernetes.Clientset {
 		panic(err)
 	}
 
-	go logs.WriteLog(0, fmt.Sprintf("%s", "Authentication successful"))
+	go log.WriteLog(0, fmt.Sprintf("%s", "Authentication successful"))
 
 	return clienset
 }

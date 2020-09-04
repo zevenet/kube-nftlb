@@ -5,9 +5,9 @@ import (
 	"strings"
 
 	"github.com/zevenet/kube-nftlb/pkg/http"
-	"github.com/zevenet/kube-nftlb/pkg/json"
+	"github.com/zevenet/kube-nftlb/pkg/parser"
 	"github.com/zevenet/kube-nftlb/pkg/types"
-	"github.com/zevenet/kube-nftlb/pkg/watchers"
+	"github.com/zevenet/kube-nftlb/pkg/watcher"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/cache"
 
@@ -16,7 +16,7 @@ import (
 
 // NewNetworkPolicyController
 func NewNetworkPolicyController(clientset *kubernetes.Clientset) cache.Controller {
-	listWatch := watchers.NewNetworkPolicyListWatch(clientset)
+	listWatch := watcher.NewNetworkPolicyListWatch(clientset)
 
 	eventHandler := cache.ResourceEventHandlerFuncs{
 		AddFunc:    AddNftlbPolicies,
@@ -37,14 +37,14 @@ func NewNetworkPolicyController(clientset *kubernetes.Clientset) cache.Controlle
 // AddNftlbPolicies
 func AddNftlbPolicies(obj interface{}) {
 	// Parse this Network policy object as a Policies struct
-	policies, err := json.ParseNetworkPolicyAsPolicies(obj.(*networkingv1.NetworkPolicy))
+	policies, err := parser.NetworkPolicyAsPolicies(obj.(*networkingv1.NetworkPolicy))
 	if err != nil {
 		// Log error if it couldn't be parsed
 		return
 	}
 
 	// Parse Policies struct as a JSON string
-	policiesJSON, err := json.ParseStruct(policies)
+	policiesJSON, err := parser.StructAsJSON(policies)
 	if err != nil {
 		// Log error if it couldn't be parsed
 		return
@@ -68,14 +68,14 @@ func AddNftlbPolicies(obj interface{}) {
 	fmt.Println(policiesResponse)
 
 	// Parse this Network policy object as a Farms struct
-	farms, err := json.ParseNetworkPolicyAsFarms(obj.(*networkingv1.NetworkPolicy))
+	farms, err := parser.NetworkPolicyAsFarms(obj.(*networkingv1.NetworkPolicy))
 	if err != nil {
 		// Log error if it couldn't be parsed
 		return
 	}
 
 	// Parse Policies struct as a JSON string
-	farmsJSON, err := json.ParseStruct(farms)
+	farmsJSON, err := parser.StructAsJSON(farms)
 	if err != nil {
 		// Log error if it couldn't be parsed
 		return
@@ -102,10 +102,10 @@ func AddNftlbPolicies(obj interface{}) {
 // DeleteNftlbPolicies
 func DeleteNftlbPolicies(obj interface{}) {
 	// Parse network policy names as a Policies struct
-	policies := json.ParseNetworkPolicyNamesAsPolicies(obj.(*networkingv1.NetworkPolicy))
+	policies := parser.NetworkPolicyNamesAsPolicies(obj.(*networkingv1.NetworkPolicy))
 
 	// Parse Policies struct as a JSON string
-	policiesJSON, err := json.ParseStruct(policies)
+	policiesJSON, err := parser.StructAsJSON(policies)
 	if err != nil {
 		// Log error if it couldn't be parsed
 		return
