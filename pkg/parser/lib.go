@@ -9,16 +9,6 @@ import (
 	corev1 "k8s.io/api/core/v1"
 )
 
-// Contains returns true when "str" string is in "sl" slice.
-func Contains(sl []string, str string) bool {
-	for _, value := range sl {
-		if value == str {
-			return true
-		}
-	}
-	return false
-}
-
 func getPersistence(service *corev1.Service) (string, string) {
 	// First we get the persistence of our service. By default, annotations have priority ahead of the sessionAffinity and sessionAffinityConfig field.
 	// If there are no annotations, the information in the sessionAffinity and sessionAffinityConfig field is collected.
@@ -141,8 +131,10 @@ func findMaxConns(service *corev1.Service) {
 			}
 		}
 	}
-	for _, nameFarm := range farmSlice {
-		maxConnsMap[nameFarm] = backendMaxConnsMap
+
+	maxConnsMap[serviceName] = make(map[string]string)
+	for _, farmName := range farmSlice {
+		maxConnsMap[serviceName][farmName] = backendMaxConnsMap
 	}
 }
 
@@ -181,15 +173,4 @@ func assignFarmNameExternalIPs(serviceName string, externalIPsName string) strin
 	// Ej my-service--http, the nodeport service is called my-service--http--externalIPsName
 	farmName := serviceName + "--" + externalIPsName
 	return farmName
-}
-
-func indexOf(element string, data []string) int {
-	for k, v := range data {
-		if element == v {
-			return k
-		}
-	}
-
-	// Not found
-	return -1
 }
