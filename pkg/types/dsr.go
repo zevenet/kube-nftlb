@@ -1,7 +1,8 @@
 package types
 
-type DsrStruct struct {
+// DSR
+type DSR struct {
 	VirtualAddr  string
-	DockerUid    []string
 	VirtualPorts string
+	DockerUID    []string
 }
