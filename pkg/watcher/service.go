@@ -1,4 +1,4 @@
-package watchers
+package watcher
 
 import (
 	"k8s.io/apimachinery/pkg/fields"
