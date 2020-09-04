@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+	"sync"
 
 	"github.com/zevenet/kube-nftlb/pkg/config"
 	"github.com/zevenet/kube-nftlb/pkg/dsr"
@@ -12,20 +13,16 @@ import (
 	corev1 "k8s.io/api/core/v1"
 )
 
-var farmsMap = map[string][]string{}
-
 // CreateServicePort
-func CreateServicePort(service *corev1.Service, servicePort corev1.ServicePort, persistence string, persistTTL string) []types.Farm {
-	servicePortFarms := make([]types.Farm, 0)
-
+func CreateServicePort(service *corev1.Service, servicePort corev1.ServicePort, persistence string, persistTTL string, farms *[]types.Farm, wg *sync.WaitGroup) {
 	// If we are creating a single service and it does not have a port name, we assign it a default name
 	if servicePort.Name == "" {
 		servicePort.Name = "default"
 	}
-	farmName := assignFarmNameService(service.ObjectMeta.Name, servicePort.Name)
+	farmName := assignFarmNameService(service.Name, servicePort.Name)
 
 	// Read the annotations collected in the "annotations" field of the service
-	mode, scheduler, schedulerParam, helper, log, logPrefix := getAnnotations(service, farmName)
+	mode, scheduler, schedParam, helper, log, logPrefix := getAnnotations(service, farmName)
 
 	// Get iface
 	iface := ""
@@ -35,27 +32,27 @@ func CreateServicePort(service *corev1.Service, servicePort corev1.ServicePort, 
 
 	// Get farm struct with default values
 	farm := types.Farm{
-		Name:           farmName,
-		Mode:           mode,
-		Iface:          iface,
-		Intraconnect:   "on",
-		Family:         findFamily(service),
-		Helper:         helper,
-		Log:            log,
-		LogPrefix:      logPrefix,
-		Persistence:    persistence,
-		PersistTTL:     persistTTL,
-		Protocol:       strings.ToLower(string(servicePort.Protocol)),
-		Scheduler:      scheduler,
-		SchedulerParam: schedulerParam,
-		State:          "up",
-		VirtualAddr:    service.Spec.ClusterIP,
-		VirtualPorts:   fmt.Sprint(servicePort.Port),
-		Backends:       make([]types.Backend, 0),
+		Name:         farmName,
+		Mode:         mode,
+		Iface:        iface,
+		IntraConnect: "on",
+		Family:       findFamily(service),
+		Helper:       helper,
+		Log:          log,
+		LogPrefix:    logPrefix,
+		Persistence:  persistence,
+		PersistTTL:   persistTTL,
+		Protocol:     strings.ToLower(string(servicePort.Protocol)),
+		Scheduler:    scheduler,
+		SchedParam:   schedParam,
+		State:        "up",
+		VirtualAddr:  service.Spec.ClusterIP,
+		VirtualPorts: fmt.Sprint(servicePort.Port),
+		Backends:     make([]types.Backend, 0),
 	}
 
-	farmsMap[service.ObjectMeta.Name] = append(farmsMap[service.ObjectMeta.Name], farm.Name)
-	servicePortFarms = append(servicePortFarms, farm)
+	farmsMap[service.Name] = append(farmsMap[service.Name], farm.Name)
+	*farms = append(*farms, farm)
 
 	// Check if the service has DSR mode and append it to the DSR list
 	if farm.Mode == "dsr" {
@@ -66,12 +63,12 @@ func CreateServicePort(service *corev1.Service, servicePort corev1.ServicePort, 
 
 	// If the service type is NodePort, modify the name of the original service, its VP and its VIP
 	if service.Spec.Type == "NodePort" || service.Spec.Type == "LoadBalancer" && servicePort.NodePort >= 0 {
-		farm.Name = assignFarmNameNodePort(service.ObjectMeta.Name+"--"+servicePort.Name, "nodePort")
+		farm.Name = assignFarmNameNodePort(service.Name+"--"+servicePort.Name, "nodePort")
 		farm.VirtualAddr = ""
 		farm.VirtualPorts = fmt.Sprint(servicePort.NodePort)
 
-		farmsMap[service.ObjectMeta.Name] = append(farmsMap[service.ObjectMeta.Name], farm.Name)
-		servicePortFarms = append(servicePortFarms, farm)
+		farmsMap[service.Name] = append(farmsMap[service.Name], farm.Name)
+		*farms = append(*farms, farm)
 
 		// Check if the service has DSR mode and append it to the DSR list
 		if farm.Mode == "dsr" {
@@ -83,51 +80,53 @@ func CreateServicePort(service *corev1.Service, servicePort corev1.ServicePort, 
 
 	// Check if the service has externalIPs field
 	for position, externalIPs := range service.Spec.ExternalIPs {
-		farm.Name = assignFarmNameExternalIPs(service.ObjectMeta.Name+"--"+servicePort.Name, "externalIPs"+strconv.Itoa(position+1))
+		farm.Name = assignFarmNameExternalIPs(service.Name+"--"+servicePort.Name, "externalIPs"+strconv.Itoa(position+1))
 		farm.VirtualAddr = externalIPs
 
-		farmsMap[service.ObjectMeta.Name] = append(farmsMap[service.ObjectMeta.Name], farm.Name)
-		servicePortFarms = append(servicePortFarms, farm)
+		farmsMap[service.Name] = append(farmsMap[service.Name], farm.Name)
+		*farms = append(*farms, farm)
 	}
 
-	fmt.Println("Finished serviceport " + servicePort.Name + " from " + farm.Name)
-
-	return servicePortFarms
+	// Release this lock
+	wg.Done()
 }
 
 // ServiceAsFarms
-func ServiceAsFarms(service *corev1.Service) types.Farms {
+func ServiceAsFarms(service *corev1.Service) *types.Farms {
 	// Make empty Farms struct where farms will be stored
-	farms := types.Farms{
-		Farms: make([]types.Farm, 0),
-	}
+	farms := make([]types.Farm, 0)
 
 	// Gets persistence and Stickiness timeout in seconds
 	persistence, persistTTL := getPersistence(service)
 	findMaxConns(service)
 
-	// When creating services we can create several from the same yaml configuration file
-	// For this we take into account the port field of the yaml configuration file. We create a service for each name field in ports
+	// Make wait group and process every service port
+	var wg sync.WaitGroup
+	wg.Add(len(service.Spec.Ports))
 	for _, servicePort := range service.Spec.Ports {
-		fmt.Println("Added serviceport " + servicePort.Name)
-		farms.Farms = append(farms.Farms, CreateServicePort(service, servicePort, persistence, persistTTL)...)
+		go CreateServicePort(service, servicePort, persistence, persistTTL, &farms, &wg)
 	}
 
-	// Returns the filled struct
-	return farms
+	// Wait until all locks are released
+	wg.Wait()
+
+	// Return the filled struct
+	return &types.Farms{
+		Farms: farms,
+	}
 }
 
-//
+// DeleteServiceFarms
 func DeleteServiceFarms(service *corev1.Service, farmPathsChan chan<- string) {
-	for _, farmName := range farmsMap[service.ObjectMeta.Name] {
+	for _, farmName := range farmsMap[service.Name] {
 		farmPathsChan <- fmt.Sprintf("farms/%s", farmName)
 		go dsr.DeleteService(farmName)
 	}
 	close(farmPathsChan)
-	go delete(farmsMap, service.ObjectMeta.Name)
+	delete(farmsMap, service.Name)
 }
 
-// DeleteMaxConnsMap
-func DeleteMaxConnsMap() {
-	maxConnsMap = map[string]string{}
+// DeleteMaxConnsService
+func DeleteMaxConnsService(service *corev1.Service) {
+	delete(maxConnsMap, service.Name)
 }

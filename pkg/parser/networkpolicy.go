@@ -1,8 +1,10 @@
 package parser
 
 import (
+	"context"
 	"fmt"
 	"strings"
+	"sync"
 
 	"github.com/zevenet/kube-nftlb/pkg/types"
 
@@ -42,21 +44,34 @@ func NetworkPolicyAsPolicies(nwPolicy *networkingv1.NetworkPolicy) (*types.Polic
 		return nil, fmt.Errorf("%s: Spec.PolicyTypes is empty", nwPolicy.Name)
 	}
 
+	// Make wait group, ingress and egress can be processed in parallel
+	var wg sync.WaitGroup
+	wg.Add(2)
+
 	// Set default values
 	policies := make([]types.Policy, 0)
 	ingressTypePolicyExists, egressTypePolicyExists := containsPolicyTypes(nwPolicy)
 
-	// Format ingress policies
-	if ingressTypePolicyExists && nwPolicy.Spec.Ingress != nil {
-		whitelistPolicy, blacklistPolicy := getIngressPolicies(nwPolicy)
-		policies = append(policies, whitelistPolicy, blacklistPolicy)
-	}
+	go func() {
+		// Format ingress policies
+		if ingressTypePolicyExists && nwPolicy.Spec.Ingress != nil {
+			whitelistPolicy, blacklistPolicy := getIngressPolicies(nwPolicy)
+			policies = append(policies, whitelistPolicy, blacklistPolicy)
+		}
+		wg.Done()
+	}()
 
-	// Format egress policies
-	if egressTypePolicyExists && nwPolicy.Spec.Egress != nil {
-		whitelistPolicy, blacklistPolicy := getEgressPolicies(nwPolicy)
-		policies = append(policies, whitelistPolicy, blacklistPolicy)
-	}
+	go func() {
+		// Format egress policies
+		if egressTypePolicyExists && nwPolicy.Spec.Egress != nil {
+			whitelistPolicy, blacklistPolicy := getEgressPolicies(nwPolicy)
+			policies = append(policies, whitelistPolicy, blacklistPolicy)
+		}
+		wg.Done()
+	}()
+
+	// Release wait lock when both goroutines are done
+	wg.Wait()
 
 	return &types.Policies{
 		Policies: policies,
@@ -182,7 +197,7 @@ func getPodIPListFromSelectors(labelNamespaceSelector *metav1.LabelSelector, lab
 	}
 
 	// Get namespaces selected by labelNamespaceSelector
-	namespaces, _ := clientset.CoreV1().Namespaces().List(nil, opts)
+	namespaces, _ := clientset.CoreV1().Namespaces().List(context.TODO(), opts)
 	for _, namespace := range namespaces.Items {
 		// Get pods inside this namespace that are also matched by labelPodSelector
 		podIPList = append(podIPList, getPodIPListFromPodSelector(namespace.Name, labelPodSelector)...)
@@ -201,7 +216,7 @@ func getPodIPListFromPodSelector(namespace string, labelPodSelector *metav1.Labe
 	}
 
 	// Get selected pods in this namespace
-	pods, _ := clientset.CoreV1().Pods(namespace).List(nil, opts)
+	pods, _ := clientset.CoreV1().Pods(namespace).List(context.TODO(), opts)
 	for _, pod := range pods.Items {
 		// Get IPs from this pod
 		for _, podIP := range pod.Status.PodIPs {
