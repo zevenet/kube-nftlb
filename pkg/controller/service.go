@@ -45,19 +45,19 @@ func AddNftlbFarms(obj interface{}) {
 	}
 
 	// Parse Farms struct as a parser string
-	farmsparser, err := parser.StructAsJSON(farms)
+	farmsJSON, err := parser.StructAsJSON(farms)
 	if err != nil {
 		// Log error if it couldn't be parsed
 		return
 	}
 
-	go log.WriteLog(0, farmsparser)
+	go log.WriteLog(0, farmsJSON)
 
 	// Fill the request data for farms
 	requestData := &types.RequestData{
 		Method: "POST",
 		Path:   "farms",
-		Body:   strings.NewReader(farmsparser),
+		Body:   strings.NewReader(farmsJSON),
 	}
 
 	// Get the response from that request
@@ -73,7 +73,7 @@ func DeleteNftlbFarms(obj interface{}) {
 	farmPathsChan := make(chan string, 1)
 
 	// Handle shared channel
-	go parser.DeleteMaxConnsMap()
+	go parser.DeleteMaxConnsService(obj.(*corev1.Service))
 	go parser.DeleteServiceFarms(obj.(*corev1.Service), farmPathsChan)
 
 	for farmPath := range farmPathsChan {

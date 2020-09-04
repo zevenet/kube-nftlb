@@ -8,7 +8,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 )
 
-// NewNetworkPolicyListWatch makes a ListWatch of every Network policy in the cluster.
+// NewNetworkPolicyListWatch makes a ListWatch for every Network Policy resource in the cluster.
 func NewNetworkPolicyListWatch(clientset *kubernetes.Clientset) *cache.ListWatch {
 	return cache.NewListWatchFromClient(
 		clientset.NetworkingV1().RESTClient(), // REST interface

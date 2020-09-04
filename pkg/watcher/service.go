@@ -8,7 +8,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 )
 
-// NewServiceListWatch makes a ListWatch of every Service in the cluster.
+// NewServiceListWatch makes a ListWatch for every Service resource in the cluster.
 func NewServiceListWatch(clientset *kubernetes.Clientset) *cache.ListWatch {
 	return cache.NewListWatchFromClient(
 		clientset.CoreV1().RESTClient(), // REST interface
