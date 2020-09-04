@@ -2,24 +2,40 @@ package auth
 
 import (
 	"flag"
+	"fmt"
+
+	"github.com/zevenet/kube-nftlb/pkg/config"
+	"github.com/zevenet/kube-nftlb/pkg/logs"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/clientcmd"
 )
 
-// GetClienset implements authentication to kube-nftlb. Stops the container if the authentication fails.
-func GetClienset(cfg string) *kubernetes.Clientset {
-	var kubeconfig *string
-	kubeconfig = flag.String("kubeconfig", cfg, cfg)
+var clienset = authenticate(config.ClientCfgPath)
+
+// GetClientset
+func GetClientset() *kubernetes.Clientset {
+	return clienset
+}
+
+// authenticate implements authentication to kube-nftlb. Stops the container if the authentication fails.
+func authenticate(cfg string) *kubernetes.Clientset {
+	// Parse command line flags
+	kubeconfig := flag.String("kubeconfig", cfg, cfg)
 	flag.Parse()
-	// collects the path of the configuration file and generates the necessary configuration to then create the client
+
+	// Collects the path of the configuration file and generates the necessary configuration to then create the client
 	config, err := clientcmd.BuildConfigFromFlags("", *kubeconfig)
 	if err != nil {
-		panic(err.Error())
+		panic(err)
 	}
-	// create the clientset, based on the previous configuration
-	clientset, err := kubernetes.NewForConfig(config)
+
+	// Create the clientset, based on the previous configuration
+	clienset, err := kubernetes.NewForConfig(config)
 	if err != nil {
-		panic(err.Error())
+		panic(err)
 	}
-	return clientset
+
+	go logs.WriteLog(0, fmt.Sprintf("%s", "Authentication successful"))
+
+	return clienset
 }
