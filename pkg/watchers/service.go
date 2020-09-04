@@ -1,22 +1,19 @@
 package watchers
 
 import (
-	v1 "k8s.io/api/core/v1"
-	kubernetes "k8s.io/client-go/kubernetes"
-	cache "k8s.io/client-go/tools/cache"
+	"k8s.io/apimachinery/pkg/fields"
+	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/tools/cache"
+
+	corev1 "k8s.io/api/core/v1"
 )
 
-var (
-	resourceNameSvc   = string(v1.ResourceServices)
-	resourceStructSvc = v1.Service{}
-)
-
-// GetServiceListWatch makes a ListWatch of every Service in the cluster.
-func GetServiceListWatch(clientset *kubernetes.Clientset) *cache.ListWatch {
-	return getListWatch(clientset, resourceNameSvc)
-}
-
-// GetServiceController returns a Controller based on listWatch.
-func GetServiceController(listWatch *cache.ListWatch, clientset *kubernetes.Clientset) cache.Controller {
-	return getController(listWatch, &resourceStructSvc, "Service", clientset)
+// NewServiceListWatch makes a ListWatch of every Service in the cluster.
+func NewServiceListWatch(clientset *kubernetes.Clientset) *cache.ListWatch {
+	return cache.NewListWatchFromClient(
+		clientset.CoreV1().RESTClient(), // REST interface
+		"services",                      // Resource to watch for
+		corev1.NamespaceAll,             // Resource can be found in ALL namespaces
+		fields.Everything(),             // Get ALL fields from requested resource
+	)
 }
