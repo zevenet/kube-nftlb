@@ -1,7 +1,7 @@
 #################################################
 # Temporal container: compile kube-nftlb-client #
 #################################################
-FROM golang:1.14.7-buster AS client-builder
+FROM golang:1.15.1-buster AS client-builder
 
 # Default shell when executing RUN
 SHELL ["/bin/bash", "-c"]
@@ -22,7 +22,7 @@ RUN go build -mod=vendor ./cmd/kube-nftlb-client
 ###############################################
 # Main container: nftlb and kube-nftlb-client #
 ###############################################
-FROM debian:stable
+FROM debian:buster-slim
 
 # Default shell when executing RUN
 SHELL ["/bin/bash", "-c"]
@@ -44,7 +44,7 @@ RUN apt-get install -y gnupg ca-certificates wget procps
 RUN wget -O - http://repo.zevenet.com/zevenet.com.gpg.key | apt-key add -
 RUN echo "deb [arch=amd64] http://repo.zevenet.com/ce/v5 buster main" | tee -a /etc/apt/sources.list
 RUN apt-get update
-RUN apt-get install -y libev4 libjansson4 libnftnl11 nftables linux-image-amd64
+RUN apt-get install -y libev4 libjansson4 libnftnl11 nftables
 
 # Add external files and compiled kube-nftlb-client to this container
 COPY ${DOCKER_PATH}/start.sh .
@@ -53,6 +53,6 @@ COPY .env .
 COPY --from=client-builder /kube-nftlb/kube-nftlb-client ./goclient
 
 # Replace nftlb with a devel version if nftlb.deb exists in this directory
-RUN if [ -s "nftlb.deb" ] ; then dpkg -i ./nftlb.deb ; else apt-get install -y nftlb ; fi
+RUN if [ -s "nftlb.deb" ] ; then dpkg -i ./nftlb.deb ; rm -f ./nftlb.deb ; else apt-get install -y nftlb ; fi
 
 CMD [ "/bin/bash", "-c", "/start.sh" ]
