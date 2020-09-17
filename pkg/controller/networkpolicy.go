@@ -1,10 +1,10 @@
 package controller
 
 import (
-	"fmt"
 	"strings"
 
 	"github.com/zevenet/kube-nftlb/pkg/http"
+	"github.com/zevenet/kube-nftlb/pkg/log"
 	"github.com/zevenet/kube-nftlb/pkg/parser"
 	"github.com/zevenet/kube-nftlb/pkg/types"
 	"github.com/zevenet/kube-nftlb/pkg/watcher"
@@ -39,14 +39,14 @@ func AddNftlbPolicies(obj interface{}) {
 	// Parse this Network policy object as a Policies struct
 	policies, err := parser.NetworkPolicyAsPolicies(obj.(*networkingv1.NetworkPolicy))
 	if err != nil {
-		// Log error if it couldn't be parsed
+		go log.WriteLog(types.ErrorLog, err.Error())
 		return
 	}
 
 	// Parse Policies struct as a JSON string
 	policiesJSON, err := parser.StructAsJSON(policies)
 	if err != nil {
-		// Log error if it couldn't be parsed
+		go log.WriteLog(types.ErrorLog, err.Error())
 		return
 	}
 
@@ -60,24 +60,22 @@ func AddNftlbPolicies(obj interface{}) {
 	// Get the response from that request
 	policiesResponse, err := http.Send(policiesRequestData)
 	if err != nil {
-		// Log error if the request failed
+		go log.WriteLog(types.ErrorLog, err.Error())
 		return
 	}
-
-	// Log response
-	fmt.Println(policiesResponse)
+	go log.WriteLog(types.StandardLog, string(policiesResponse))
 
 	// Parse this Network policy object as a Farms struct
 	farms, err := parser.NetworkPolicyAsFarms(obj.(*networkingv1.NetworkPolicy))
 	if err != nil {
-		// Log error if it couldn't be parsed
+		go log.WriteLog(types.ErrorLog, err.Error())
 		return
 	}
 
 	// Parse Policies struct as a JSON string
 	farmsJSON, err := parser.StructAsJSON(farms)
 	if err != nil {
-		// Log error if it couldn't be parsed
+		go log.WriteLog(types.ErrorLog, err.Error())
 		return
 	}
 
@@ -91,12 +89,10 @@ func AddNftlbPolicies(obj interface{}) {
 	// Get the response from that request
 	farmsResponse, err := http.Send(farmsRequestData)
 	if err != nil {
-		// Log error if the request failed
+		go log.WriteLog(types.ErrorLog, err.Error())
 		return
 	}
-
-	// Log response
-	fmt.Println(farmsResponse)
+	go log.WriteLog(types.StandardLog, string(farmsResponse))
 }
 
 // DeleteNftlbPolicies
@@ -107,7 +103,7 @@ func DeleteNftlbPolicies(obj interface{}) {
 	// Parse Policies struct as a JSON string
 	policiesJSON, err := parser.StructAsJSON(policies)
 	if err != nil {
-		// Log error if it couldn't be parsed
+		go log.WriteLog(types.ErrorLog, err.Error())
 		return
 	}
 
@@ -121,12 +117,10 @@ func DeleteNftlbPolicies(obj interface{}) {
 	// Get the response from that request
 	policiesResponse, err := http.Send(policiesRequestData)
 	if err != nil {
-		// Log error if the request failed
+		go log.WriteLog(types.ErrorLog, err.Error())
 		return
 	}
-
-	// Log response
-	fmt.Println(policiesResponse)
+	go log.WriteLog(types.StandardLog, string(policiesResponse))
 }
 
 // UpdateNftlbPolicies

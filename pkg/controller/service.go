@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"fmt"
 	"strings"
 
 	"github.com/zevenet/kube-nftlb/pkg/http"
@@ -36,22 +37,23 @@ func NewServiceController(clientset *kubernetes.Clientset) cache.Controller {
 
 // AddNftlbFarms
 func AddNftlbFarms(obj interface{}) {
+	svc := obj.(*corev1.Service)
+
 	// Parse this Service struct as a Farms struct
-	farms := parser.ServiceAsFarms(obj.(*corev1.Service))
+	farms := parser.ServiceAsFarms(svc)
 
 	// Don't accept empty farms
 	if farms.Farms == nil || len(farms.Farms) == 0 {
+		go log.WriteLog(types.DetailedLog, fmt.Sprintf("AddNftlbFarms: Service name: %s\nFarms struct is empty", svc.Name))
 		return
 	}
 
 	// Parse Farms struct as a parser string
 	farmsJSON, err := parser.StructAsJSON(farms)
 	if err != nil {
-		// Log error if it couldn't be parsed
+		go log.WriteLog(types.ErrorLog, fmt.Sprintf("AddNftlbFarms: Service name: %s\n%s", svc.Name, err.Error()))
 		return
 	}
-
-	go log.WriteLog(0, farmsJSON)
 
 	// Fill the request data for farms
 	requestData := &types.RequestData{
@@ -61,20 +63,24 @@ func AddNftlbFarms(obj interface{}) {
 	}
 
 	// Get the response from that request
-	if _, err := http.Send(requestData); err != nil {
-		// Log error if the request failed
+	response, err := http.Send(requestData)
+	if err != nil {
+		go log.WriteLog(types.ErrorLog, fmt.Sprintf("AddNftlbFarms: Service name: %s\n%s", svc.Name, err.Error()))
 		return
 	}
+	go log.WriteLog(types.StandardLog, fmt.Sprintf("AddNftlbFarms: Service name: %s\n%s", svc.Name, string(response)))
 }
 
 // DeleteNftlbFarms
 func DeleteNftlbFarms(obj interface{}) {
+	svc := obj.(*corev1.Service)
+
 	// Make channel where farm path will arrive
 	farmPathsChan := make(chan string, 1)
 
 	// Handle shared channel
-	go parser.DeleteMaxConnsService(obj.(*corev1.Service))
-	go parser.DeleteServiceFarms(obj.(*corev1.Service), farmPathsChan)
+	go parser.DeleteMaxConnsService(svc)
+	go parser.DeleteServiceFarms(svc, farmPathsChan)
 
 	for farmPath := range farmPathsChan {
 		// Fill the request data
@@ -84,8 +90,10 @@ func DeleteNftlbFarms(obj interface{}) {
 		}
 
 		// Get the response from that request
-		if _, err := http.Send(requestData); err != nil {
-			// Log error if the request failed
+		if response, err := http.Send(requestData); err != nil {
+			go log.WriteLog(types.ErrorLog, fmt.Sprintf("DeleteNftlbFarms: Service name: %s\n%s", svc.Name, err.Error()))
+		} else {
+			go log.WriteLog(types.StandardLog, fmt.Sprintf("DeleteNftlbFarms: Service name: %s\n%s", svc.Name, string(response)))
 		}
 	}
 }
