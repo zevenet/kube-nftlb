@@ -97,7 +97,7 @@ func newPolicy(list []string, name string, policyType string, listType string) t
 	}
 }
 
-func getLists(policyPeer networkingv1.NetworkPolicyPeer) ([]string, []string) {
+func getLists(policyPeer *networkingv1.NetworkPolicyPeer) ([]string, []string) {
 	// Make ingress whitelist and blacklist
 	whitelist := make([]string, 0)
 	blacklist := make([]string, 0)
@@ -137,7 +137,7 @@ func getIngressPolicies(nwPolicy *networkingv1.NetworkPolicy) (types.Policy, typ
 		//portList := getPortList(rule.Ports)
 
 		for _, from := range rule.From {
-			peerWhitelist, peerBlacklist := getLists(from)
+			peerWhitelist, peerBlacklist := getLists(&from)
 			whitelist = append(whitelist, peerWhitelist...)
 			blacklist = append(blacklist, peerBlacklist...)
 		}
@@ -156,7 +156,7 @@ func getEgressPolicies(nwPolicy *networkingv1.NetworkPolicy) (types.Policy, type
 		//portList := getPortList(rule.Ports)
 
 		for _, to := range rule.To {
-			peerWhitelist, peerBlacklist := getLists(to)
+			peerWhitelist, peerBlacklist := getLists(&to)
 			whitelist = append(whitelist, peerWhitelist...)
 			blacklist = append(blacklist, peerBlacklist...)
 		}
