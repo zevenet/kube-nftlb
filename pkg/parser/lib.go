@@ -4,7 +4,12 @@ import (
 	"fmt"
 	"net"
 	"regexp"
+	"strconv"
 	"strings"
+
+	"github.com/zevenet/kube-nftlb/pkg/config"
+	"github.com/zevenet/kube-nftlb/pkg/log"
+	"github.com/zevenet/kube-nftlb/pkg/types"
 
 	corev1 "k8s.io/api/core/v1"
 )
@@ -110,67 +115,80 @@ func getAnnotations(service *corev1.Service, farmName string) (string, string, s
 }
 
 func findMaxConns(service *corev1.Service) {
-	var farmSlice []string
-	backendMaxConnsMap := "0"
-	serviceName := service.ObjectMeta.Name
+	maxConnsFarm := "0"
+
 	var rgx = regexp.MustCompile(`[a-z]+$`)
-	if service.ObjectMeta.Annotations != nil {
-		farmName := ""
-		for _, port := range service.Spec.Ports {
-			if port.Name == "" {
-				farmName = assignFarmNameService(serviceName, "default")
-			} else {
-				farmName = assignFarmNameService(serviceName, port.Name)
-			}
-			farmSlice = append(farmSlice, farmName)
-		}
-		for key, value := range service.ObjectMeta.Annotations {
-			field := rgx.FindStringSubmatch(key)
-			if strings.ToLower(string(field[0])) == "maxconns" {
-				backendMaxConnsMap = value
-			}
+	if service.ObjectMeta.Annotations == nil {
+		log.WriteLog(types.DetailedLog, fmt.Sprintf("findMaxConns: No annotations found for Service %s", service.Name))
+	}
+
+	for key, value := range service.ObjectMeta.Annotations {
+		field := rgx.FindStringSubmatch(key)
+		if strings.ToLower(string(field[0])) == "maxconns" {
+			maxConnsFarm = value
 		}
 	}
 
-	maxConnsMap[serviceName] = make(map[string]string)
-	for _, farmName := range farmSlice {
-		maxConnsMap[serviceName][farmName] = backendMaxConnsMap
+	for _, servicePort := range service.Spec.Ports {
+		farmName := FormatFarmName(service.Name, servicePort.Name)
+		maxConnsMap[farmName] = maxConnsFarm
 	}
 }
 
 func findFamily(service *corev1.Service) string {
-	// Find out what type of version the service IP has, by default the value ​​is ipv4
-	family := "ipv4"
-	localhostIp := net.ParseIP(service.Spec.ClusterIP)
-	if localhostIp.To4() != nil {
-		family = "ipv4"
-	} else if localhostIp.To16() != nil {
-		family = "ipv6"
+	if localhostIP := net.ParseIP(service.Spec.ClusterIP); localhostIP.To4() != nil {
+		return "ipv4"
 	}
-	return family
+	return "ipv6"
 }
 
-func assignFarmNameService(serviceName string, portName string) string {
-	// We assign the name of the farm. Two possibilities are contemplated.
-	// The first possibility is the creation of one or several services. If several are created from the same yaml configuration file we need to differentiate them (because they have the same service name). For this we add the name of the service followed by the name of the port
-	// farmName = service.ObjectMeta.Name + "--" + port.Name
-
-	// The second possibility is when a single service is created and it has not been assigned a port name. It is assigned a default one called "default"
-	// farmName = service.ObjectMeta.Name + "--" + "default"
-	farmName := serviceName + "--" + portName
-	return farmName
+func findIface(mode string) string {
+	if mode == "dsr" {
+		return config.DockerInterfaceBridge
+	}
+	return ""
 }
 
-func assignFarmNameNodePort(serviceName string, nodeportName string) string {
-	// The nodeport service is called the same as the original service by adding the string node-port
-	// Ej my-service--http, the nodeport service is called my-service--http--nodeport
-	farmName := serviceName + "--" + nodeportName
-	return farmName
+func findProtocol(servicePort *corev1.ServicePort) string {
+	return strings.ToLower(string(servicePort.Protocol))
 }
 
-func assignFarmNameExternalIPs(serviceName string, externalIPsName string) string {
-	// The nodeport service is called the same as the original service by adding the string node-port
-	// Ej my-service--http, the nodeport service is called my-service--http--externalIPsName
-	farmName := serviceName + "--" + externalIPsName
-	return farmName
+func findVirtualPorts(servicePort *corev1.ServicePort) string {
+	return strconv.FormatInt(int64(servicePort.Port), 10)
+}
+
+func findVirtualPortsNodePort(servicePort *corev1.ServicePort) string {
+	return strconv.FormatInt(int64(servicePort.NodePort), 10)
+}
+
+// FormatFarmName returns a formatted farm name string for nftlb (regular Service).
+func FormatFarmName(resourceName string, resourcePortName string) string {
+	// The first possibility is the creation of one or several resources. If several are created from the same YAML
+	// configuration file, we need to differentiate them (because they have the same resource name). For this we make
+	// the resource name followed by the name of the resourcePort.
+	// Example: "resource.Name + -- + resourcePort.Name" => "farm--http"
+
+	// The second possibility is when a single resource is created and some resourcePorts haven't been assigned a name.
+	// It is assigned a default one called "default".
+	// Example: "resource.Name + --default" => "farm--default"
+
+	if resourcePortName == "" {
+		resourcePortName = "default"
+	}
+
+	return fmt.Sprintf("%s--%s", resourceName, resourcePortName)
+}
+
+// FormatNodePortFarmName returns a formatted farm name (--nodePort suffix) for nftlb.
+func FormatNodePortFarmName(resourceName string, resourcePortName string) string {
+	// The NodePort resource is called the same as the original Service by appending the string "nodePort".
+	// Example: "farm--http" => "farm--http--nodeport".
+	return fmt.Sprintf("%s--nodePort", FormatFarmName(resourceName, resourcePortName))
+}
+
+// FormatExternalIPFarmName returns a formatted farm name (--externalIP-index suffix) string for nftlb.
+func FormatExternalIPFarmName(resourceName string, resourcePortName string, index int) string {
+	// The ExternalIP resource is called the same as the original Service by appending the string "externalIP-index".
+	// Example: "farm--http" => "farm--http--externalIP-index".
+	return fmt.Sprintf("%s--externalIP-%d", FormatFarmName(resourceName, resourcePortName), index)
 }
