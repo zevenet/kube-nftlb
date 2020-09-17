@@ -1,10 +1,7 @@
 package main
 
 import (
-	"time"
-
 	"github.com/zevenet/kube-nftlb/pkg/auth"
-	"github.com/zevenet/kube-nftlb/pkg/config"
 	"github.com/zevenet/kube-nftlb/pkg/controller"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/client-go/tools/cache"
@@ -24,7 +21,6 @@ func main() {
 	// Run controllers as background processes
 	for _, controller := range controllers {
 		go controller.Run(wait.NeverStop)
-		time.Sleep(config.ClientStartDelayTime)
 	}
 
 	select {}
