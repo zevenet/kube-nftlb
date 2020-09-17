@@ -2,131 +2,133 @@ package parser
 
 import (
 	"fmt"
-	"strconv"
-	"strings"
 	"sync"
 
-	"github.com/zevenet/kube-nftlb/pkg/config"
 	"github.com/zevenet/kube-nftlb/pkg/dsr"
 	"github.com/zevenet/kube-nftlb/pkg/types"
 
 	corev1 "k8s.io/api/core/v1"
 )
 
-// CreateServicePort
-func CreateServicePort(service *corev1.Service, servicePort corev1.ServicePort, persistence string, persistTTL string, farms *[]types.Farm, wg *sync.WaitGroup) {
-	// If we are creating a single service and it does not have a port name, we assign it a default name
-	if servicePort.Name == "" {
-		servicePort.Name = "default"
-	}
-	farmName := assignFarmNameService(service.Name, servicePort.Name)
-
-	// Read the annotations collected in the "annotations" field of the service
-	mode, scheduler, schedParam, helper, log, logPrefix := getAnnotations(service, farmName)
-
-	// Get iface
-	iface := ""
-	if mode == "dsr" {
-		iface = config.DockerInterfaceBridge
-	}
-
-	// Get farm struct with default values
-	farm := types.Farm{
-		Name:         farmName,
-		Mode:         mode,
-		Iface:        iface,
-		IntraConnect: "on",
-		Family:       findFamily(service),
-		Helper:       helper,
-		Log:          log,
-		LogPrefix:    logPrefix,
-		Persistence:  persistence,
-		PersistTTL:   persistTTL,
-		Protocol:     strings.ToLower(string(servicePort.Protocol)),
-		Scheduler:    scheduler,
-		SchedParam:   schedParam,
-		State:        "up",
-		VirtualAddr:  service.Spec.ClusterIP,
-		VirtualPorts: fmt.Sprint(servicePort.Port),
-		Backends:     make([]types.Backend, 0),
-	}
-
-	farmsMap[service.Name] = append(farmsMap[service.Name], farm.Name)
-	*farms = append(*farms, farm)
-
-	// Check if the service has DSR mode and append it to the DSR list
-	if farm.Mode == "dsr" {
-		go dsr.CreateInterfaceDsr(farm, service)
-	} else if dsr.ExistsServiceDSR(farm.Name) && service.Spec.Type != "NodePort" {
-		go dsr.DeleteInterfaceDsr(farm.Name)
-	}
-
-	// If the service type is NodePort, modify the name of the original service, its VP and its VIP
-	if service.Spec.Type == "NodePort" || service.Spec.Type == "LoadBalancer" && servicePort.NodePort >= 0 {
-		farm.Name = assignFarmNameNodePort(service.Name+"--"+servicePort.Name, "nodePort")
-		farm.VirtualAddr = ""
-		farm.VirtualPorts = fmt.Sprint(servicePort.NodePort)
-
-		farmsMap[service.Name] = append(farmsMap[service.Name], farm.Name)
-		*farms = append(*farms, farm)
-
-		// Check if the service has DSR mode and append it to the DSR list
-		if farm.Mode == "dsr" {
-			go dsr.CreateInterfaceDsr(farm, service)
-		} else if dsr.ExistsServiceDSR(farm.Name) && service.Spec.Type != "NodePort" {
-			go dsr.DeleteInterfaceDsr(farm.Name)
-		}
-	}
-
-	// Check if the service has externalIPs field
-	for position, externalIPs := range service.Spec.ExternalIPs {
-		farm.Name = assignFarmNameExternalIPs(service.Name+"--"+servicePort.Name, "externalIPs"+strconv.Itoa(position+1))
-		farm.VirtualAddr = externalIPs
-
-		farmsMap[service.Name] = append(farmsMap[service.Name], farm.Name)
-		*farms = append(*farms, farm)
-	}
-
-	// Release this lock
-	wg.Done()
-}
-
-// ServiceAsFarms
+// ServiceAsFarms reads a Service and returns a filled Farms struct.
 func ServiceAsFarms(service *corev1.Service) *types.Farms {
-	// Make empty Farms struct where farms will be stored
+	// Make empty farms slice where farms will be stored
 	farms := make([]types.Farm, 0)
 
-	// Gets persistence and Stickiness timeout in seconds
+	// Get persistence and persistTTL timeout in seconds
 	persistence, persistTTL := getPersistence(service)
+
+	// Find maxconns
 	findMaxConns(service)
 
-	// Make wait group and process every service port
+	// Make wait group and process every ServicePort
 	var wg sync.WaitGroup
 	wg.Add(len(service.Spec.Ports))
-	for _, servicePort := range service.Spec.Ports {
-		go CreateServicePort(service, servicePort, persistence, persistTTL, &farms, &wg)
+	for index := range service.Spec.Ports {
+		// Can't reference the Service Port directly, because it only takes the first one and the rest is ignored
+		go CreateServicePort(service, &service.Spec.Ports[index], persistence, persistTTL, &farms, &wg)
 	}
 
 	// Wait until all locks are released
 	wg.Wait()
 
-	// Return the filled struct
+	// Return a Farms struct with the filled farms slice
 	return &types.Farms{
 		Farms: farms,
 	}
 }
 
-// DeleteServiceFarms
+// CreateServicePort appends farms parsed from a ServicePort to a Farm slice.
+func CreateServicePort(service *corev1.Service, servicePort *corev1.ServicePort, persistence string, persistTTL string, farms *[]types.Farm, wg *sync.WaitGroup) {
+	// Get a formatted farm name from Service and ServicePort
+	farmName := FormatFarmName(service.Name, servicePort.Name)
+
+	// Read the annotations collected in the "annotations" field of the service
+	mode, scheduler, schedParam, helper, log, logPrefix := getAnnotations(service, farmName)
+
+	// Get farm struct with default values
+	farm := types.Farm{
+		Name:         farmName,
+		Mode:         mode,
+		Helper:       helper,
+		Log:          log,
+		LogPrefix:    logPrefix,
+		Persistence:  persistence,
+		PersistTTL:   persistTTL,
+		Scheduler:    scheduler,
+		SchedParam:   schedParam,
+		VirtualAddr:  service.Spec.ClusterIP,
+		VirtualPorts: findVirtualPorts(servicePort),
+		Protocol:     findProtocol(servicePort),
+		Family:       findFamily(service),
+		Iface:        findIface(mode),
+		IntraConnect: "on",
+		State:        "up",
+		Backends:     make([]types.Backend, 0),
+	}
+	*farms = append(*farms, farm)
+
+	go func() {
+		// Append farm name to the slice of farm names based on the Service name
+		farmsPerServiceMap[service.Name] = append(farmsPerServiceMap[service.Name], farm.Name)
+
+		// Check DSR mode
+		if farm.Mode == "dsr" {
+			dsr.CreateInterfaceDsr(farm, service)
+		}
+	}()
+
+	// If the Service type is NodePort, modify the farm name, its VP and its VIP
+	if service.Spec.Type == "NodePort" || service.Spec.Type == "LoadBalancer" && servicePort.NodePort >= 0 {
+		farm.Name = FormatNodePortFarmName(service.Name, servicePort.Name)
+		farm.VirtualAddr = ""
+		farm.VirtualPorts = findVirtualPortsNodePort(servicePort)
+		*farms = append(*farms, farm)
+
+		go func() {
+			// Append NodePort farm name to the slice of farm names and NodePort based on the Service name
+			farmsPerServiceMap[service.Name] = append(farmsPerServiceMap[service.Name], farm.Name)
+
+			// Check DSR mode
+			if farm.Mode == "dsr" {
+				dsr.CreateInterfaceDsr(farm, service)
+			}
+		}()
+	}
+
+	// Make a farm for every externalIP found in the Service
+	for index, externalIP := range service.Spec.ExternalIPs {
+		farm.Name = FormatExternalIPFarmName(service.Name, servicePort.Name, index+1)
+		farm.VirtualAddr = externalIP
+		*farms = append(*farms, farm)
+
+		go func() {
+			// Append ExternalIP farm name to the slice of farm names based on the Service name
+			farmsPerExternalIPResourceMap[service.Name] = append(farmsPerExternalIPResourceMap[service.Name], farm.Name)
+		}()
+	}
+
+	// Release lock
+	wg.Done()
+}
+
+// DeleteServiceFarms sends farm paths through a channel to the controller. The controller then deletes every farm.
 func DeleteServiceFarms(service *corev1.Service, farmPathsChan chan<- string) {
-	for _, farmName := range farmsMap[service.Name] {
+	for _, farmName := range farmsPerServiceMap[service.Name] {
 		farmPathsChan <- fmt.Sprintf("farms/%s", farmName)
 		go dsr.DeleteService(farmName)
 	}
+	farmsPerServiceMap[service.Name] = []string{}
+
+	for _, farmName := range farmsPerExternalIPResourceMap[service.Name] {
+		farmPathsChan <- fmt.Sprintf("farms/%s", farmName)
+	}
+	farmsPerExternalIPResourceMap[service.Name] = []string{}
+
 	close(farmPathsChan)
-	delete(farmsMap, service.Name)
 }
 
-// DeleteMaxConnsService
+// DeleteMaxConnsService deletes the key:value pair from maxConnsMap.
 func DeleteMaxConnsService(service *corev1.Service) {
 	delete(maxConnsMap, service.Name)
 }
