@@ -1,99 +1,30 @@
 package parser
 
 import (
-	"context"
 	"fmt"
+	"sync"
 
 	"github.com/zevenet/kube-nftlb/pkg/dsr"
 	"github.com/zevenet/kube-nftlb/pkg/types"
-	"k8s.io/apimachinery/pkg/labels"
 
 	corev1 "k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// EndpointsAsFarms
+// EndpointsAsFarms reads a Endpoints and returns a filled Farms struct.
 func EndpointsAsFarms(endpoints *corev1.Endpoints) *types.Farms {
-	endpointName := endpoints.Name
-	serviceList := getServiceListFromEndpoints(endpoints.Labels)
-	state := "up"
-	maxconns := "0"
 	farms := make([]types.Farm, 0)
+	var wg sync.WaitGroup
 
-	for _, service := range serviceList.Items {
-		serviceName := service.Name
-		for _, endpoint := range endpoints.Subsets {
-			for _, address := range endpoint.Addresses {
-				// Get the ip and the name of the backends. If the name field is empty, it is assigned the same as the service.
-				ipBackend := address.IP
-				backendName := endpoints.ObjectMeta.Name
-				if address.TargetRef != nil {
-					backendName = address.TargetRef.Name
-				}
-
-				// We proceed to create each of the backends
-				for _, port := range endpoint.Ports {
-					// If the port name field is empty, it is assigned one by default
-					if port.Name == "" {
-						port.Name = "default"
-					}
-
-					// Attach the backends to the service
-					farmName := assignFarmNameService(endpointName, port.Name)
-
-					// Get backend ports
-					portBackend := fmt.Sprint(port.Port)
-					if dsr.ExistsServiceDSR(farmName) {
-						dsr.AddInterfaceDsr(farmName, backendName, dsr.GetVirtualAddr(farmName))
-						portBackend = dsr.GetVirtualPorts(farmName)
-					}
-
-					//
-					if maxConnsMap[serviceName][farmName] != "0" {
-						maxconns = maxConnsMap[serviceName][farmName]
-					}
-
-					backends := make([]types.Backend, 0)
-					backend := types.Backend{
-						Name:         backendName,
-						IPAddr:       ipBackend,
-						State:        state,
-						Port:         portBackend,
-						EstConnlimit: maxconns,
-					}
-					backends = append(backends, backend)
-					var farm = types.Farm{
-						Name:     farmName,
-						Backends: backends,
-					}
-					farms = append(farms, farm)
-
-					// Check if the current service is of type nodePort thanks to the global variable that we have created previously
-					// If this is the case, the nodePort service is assigned the same backends as the original service
-					nodePortFarmName := assignFarmNameNodePort(farmName, "nodePort")
-					if /*Contains(nodePortArray, nodePortFarmName)*/ true {
-						var farm = types.Farm{
-							Name:     nodePortFarmName,
-							Backends: backends,
-						}
-						farms = append(farms, farm)
-					}
-
-					// Check if the current service has externalIPs thanks to the global variable that we have created previously
-					// If this is the case, the externalIPs service is assigned the same backends as the original service
-					if _, ok := externalIPsMap[serviceName]; ok {
-						for _, farmNameExternalIP := range externalIPsMap[farmName] {
-							var farm = types.Farm{
-								Name:     farmNameExternalIP,
-								Backends: backends,
-							}
-							farms = append(farms, farm)
-						}
-					}
-				}
-			}
+	for idxSubset, subset := range endpoints.Subsets {
+		for idxAddress := range subset.Addresses {
+			// Add a lock for every EndpointAddress
+			wg.Add(1)
+			go CreateEndpointAddress(endpoints, &subset.Addresses[idxAddress], &endpoints.Subsets[idxSubset], &farms, &wg)
 		}
 	}
+
+	// Wait until all locks are released
+	wg.Wait()
 
 	// Returns the filled struct
 	return &types.Farms{
@@ -101,38 +32,75 @@ func EndpointsAsFarms(endpoints *corev1.Endpoints) *types.Farms {
 	}
 }
 
-// DeleteEndpointsBackends returns every backend name through a channel from a farm given a Endpoints object.
-func DeleteEndpointsBackends(endpoints *corev1.Endpoints, backendPathsChan chan<- string) {
-	serviceList := getServiceListFromEndpoints(endpoints.Labels)
-
-	for _, service := range serviceList.Items {
-		farmName := service.Name
-
-		for _, backendName := range portsMap[farmName] {
-			backendPathsChan <- fmt.Sprintf("farms/%s/backends/%s", farmName, backendName)
-		}
-		go delete(portsMap, farmName)
-
-		for _, backendName := range nodePortMap[farmName] {
-			backendPathsChan <- fmt.Sprintf("farms/%s/backends/%s", farmName, backendName)
-		}
-		go delete(nodePortMap, farmName)
-
-		for _, backendName := range externalIPsMap[farmName] {
-			backendPathsChan <- fmt.Sprintf("farms/%s/backends/%s", farmName, backendName)
-		}
-		go delete(externalIPsMap, farmName)
+// CreateEndpointAddress appends farms parsed from a EndpointAddress to a Farm slice.
+func CreateEndpointAddress(endpoints *corev1.Endpoints, address *corev1.EndpointAddress, subset *corev1.EndpointSubset, farms *[]types.Farm, wg *sync.WaitGroup) {
+	// If the name field is empty, it is assigned the same as the service.
+	backendName := endpoints.Name
+	if address.TargetRef != nil {
+		backendName = address.TargetRef.Name
 	}
 
-	close(backendPathsChan)
+	// We proceed to create each of the backends
+	for _, endpointPort := range subset.Ports {
+		farm := types.Farm{
+			Name: FormatFarmName(endpoints.Name, endpointPort.Name),
+		}
+
+		// Get backend ports
+		portBackend := fmt.Sprint(endpointPort.Port)
+		if dsr.ExistsServiceDSR(farm.Name) {
+			portBackend = dsr.GetVirtualPorts(farm.Name)
+			go dsr.AddInterfaceDsr(farm.Name, backendName, dsr.GetVirtualAddr(farm.Name))
+		}
+
+		farm.Backends = []types.Backend{
+			{
+				Name:         backendName,
+				IPAddr:       address.IP,
+				State:        "up",
+				Port:         portBackend,
+				EstConnlimit: maxConnsMap[farm.Name],
+			},
+		}
+		*farms = append(*farms, farm)
+		go func() {
+			farmsPerEndpointMap[endpoints.Name] = append(farmsPerEndpointMap[endpoints.Name], farm.Name)
+			backendsPerFarm[farm.Name] = append(backendsPerFarm[farm.Name], backendName)
+		}()
+
+		// The NodePort Service is assigned the same backends as the original service
+		if farmNameNodePort := FormatNodePortFarmName(endpoints.Name, endpointPort.Name); existsFarm(endpoints.Name, farmNameNodePort) {
+			farm.Name = farmNameNodePort
+			*farms = append(*farms, farm)
+			go func() {
+				farmsPerEndpointMap[endpoints.Name] = append(farmsPerEndpointMap[endpoints.Name], farm.Name)
+				backendsPerFarm[farm.Name] = append(backendsPerFarm[farm.Name], backendName)
+			}()
+		}
+
+		// The ExternalIP Service is assigned the same backends as the original service
+		for _, farmNameExternalIP := range farmsPerExternalIPResourceMap[endpoints.Name] {
+			farm.Name = farmNameExternalIP
+			*farms = append(*farms, farm)
+			go func() {
+				farmsPerEndpointMap[endpoints.Name] = append(farmsPerEndpointMap[endpoints.Name], farm.Name)
+				backendsPerFarm[farm.Name] = append(backendsPerFarm[farm.Name], backendName)
+			}()
+		}
+	}
+
+	// Release lock
+	wg.Done()
 }
 
-func getServiceListFromEndpoints(endpointsLabels map[string]string) *corev1.ServiceList {
-	opts := metav1.ListOptions{
-		LabelSelector: labels.Set(endpointsLabels).String(),
+// DeleteEndpointsBackends sends backend paths through a channel to the controller. The controller then deletes every backend.
+func DeleteEndpointsBackends(endpoints *corev1.Endpoints, backendPathsChan chan<- string) {
+	for _, farmName := range farmsPerEndpointMap[endpoints.Name] {
+		for _, backendName := range backendsPerFarm[farmName] {
+			backendPathsChan <- fmt.Sprintf("farms/%s/backends/%s", farmName, backendName)
+		}
+		backendsPerFarm[farmName] = []string{}
 	}
-
-	list, _ := clientset.CoreV1().Services(corev1.NamespaceAll).List(context.TODO(), opts)
-
-	return list
+	farmsPerEndpointMap[endpoints.Name] = []string{}
+	close(backendPathsChan)
 }
