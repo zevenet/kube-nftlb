@@ -1,7 +1,7 @@
 #################################################
 # Temporal container: compile kube-nftlb-client #
 #################################################
-FROM golang:1.15.1-buster AS client-builder
+FROM golang:1.15.2-buster AS client-builder
 
 # Default shell when executing RUN
 SHELL ["/bin/bash", "-c"]
