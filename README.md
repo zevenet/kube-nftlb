@@ -1,3 +1,22 @@
+- [kube-nftlb](#kube-nftlb)
+  - [Prerequisites 📋](#prerequisites-)
+  - [Installation 🔧](#installation-)
+  - [Deployment 🚀](#deployment-)
+  - [Local Configuration ⚙](#local-configuration-)
+  - [Creation of a simple service ✏](#creation-of-a-simple-service-)
+  - [Creation and assignment of deployments ✏](#creation-and-assignment-of-deployments-)
+  - [Setting up our service 📌](#setting-up-our-service-)
+    - [Configure Mode](#configure-mode)
+    - [Configure Persistence](#configure-persistence)
+    - [Configure Scheduler](#configure-scheduler)
+    - [Configure Helper](#configure-helper)
+    - [Configure Logs](#configure-logs)
+    - [How to set up annotations](#how-to-set-up-annotations)
+  - [Benchmarks 📊](#benchmarks-)
+    - [Environment](#environment)
+    - [Charts: time by endpoints number](#charts-time-by-endpoints-number)
+    - [Charts: rules by count type](#charts-rules-by-count-type)
+
 # kube-nftlb
 
 [![GoDev reference](https://img.shields.io/badge/go.dev-reference-007d9c?logo=go)](https://pkg.go.dev/github.com/zevenet/kube-nftlb?tab=overview)
