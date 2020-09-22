@@ -1,0 +1,840 @@
+kube-nftlb {
+	replicas-test-010 {
+create-service: 6 ms (18 rules counted)
+delete-service: 4 ms (16 rules counted)
+	}
+	replicas-test-050 {
+create-service: 26 ms (18 rules counted)
+delete-service: 5 ms (16 rules counted)
+	}
+	replicas-test-100 {
+create-service: 109 ms (18 rules counted)
+delete-service: 9 ms (16 rules counted)
+	}
+}
+kube-proxy {
+	replicas-test-010 {
+create-service: 3541 ms (81 rules counted)
+delete-service: 389 ms (50 rules counted)
+	}
+	replicas-test-050 {
+create-service: 15580 ms (201 rules counted)
+delete-service: 757 ms (50 rules counted)
+	}
+	replicas-test-100 {
+create-service: 32034 ms (351 rules counted)
+delete-service: 1337 ms (50 rules counted)
+	}
+}
+kube-nftlb {
+	replicas-test-010 {
+create-service: 8 ms (18 rules counted)
+delete-service: 6 ms (16 rules counted)
+	}
+	replicas-test-050 {
+create-service: 24 ms (18 rules counted)
+delete-service: 5 ms (16 rules counted)
+	}
+	replicas-test-100 {
+create-service: 57 ms (18 rules counted)
+delete-service: 5 ms (16 rules counted)
+	}
+}
+kube-proxy {
+	replicas-test-010 {
+create-service: 2002 ms (81 rules counted)
+delete-service: 394 ms (50 rules counted)
+	}
+	replicas-test-050 {
+create-service: 13048 ms (201 rules counted)
+delete-service: 772 ms (50 rules counted)
+	}
+	replicas-test-100 {
+create-service: 32097 ms (351 rules counted)
+delete-service: 1314 ms (50 rules counted)
+	}
+}
+kube-nftlb {
+	replicas-test-010 {
+create-service: 6 ms (18 rules counted)
+delete-service: 5 ms (16 rules counted)
+	}
+	replicas-test-050 {
+create-service: 22 ms (18 rules counted)
+delete-service: 5 ms (16 rules counted)
+	}
+	replicas-test-100 {
+create-service: 6 ms (18 rules counted)
+delete-service: 5 ms (16 rules counted)
+	}
+}
+kube-proxy {
+	replicas-test-010 {
+create-service: 3541 ms (81 rules counted)
+delete-service: 389 ms (50 rules counted)
+	}
+	replicas-test-050 {
+create-service: 14876 ms (201 rules counted)
+delete-service: 746 ms (50 rules counted)
+	}
+	replicas-test-100 {
+create-service: 31074 ms (351 rules counted)
+delete-service: 1187 ms (50 rules counted)
+	}
+}
+kube-nftlb {
+	replicas-test-010 {
+create-service: 11 ms (18 rules counted)
+delete-service: 5 ms (16 rules counted)
+	}
+	replicas-test-050 {
+create-service: 21 ms (18 rules counted)
+delete-service: 9 ms (16 rules counted)
+	}
+	replicas-test-100 {
+create-service: 48 ms (18 rules counted)
+delete-service: 5 ms (16 rules counted)
+	}
+}
+kube-proxy {
+	replicas-test-010 {
+create-service: 2398 ms (81 rules counted)
+delete-service: 406 ms (50 rules counted)
+	}
+	replicas-test-050 {
+create-service: 14873 ms (201 rules counted)
+delete-service: 781 ms (50 rules counted)
+	}
+	replicas-test-100 {
+create-service: 30113 ms (351 rules counted)
+delete-service: 1268 ms (50 rules counted)
+	}
+}
+kube-nftlb {
+	replicas-test-010 {
+create-service: 5 ms (18 rules counted)
+delete-service: 5 ms (16 rules counted)
+	}
+	replicas-test-050 {
+create-service: 20 ms (18 rules counted)
+delete-service: 4 ms (16 rules counted)
+	}
+	replicas-test-100 {
+create-service: 263 ms (18 rules counted)
+delete-service: 18 ms (16 rules counted)
+	}
+}
+kube-proxy {
+	replicas-test-010 {
+create-service: 1956 ms (81 rules counted)
+delete-service: 386 ms (50 rules counted)
+	}
+	replicas-test-050 {
+create-service: 16320 ms (201 rules counted)
+delete-service: 750 ms (50 rules counted)
+	}
+	replicas-test-100 {
+create-service: 29874 ms (351 rules counted)
+delete-service: 1201 ms (50 rules counted)
+	}
+}
+kube-nftlb {
+	replicas-test-010 {
+create-service: 9 ms (18 rules counted)
+delete-service: 5 ms (16 rules counted)
+	}
+	replicas-test-050 {
+create-service: 25 ms (18 rules counted)
+delete-service: 5 ms (16 rules counted)
+	}
+	replicas-test-100 {
+create-service: 46 ms (18 rules counted)
+delete-service: 5 ms (16 rules counted)
+	}
+}
+kube-proxy {
+	replicas-test-010 {
+create-service: 2148 ms (81 rules counted)
+delete-service: 392 ms (50 rules counted)
+	}
+	replicas-test-050 {
+create-service: 15313 ms (201 rules counted)
+delete-service: 730 ms (50 rules counted)
+	}
+	replicas-test-100 {
+create-service: 30485 ms (351 rules counted)
+delete-service: 1197 ms (50 rules counted)
+	}
+}
+kube-nftlb {
+	replicas-test-010 {
+create-service: 5 ms (18 rules counted)
+delete-service: 5 ms (16 rules counted)
+	}
+	replicas-test-050 {
+create-service: 21 ms (18 rules counted)
+delete-service: 5 ms (16 rules counted)
+	}
+	replicas-test-100 {
+create-service: 59 ms (18 rules counted)
+delete-service: 4 ms (16 rules counted)
+	}
+}
+kube-proxy {
+	replicas-test-010 {
+create-service: 3248 ms (81 rules counted)
+delete-service: 387 ms (50 rules counted)
+	}
+	replicas-test-050 {
+create-service: 14101 ms (201 rules counted)
+delete-service: 743 ms (50 rules counted)
+	}
+	replicas-test-100 {
+create-service: 28653 ms (351 rules counted)
+delete-service: 1225 ms (50 rules counted)
+	}
+}
+kube-nftlb {
+	replicas-test-010 {
+create-service: 5 ms (18 rules counted)
+delete-service: 5 ms (16 rules counted)
+	}
+	replicas-test-050 {
+create-service: 24 ms (18 rules counted)
+delete-service: 5 ms (16 rules counted)
+	}
+	replicas-test-100 {
+create-service: 54 ms (18 rules counted)
+delete-service: 5 ms (16 rules counted)
+	}
+}
+kube-proxy {
+	replicas-test-010 {
+create-service: 2204 ms (81 rules counted)
+delete-service: 406 ms (50 rules counted)
+	}
+	replicas-test-050 {
+create-service: 15324 ms (201 rules counted)
+delete-service: 750 ms (50 rules counted)
+	}
+	replicas-test-100 {
+create-service: 31566 ms (351 rules counted)
+delete-service: 1278 ms (50 rules counted)
+	}
+}
+kube-nftlb {
+	replicas-test-010 {
+create-service: 5 ms (18 rules counted)
+delete-service: 5 ms (16 rules counted)
+	}
+	replicas-test-050 {
+create-service: 23 ms (18 rules counted)
+delete-service: 5 ms (16 rules counted)
+	}
+	replicas-test-100 {
+create-service: 52 ms (18 rules counted)
+delete-service: 39 ms (16 rules counted)
+	}
+}
+kube-proxy {
+	replicas-test-010 {
+create-service: 2158 ms (81 rules counted)
+delete-service: 386 ms (50 rules counted)
+	}
+	replicas-test-050 {
+create-service: 14744 ms (201 rules counted)
+delete-service: 745 ms (50 rules counted)
+	}
+	replicas-test-100 {
+create-service: 27553 ms (351 rules counted)
+delete-service: 1212 ms (50 rules counted)
+	}
+}
+kube-nftlb {
+	replicas-test-010 {
+create-service: 8 ms (18 rules counted)
+delete-service: 5 ms (16 rules counted)
+	}
+	replicas-test-050 {
+create-service: 24 ms (18 rules counted)
+delete-service: 19 ms (16 rules counted)
+	}
+	replicas-test-100 {
+create-service: 51 ms (18 rules counted)
+delete-service: 4 ms (16 rules counted)
+	}
+}
+kube-proxy {
+	replicas-test-010 {
+create-service: 2370 ms (81 rules counted)
+delete-service: 381 ms (50 rules counted)
+	}
+	replicas-test-050 {
+create-service: 15184 ms (201 rules counted)
+delete-service: 786 ms (50 rules counted)
+	}
+	replicas-test-100 {
+create-service: 28272 ms (351 rules counted)
+delete-service: 1297 ms (50 rules counted)
+	}
+}
+kube-nftlb {
+	replicas-test-010 {
+create-service: 5 ms (18 rules counted)
+delete-service: 5 ms (16 rules counted)
+	}
+	replicas-test-050 {
+create-service: 21 ms (18 rules counted)
+delete-service: 5 ms (16 rules counted)
+	}
+	replicas-test-100 {
+create-service: 109 ms (18 rules counted)
+delete-service: 6 ms (16 rules counted)
+	}
+}
+kube-proxy {
+	replicas-test-010 {
+create-service: 3467 ms (81 rules counted)
+delete-service: 440 ms (50 rules counted)
+	}
+	replicas-test-050 {
+create-service: 13549 ms (201 rules counted)
+delete-service: 790 ms (50 rules counted)
+	}
+	replicas-test-100 {
+create-service: 29683 ms (351 rules counted)
+delete-service: 1337 ms (50 rules counted)
+	}
+}
+kube-nftlb {
+	replicas-test-010 {
+create-service: 4 ms (18 rules counted)
+delete-service: 5 ms (16 rules counted)
+	}
+	replicas-test-050 {
+create-service: 30 ms (18 rules counted)
+delete-service: 5 ms (16 rules counted)
+	}
+	replicas-test-100 {
+create-service: 45 ms (18 rules counted)
+delete-service: 5 ms (16 rules counted)
+	}
+}
+kube-proxy {
+	replicas-test-010 {
+create-service: 3382 ms (81 rules counted)
+delete-service: 385 ms (50 rules counted)
+	}
+	replicas-test-050 {
+create-service: 15533 ms (201 rules counted)
+delete-service: 757 ms (50 rules counted)
+	}
+	replicas-test-100 {
+create-service: 29532 ms (351 rules counted)
+delete-service: 1192 ms (50 rules counted)
+	}
+}
+kube-nftlb {
+	replicas-test-010 {
+create-service: 6 ms (18 rules counted)
+delete-service: 4 ms (16 rules counted)
+	}
+	replicas-test-050 {
+create-service: 275 ms (18 rules counted)
+delete-service: 16 ms (16 rules counted)
+	}
+	replicas-test-100 {
+create-service: 13 ms (18 rules counted)
+delete-service: 5 ms (16 rules counted)
+	}
+}
+kube-proxy {
+	replicas-test-010 {
+create-service: 2244 ms (81 rules counted)
+delete-service: 386 ms (50 rules counted)
+	}
+	replicas-test-050 {
+create-service: 16061 ms (201 rules counted)
+delete-service: 760 ms (50 rules counted)
+	}
+	replicas-test-100 {
+create-service: 28211 ms (351 rules counted)
+delete-service: 1204 ms (50 rules counted)
+	}
+}
+kube-nftlb {
+	replicas-test-010 {
+create-service: 13 ms (18 rules counted)
+delete-service: 6 ms (16 rules counted)
+	}
+	replicas-test-050 {
+create-service: 22 ms (18 rules counted)
+delete-service: 5 ms (16 rules counted)
+	}
+	replicas-test-100 {
+create-service: 317 ms (18 rules counted)
+delete-service: 5 ms (16 rules counted)
+	}
+}
+kube-proxy {
+	replicas-test-010 {
+create-service: 2034 ms (81 rules counted)
+delete-service: 416 ms (50 rules counted)
+	}
+	replicas-test-050 {
+create-service: 15470 ms (201 rules counted)
+delete-service: 815 ms (50 rules counted)
+	}
+	replicas-test-100 {
+create-service: 31096 ms (351 rules counted)
+delete-service: 1316 ms (50 rules counted)
+	}
+}
+kube-nftlb {
+	replicas-test-010 {
+create-service: 7 ms (18 rules counted)
+delete-service: 5 ms (16 rules counted)
+	}
+	replicas-test-050 {
+create-service: 5 ms (18 rules counted)
+delete-service: 5 ms (16 rules counted)
+	}
+	replicas-test-100 {
+create-service: 55 ms (18 rules counted)
+delete-service: 4 ms (16 rules counted)
+	}
+}
+kube-proxy {
+	replicas-test-010 {
+create-service: 2280 ms (81 rules counted)
+delete-service: 411 ms (50 rules counted)
+	}
+	replicas-test-050 {
+create-service: 14560 ms (201 rules counted)
+delete-service: 769 ms (50 rules counted)
+	}
+	replicas-test-100 {
+create-service: 29237 ms (351 rules counted)
+delete-service: 1353 ms (50 rules counted)
+	}
+}
+kube-nftlb {
+	replicas-test-010 {
+create-service: 7 ms (18 rules counted)
+delete-service: 5 ms (16 rules counted)
+	}
+	replicas-test-050 {
+create-service: 85 ms (18 rules counted)
+delete-service: 14 ms (16 rules counted)
+	}
+	replicas-test-100 {
+create-service: 98 ms (18 rules counted)
+delete-service: 5 ms (16 rules counted)
+	}
+}
+kube-proxy {
+	replicas-test-010 {
+create-service: 3380 ms (81 rules counted)
+delete-service: 433 ms (50 rules counted)
+	}
+	replicas-test-050 {
+create-service: 16063 ms (201 rules counted)
+delete-service: 808 ms (50 rules counted)
+	}
+	replicas-test-100 {
+create-service: 31542 ms (351 rules counted)
+delete-service: 1389 ms (50 rules counted)
+	}
+}
+kube-nftlb {
+	replicas-test-010 {
+create-service: 10 ms (18 rules counted)
+delete-service: 5 ms (16 rules counted)
+	}
+	replicas-test-050 {
+create-service: 26 ms (18 rules counted)
+delete-service: 5 ms (16 rules counted)
+	}
+	replicas-test-100 {
+create-service: 54 ms (18 rules counted)
+delete-service: 4 ms (16 rules counted)
+	}
+}
+kube-proxy {
+	replicas-test-010 {
+create-service: 2264 ms (81 rules counted)
+delete-service: 386 ms (50 rules counted)
+	}
+	replicas-test-050 {
+create-service: 14576 ms (201 rules counted)
+delete-service: 826 ms (50 rules counted)
+	}
+	replicas-test-100 {
+create-service: 30067 ms (351 rules counted)
+delete-service: 1247 ms (50 rules counted)
+	}
+}
+kube-nftlb {
+	replicas-test-010 {
+create-service: 7 ms (18 rules counted)
+delete-service: 5 ms (16 rules counted)
+	}
+	replicas-test-050 {
+create-service: 23 ms (18 rules counted)
+delete-service: 5 ms (16 rules counted)
+	}
+	replicas-test-100 {
+create-service: 49 ms (18 rules counted)
+delete-service: 4 ms (16 rules counted)
+	}
+}
+kube-proxy {
+	replicas-test-010 {
+create-service: 3119 ms (81 rules counted)
+delete-service: 398 ms (50 rules counted)
+	}
+	replicas-test-050 {
+create-service: 20026 ms (201 rules counted)
+delete-service: 1499 ms (50 rules counted)
+	}
+	replicas-test-100 {
+create-service: 30906 ms (351 rules counted)
+delete-service: 1209 ms (50 rules counted)
+	}
+}
+kube-nftlb {
+	replicas-test-010 {
+create-service: 7 ms (18 rules counted)
+delete-service: 5 ms (16 rules counted)
+	}
+	replicas-test-050 {
+create-service: 44 ms (18 rules counted)
+delete-service: 5 ms (16 rules counted)
+	}
+	replicas-test-100 {
+create-service: 63 ms (18 rules counted)
+delete-service: 5 ms (16 rules counted)
+	}
+}
+kube-proxy {
+	replicas-test-010 {
+create-service: 2844 ms (81 rules counted)
+delete-service: 555 ms (50 rules counted)
+	}
+	replicas-test-050 {
+create-service: 22600 ms (201 rules counted)
+delete-service: 807 ms (50 rules counted)
+	}
+	replicas-test-100 {
+create-service: 33323 ms (351 rules counted)
+delete-service: 1257 ms (50 rules counted)
+	}
+}
+kube-nftlb {
+	replicas-test-010 {
+create-service: 7 ms (18 rules counted)
+delete-service: 5 ms (16 rules counted)
+	}
+	replicas-test-050 {
+create-service: 16 ms (18 rules counted)
+delete-service: 4 ms (16 rules counted)
+	}
+	replicas-test-100 {
+create-service: 46 ms (18 rules counted)
+delete-service: 5 ms (16 rules counted)
+	}
+}
+kube-proxy {
+	replicas-test-010 {
+create-service: 2144 ms (81 rules counted)
+delete-service: 389 ms (50 rules counted)
+	}
+	replicas-test-050 {
+create-service: 12098 ms (201 rules counted)
+delete-service: 818 ms (50 rules counted)
+	}
+	replicas-test-100 {
+create-service: 29651 ms (351 rules counted)
+delete-service: 139 ms (50 rules counted)
+	}
+}
+kube-nftlb {
+	replicas-test-010 {
+create-service: 15 ms (18 rules counted)
+delete-service: 5 ms (16 rules counted)
+	}
+	replicas-test-050 {
+create-service: 24 ms (18 rules counted)
+delete-service: 5 ms (16 rules counted)
+	}
+	replicas-test-100 {
+create-service: 297 ms (18 rules counted)
+delete-service: 16 ms (16 rules counted)
+	}
+}
+kube-proxy {
+	replicas-test-010 {
+create-service: 4305 ms (81 rules counted)
+delete-service: 396 ms (50 rules counted)
+	}
+	replicas-test-050 {
+create-service: 13451 ms (201 rules counted)
+delete-service: 821 ms (50 rules counted)
+	}
+	replicas-test-100 {
+create-service: 27642 ms (351 rules counted)
+delete-service: 1205 ms (50 rules counted)
+	}
+}
+kube-nftlb {
+	replicas-test-010 {
+create-service: 63 ms (18 rules counted)
+delete-service: 10 ms (16 rules counted)
+	}
+	replicas-test-050 {
+create-service: 42 ms (18 rules counted)
+delete-service: 5 ms (16 rules counted)
+	}
+	replicas-test-100 {
+create-service: 57 ms (18 rules counted)
+delete-service: 5 ms (16 rules counted)
+	}
+}
+kube-proxy {
+	replicas-test-010 {
+create-service: 2379 ms (81 rules counted)
+delete-service: 458 ms (50 rules counted)
+	}
+	replicas-test-050 {
+create-service: 16076 ms (201 rules counted)
+delete-service: 844 ms (50 rules counted)
+	}
+	replicas-test-100 {
+create-service: 29411 ms (351 rules counted)
+delete-service: 1390 ms (50 rules counted)
+	}
+}
+kube-nftlb {
+	replicas-test-010 {
+create-service: 8 ms (18 rules counted)
+delete-service: 6 ms (16 rules counted)
+	}
+	replicas-test-050 {
+create-service: 6 ms (18 rules counted)
+delete-service: 7 ms (16 rules counted)
+	}
+	replicas-test-100 {
+create-service: 48 ms (18 rules counted)
+delete-service: 7 ms (16 rules counted)
+	}
+}
+kube-proxy {
+	replicas-test-010 {
+create-service: 2081 ms (81 rules counted)
+delete-service: 396 ms (50 rules counted)
+	}
+	replicas-test-050 {
+create-service: 16501 ms (201 rules counted)
+delete-service: 803 ms (50 rules counted)
+	}
+	replicas-test-100 {
+create-service: 28261 ms (351 rules counted)
+delete-service: 1403 ms (50 rules counted)
+	}
+}
+kube-nftlb {
+	replicas-test-010 {
+create-service: 6 ms (18 rules counted)
+delete-service: 4 ms (16 rules counted)
+	}
+	replicas-test-050 {
+create-service: 22 ms (18 rules counted)
+delete-service: 5 ms (16 rules counted)
+	}
+	replicas-test-100 {
+create-service: 51 ms (18 rules counted)
+delete-service: 5 ms (16 rules counted)
+	}
+}
+kube-proxy {
+	replicas-test-010 {
+create-service: 2464 ms (81 rules counted)
+delete-service: 446 ms (50 rules counted)
+	}
+	replicas-test-050 {
+create-service: 19495 ms (201 rules counted)
+delete-service: 1008 ms (50 rules counted)
+	}
+	replicas-test-100 {
+create-service: 40096 ms (351 rules counted)
+delete-service: 1634 ms (50 rules counted)
+	}
+}
+kube-nftlb {
+	replicas-test-010 {
+create-service: 5 ms (18 rules counted)
+delete-service: 5 ms (16 rules counted)
+	}
+	replicas-test-050 {
+create-service: 27 ms (18 rules counted)
+delete-service: 5 ms (16 rules counted)
+	}
+	replicas-test-100 {
+create-service: 50 ms (18 rules counted)
+delete-service: 5 ms (16 rules counted)
+	}
+}
+kube-proxy {
+	replicas-test-010 {
+create-service: 3788 ms (81 rules counted)
+delete-service: 523 ms (50 rules counted)
+	}
+	replicas-test-050 {
+create-service: 16157 ms (201 rules counted)
+delete-service: 784 ms (50 rules counted)
+	}
+	replicas-test-100 {
+create-service: 31528 ms (351 rules counted)
+delete-service: 1267 ms (50 rules counted)
+	}
+}
+kube-nftlb {
+	replicas-test-010 {
+create-service: 6 ms (18 rules counted)
+delete-service: 5 ms (16 rules counted)
+	}
+	replicas-test-050 {
+create-service: 22 ms (18 rules counted)
+delete-service: 4 ms (16 rules counted)
+	}
+	replicas-test-100 {
+create-service: 52 ms (18 rules counted)
+delete-service: 4 ms (16 rules counted)
+	}
+}
+kube-proxy {
+	replicas-test-010 {
+create-service: 2310 ms (81 rules counted)
+delete-service: 457 ms (50 rules counted)
+	}
+	replicas-test-050 {
+create-service: 15054 ms (201 rules counted)
+delete-service: 802 ms (50 rules counted)
+	}
+	replicas-test-100 {
+create-service: 31446 ms (351 rules counted)
+delete-service: 1217 ms (50 rules counted)
+	}
+}
+kube-nftlb {
+	replicas-test-010 {
+create-service: 7 ms (18 rules counted)
+delete-service: 6 ms (16 rules counted)
+	}
+	replicas-test-050 {
+create-service: 60 ms (18 rules counted)
+delete-service: 5 ms (16 rules counted)
+	}
+	replicas-test-100 {
+create-service: 49 ms (18 rules counted)
+delete-service: 5 ms (16 rules counted)
+	}
+}
+kube-proxy {
+	replicas-test-010 {
+create-service: 3374 ms (81 rules counted)
+delete-service: 395 ms (50 rules counted)
+	}
+	replicas-test-050 {
+create-service: 19444 ms (201 rules counted)
+delete-service: 823 ms (50 rules counted)
+	}
+	replicas-test-100 {
+create-service: 30742 ms (351 rules counted)
+delete-service: 1309 ms (50 rules counted)
+	}
+}
+kube-nftlb {
+	replicas-test-010 {
+create-service: 7 ms (18 rules counted)
+delete-service: 4 ms (16 rules counted)
+	}
+	replicas-test-050 {
+create-service: 25 ms (18 rules counted)
+delete-service: 5 ms (16 rules counted)
+	}
+	replicas-test-100 {
+create-service: 54 ms (18 rules counted)
+delete-service: 6 ms (16 rules counted)
+	}
+}
+kube-proxy {
+	replicas-test-010 {
+create-service: 1885 ms (81 rules counted)
+delete-service: 646 ms (50 rules counted)
+	}
+	replicas-test-050 {
+create-service: 14613 ms (201 rules counted)
+delete-service: 820 ms (50 rules counted)
+	}
+	replicas-test-100 {
+create-service: 31875 ms (351 rules counted)
+delete-service: 1312 ms (50 rules counted)
+	}
+}
+kube-nftlb {
+	replicas-test-010 {
+create-service: 15 ms (18 rules counted)
+delete-service: 4 ms (16 rules counted)
+	}
+	replicas-test-050 {
+create-service: 30 ms (18 rules counted)
+delete-service: 5 ms (16 rules counted)
+	}
+	replicas-test-100 {
+create-service: 70 ms (18 rules counted)
+delete-service: 4 ms (16 rules counted)
+	}
+}
+kube-proxy {
+	replicas-test-010 {
+create-service: 2205 ms (81 rules counted)
+delete-service: 387 ms (50 rules counted)
+	}
+	replicas-test-050 {
+create-service: 14588 ms (201 rules counted)
+delete-service: 781 ms (50 rules counted)
+	}
+	replicas-test-100 {
+create-service: 31811 ms (351 rules counted)
+delete-service: 1334 ms (50 rules counted)
+	}
+}
+kube-nftlb {
+	replicas-test-010 {
+create-service: 6 ms (18 rules counted)
+delete-service: 5 ms (16 rules counted)
+	}
+	replicas-test-050 {
+create-service: 17 ms (18 rules counted)
+delete-service: 4 ms (16 rules counted)
+	}
+	replicas-test-100 {
+create-service: 49 ms (18 rules counted)
+delete-service: 5 ms (16 rules counted)
+	}
+}
+kube-proxy {
+	replicas-test-010 {
+create-service: 2197 ms (81 rules counted)
+delete-service: 387 ms (50 rules counted)
+	}
+	replicas-test-050 {
+create-service: 15096 ms (201 rules counted)
+delete-service: 762 ms (50 rules counted)
+	}
+	replicas-test-100 {
+create-service: 34560 ms (351 rules counted)
+delete-service: 1370 ms (50 rules counted)
+	}
+}
