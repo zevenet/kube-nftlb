@@ -16,7 +16,7 @@ WORKDIR /kube-nftlb
 COPY . .
 
 # Compile kube-nftlb-client using local dependencies
-RUN go build -mod=vendor ./cmd/kube-nftlb-client
+RUN GOOS=linux CGO_ENABLED=1 go build -tags 'osusergo netgo' -mod=vendor ./cmd/kube-nftlb-client
 
 
 ###############################################
