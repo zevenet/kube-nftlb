@@ -14,6 +14,8 @@
     - [How to set up annotations](#how-to-set-up-annotations)
   - [Benchmarks 📊](#benchmarks-)
     - [Environment](#environment)
+    - [Summary](#summary)
+    - [Comparison of averages](#comparison-of-averages)
     - [Charts: time by endpoints number](#charts-time-by-endpoints-number)
     - [Charts: rules by count type](#charts-rules-by-count-type)
 
@@ -446,7 +448,7 @@ This data can be found at `resources/` directory.
 ### Environment
 
 - **Host**: Bare metal, not virtualized
-- **CPU**: Intel i5 660 (4) @ 3.334GHz
+- **CPU**: Intel i5 7500 (4)
 - **OS**: Debian GNU/Linux 10.5 (buster) x86_64 (netinst, no DE)
 - **Kernel**: Linux debian 5.7.0-0.bpo.2-amd64 #1 SMP Debian 5.7.10-1~bpo10+1 (2020-07-30) x86_64 GNU/Linux
 - **Memory**: 3740MiB
@@ -462,13 +464,135 @@ This data can be found at `resources/` directory.
 
 _If we're missing something, open an issue and let us know._
 
+### Summary
+
+Tests are based on the number of rules iptables/nftables set after a series of steps. There are scripts that do the heavy lifting for you in `performance-tests/` (make sure to understand the `README`).
+
+Rule count must be known beforehand. We can measure the time between steps if we know how many rules are set in those steps (example: measure how much time (in ms) does it take to change from X rules to Y rules).
+
+Rules are counted with a single shell command. To find out more about this, see `performance-tests/test.sh`.
+
+After repeating the same test over and over and storing every result, we can calculate statistics from those results (`ministat`) and draw [bar charts](https://en.wikipedia.org/wiki/Bar_chart) and [boxplots](https://en.wikipedia.org/wiki/Box_plot) (`gnuplot`).
+
+The following sections are extracted from the same data (`resources/filtered-results.txt`). In conclusion, **`kube-nftlb` (nftables) is several times faster than `kube-proxy` (iptables)** (depends on the case how much).
+
+### Comparison of averages
+
+**Creating a Service**
+
+- 10 endpoints
+
+```console
+user@debian:kube-nftlb# cat resources/filtered-results.txt | awk "/^kube-nftlb {$/,/^}$/" | awk "/^\\treplicas-test-010 {$/{flag=1;next}/^\\t}$/{flag=0}flag" | grep -e "create-service" | sed -e "s/^create-service: //g" -e "s/ ms .*$//g" | ministat -n
+x <stdin>
+    N           Min           Max        Median           Avg        Stddev
+x  30             4            63             7           9.3     10.524684
+
+user@debian:kube-nftlb# cat resources/filtered-results.txt | awk "/^kube-proxy {$/,/^}$/" | awk "/^\\treplicas-test-010 {$/{flag=1;next}/^\\t}$/{flag=0}flag" | grep -e "create-service" | sed -e "s/^create-service: //g" -e "s/ ms .*$//g" | ministat -n
+x <stdin>
+    N           Min           Max        Median           Avg        Stddev
+x  30          1885          4305          2370     2657.0667     665.77494
+```
+
+`kube-nftlb` is **285,70** times faster on average than `kube-proxy` in this case.
+
+- 50 endpoints
+
+```console
+user@debian:kube-nftlb# cat resources/filtered-results.txt | awk "/^kube-nftlb {$/,/^}$/" | awk "/^\\treplicas-test-050 {$/{flag=1;next}/^\\t}$/{flag=0}flag" | grep -e "create-service" | sed -e "s/^create-service: //g" -e "s/ ms .*$//g" | ministat -n
+x <stdin>
+    N           Min           Max        Median           Avg        Stddev
+x  30             5           275            24     35.066667     47.712453
+
+user@debian:kube-nftlb# cat resources/filtered-results.txt | awk "/^kube-proxy {$/,/^}$/" | awk "/^\\treplicas-test-050 {$/{flag=1;next}/^\\t}$/{flag=0}flag" | grep -e "create-service" | sed -e "s/^create-service: //g" -e "s/ ms .*$//g" | ministat -n
+x <stdin>
+    N           Min           Max        Median           Avg        Stddev
+x  30         12098         22600         15313     15679.133     2175.9727
+```
+
+`kube-nftlb` is **447,12** times faster on average than `kube-proxy` in this case.
+
+- 100 endpoints
+
+```console
+user@debian:kube-nftlb# cat resources/filtered-results.txt | awk "/^kube-nftlb {$/,/^}$/" | awk "/^\\treplicas-test-100 {$/{flag=1;next}/^\\t}$/{flag=0}flag" | grep -e "create-service" | sed -e "s/^create-service: //g" -e "s/ ms .*$//g" | ministat -n
+x <stdin>
+    N           Min           Max        Median           Avg        Stddev
+x  30             6           317            54     79.033333     75.623607
+
+user@debian:kube-nftlb# cat resources/filtered-results.txt | awk "/^kube-proxy {$/,/^}$/" | awk "/^\\treplicas-test-100 {$/{flag=1;next}/^\\t}$/{flag=0}flag" | grep -e "create-service" | sed -e "s/^create-service: //g" -e "s/ ms .*$//g" | ministat -n
+x <stdin>
+    N           Min           Max        Median           Avg        Stddev
+x  30         27553         40096         30742       30744.7     2418.6873
+```
+
+`kube-nftlb` is **389** times faster on average than `kube-proxy` in this case.
+
+**Deleting a Service**
+
+- 10 endpoints
+
+```console
+user@debian:kube-nftlb# cat resources/filtered-results.txt | awk "/^kube-nftlb {$/,/^}$/" | awk "/^\\treplicas-test-010 {$/{flag=1;next}/^\\t}$/{flag=0}flag" | grep -e "delete-service" | sed -e "s/^delete-service: //g" -e "s/ ms .*$//g" | ministat -n
+x <stdin>
+    N           Min           Max        Median           Avg        Stddev
+x  30             4            10             5     5.1333333     1.0742546
+
+user@debian:kube-nftlb# cat resources/filtered-results.txt | awk "/^kube-proxy {$/,/^}$/" | awk "/^\\treplicas-test-010 {$/{flag=1;next}/^\\t}$/{flag=0}flag" | grep -e "delete-service" | sed -e "s/^delete-service: //g" -e "s/ ms .*$//g" | ministat -n
+x <stdin>
+    N           Min           Max        Median           Avg        Stddev
+x  30           381           646           396         420.2     59.218124
+```
+
+`kube-nftlb` is **81,85** times faster on average than `kube-proxy` in this case.
+
+- 50 endpoints
+
+```console
+user@debian:kube-nftlb# cat resources/filtered-results.txt | awk "/^kube-nftlb {$/,/^}$/" | awk "/^\\treplicas-test-050 {$/{flag=1;next}/^\\t}$/{flag=0}flag" | grep -e "delete-service" | sed -e "s/^delete-service: //g" -e "s/ ms .*$//g" | ministat -n
+x <stdin>
+    N           Min           Max        Median           Avg        Stddev
+x  30             4            19             5           6.2     3.6141484
+
+user@debian:kube-nftlb# cat resources/filtered-results.txt | awk "/^kube-proxy {$/,/^}$/" | awk "/^\\treplicas-test-050 {$/{flag=1;next}/^\\t}$/{flag=0}flag" | grep -e "delete-service" | sed -e "s/^delete-service: //g" -e "s/ ms .*$//g" | ministat -n
+x <stdin>
+    N           Min           Max        Median           Avg        Stddev
+x  30           730          1499           786     815.23333     138.76442
+```
+
+`kube-nftlb` is **131,48** times faster on average than `kube-proxy` in this case.
+
+- 100 endpoints
+
+```console
+user@debian:kube-nftlb# cat resources/filtered-results.txt | awk "/^kube-nftlb {$/,/^}$/" | awk "/^\\treplicas-test-100 {$/{flag=1;next}/^\\t}$/{flag=0}flag" | grep -e "delete-service" | sed -e "s/^delete-service: //g" -e "s/ ms .*$//g" | ministat -n
+x <stdin>
+    N           Min           Max        Median           Avg        Stddev
+x  30             4            39             5     6.9666667     6.8455036
+
+user@debian:kube-nftlb# cat resources/filtered-results.txt | awk "/^kube-proxy {$/,/^}$/" | awk "/^\\treplicas-test-100 {$/{flag=1;next}/^\\t}$/{flag=0}flag" | grep -e "delete-service" | sed -e "s/^delete-service: //g" -e "s/ ms .*$//g" | ministat -n
+x <stdin>
+    N           Min           Max        Median           Avg        Stddev
+x  30           139          1634          1278     1253.3333     229.83807
+```
+
+`kube-nftlb` is **179,9** times faster on average than `kube-proxy` in this case.
+
 ### Charts: time by endpoints number
+
+- **X axis**: how many replicas does the deployment have (10, 50 or 100 replicas)
+    - The comparison is better shown by joining the two daemonsets in the same value.
+- **Y axis**: how much time (in milliseconds) does it take to set rules after creating or deleting a Service
 
 [![Chart time/by-endpoints-number/create-service](./resources/time/by-endpoints-number/create-service.png)](./resources/time/by-endpoints-number/create-service.png)
 
 [![Chart time/by-endpoints-number/delete-service](./resources/time/by-endpoints-number/delete-service.png)](./resources/time/by-endpoints-number/delete-service.png)
 
 ### Charts: rules by count type
+
+- **X axis**: what is calculated (creating or deleting a Service for N replicas)
+  - The comparison is better shown by joining the two daemonsets in the same value.
+- **Y axis**: how many rules are set depending of the X axis value
 
 [![Chart rules/by-count-type/replicas-test-010](./resources/rules/by-count-type/replicas-test-010.png)](./resources/rules/by-count-type/replicas-test-010.png)
 
