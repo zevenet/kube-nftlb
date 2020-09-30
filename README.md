@@ -468,11 +468,11 @@ _If we're missing something, open an issue and let us know._
 
 Tests are based on the number of rules iptables/nftables set after a series of steps. There are scripts that do the heavy lifting for you in `performance-tests/` (make sure to understand the `README`).
 
-Rule count must be known beforehand. We can measure the time between steps if we know how many rules are set in those steps (example: measure how much time (in ms) does it take to change from X rules to Y rules).
+Rule count must be known beforehand. We can measure the time between steps if we know how many rules are set in those steps (example: measure how much time (in ms) does it take to change from X rules to Y rules). This counting could vary between systems, although it's a possibility that we don't expect to happen frequently, it could happen for some reason. It's the reason why `performance-tests/expected-rule-count.sh.example` exists and why the counting must be tailored to your individual system. This means that you shouldn't expect the **exact** (read carefully) same results from your testing, as we can't be 100% sure this value doesn't change.
 
 Rules are counted with a single shell command. To find out more about this, see `performance-tests/test.sh`.
 
-We can't do statistics on a single test, because a single result it's not meaningful on its own and doesn't account for variation. After repeating the test over and over and storing every result, we can calculate statistics from those results (`ministat`) and draw [bar charts](https://en.wikipedia.org/wiki/Bar_chart) and [boxplots](https://en.wikipedia.org/wiki/Box_plot) (`gnuplot`).
+We can't do statistics based a single test, because an unique result isn't meaningful on its own and doesn't account for variation. After repeating the test over and over and storing every result individually, we can calculate statistics from those results (`ministat`) and draw [bar charts](https://en.wikipedia.org/wiki/Bar_chart) and [boxplots](https://en.wikipedia.org/wiki/Box_plot) (`gnuplot`).
 
 The following sections are extracted from the same data (`resources/filtered-results.txt`). In conclusion, **`kube-nftlb` (nftables) is several times faster than `kube-proxy` (iptables)** (depends on the case how much).
 
