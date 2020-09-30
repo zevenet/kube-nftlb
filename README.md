@@ -472,7 +472,7 @@ Rule count must be known beforehand. We can measure the time between steps if we
 
 Rules are counted with a single shell command. To find out more about this, see `performance-tests/test.sh`.
 
-After repeating the same test over and over and storing every result, we can calculate statistics from those results (`ministat`) and draw [bar charts](https://en.wikipedia.org/wiki/Bar_chart) and [boxplots](https://en.wikipedia.org/wiki/Box_plot) (`gnuplot`).
+We can't do statistics on a single test, because a single result it's not meaningful on its own and doesn't account for variation. After repeating the test over and over and storing every result, we can calculate statistics from those results (`ministat`) and draw [bar charts](https://en.wikipedia.org/wiki/Bar_chart) and [boxplots](https://en.wikipedia.org/wiki/Box_plot) (`gnuplot`).
 
 The following sections are extracted from the same data (`resources/filtered-results.txt`). In conclusion, **`kube-nftlb` (nftables) is several times faster than `kube-proxy` (iptables)** (depends on the case how much).
 
