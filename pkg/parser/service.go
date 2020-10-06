@@ -2,133 +2,131 @@ package parser
 
 import (
 	"fmt"
+	"net"
+	"strconv"
+	"strings"
 	"sync"
 
-	"github.com/zevenet/kube-nftlb/pkg/dsr"
+	"github.com/zevenet/kube-nftlb/pkg/config"
 	"github.com/zevenet/kube-nftlb/pkg/types"
 
 	corev1 "k8s.io/api/core/v1"
 )
 
-// ServiceAsFarms reads a Service and returns a filled Farms struct.
-func ServiceAsFarms(service *corev1.Service) *types.Farms {
-	// Make empty farms slice where farms will be stored
-	farms := make([]types.Farm, 0)
+// ServiceAsPaths sends farm and addresses paths through a channel to the controller. The controller then sends a
+// DELETE request to nftlb for every path.
+func ServiceAsPaths(service *corev1.Service, pathChan chan<- string) {
+	// Send farm and addresses paths to the controller
+	pathChan <- fmt.Sprintf("farms/%s", service.Name)
+	for _, addressName := range addressesPerService[service.Name] {
+		pathChan <- fmt.Sprintf("addresses/%s", addressName)
+	}
 
-	// Get persistence and persistTTL timeout in seconds
-	persistence, persistTTL := getPersistence(service)
+	// Remove from memory addresses names mapped to this Service
+	delete(addressesPerService, service.Name)
 
-	// Find maxconns
-	findMaxConns(service)
+	close(pathChan)
+}
 
-	// Make wait group and process every ServicePort
-	var wg sync.WaitGroup
+// ServiceAsNftlb analyzes a Service and returns a filled Nftlb struct.
+func ServiceAsNftlb(service *corev1.Service) *types.Nftlb {
+	// Read the annotations collected in the "annotations" field of the service
+	annotations := getAnnotations(service)
+
+	// Read useful values from the Service to be passed to servicePortAsAddress() instead of passing the Service
+	serviceData := &types.ServiceData{
+		Name:      service.Name,
+		ClusterIP: service.Spec.ClusterIP,
+		Type:      string(service.Spec.Type),
+		Family:    findFamily(service),
+	}
+
+	// 1 Service (k8s) = 1 Farm (nftlb)
+	farm := types.Farm{
+		Name:         service.Name,
+		Mode:         annotations.Mode,
+		Persistence:  annotations.Persistence,
+		PersistTTL:   annotations.PersistTTL,
+		Scheduler:    annotations.Scheduler,
+		SchedParam:   annotations.SchedParam,
+		Helper:       annotations.Helper,
+		Log:          annotations.Log,
+		LogPrefix:    annotations.LogPrefix,
+		EstConnlimit: annotations.EstConnlimit,
+		Iface:        findIface(annotations.Mode),
+		IntraConnect: "on",
+		State:        "up",
+		Addresses:    make([]types.Address, len(service.Spec.Ports)),
+	}
+
+	// Initialize an address name slice based on the Service name
+	addressesPerService[service.Name] = make([]string, len(service.Spec.Ports))
+
+	// Make wait group to syncronize every ServicePort
+	wg := new(sync.WaitGroup)
 	wg.Add(len(service.Spec.Ports))
+
+	// 1 ServicePort (k8s) = 1 Address (nftlb)
 	for index := range service.Spec.Ports {
-		// Can't reference the Service Port directly, because it only takes the first one and the rest is ignored
-		go CreateServicePort(service, &service.Spec.Ports[index], persistence, persistTTL, &farms, &wg)
+		// Process all ServicePorts in parallel, using goroutines
+		go func(servicePort *corev1.ServicePort, index int) {
+			// Release lock after this func has finished
+			defer wg.Done()
+
+			// Parse ServicePort as Address
+			address := servicePortAsAddress(servicePort, serviceData)
+
+			// Append address to farm addresses
+			farm.Addresses[index] = address
+
+			// Append address name to addresses based on this Service
+			addressesPerService[service.Name][index] = address.Name
+		}(&service.Spec.Ports[index], index)
 	}
 
 	// Wait until all locks are released
 	wg.Wait()
 
-	// Return a Farms struct with the filled farms slice
-	return &types.Farms{
-		Farms: farms,
+	// Return a filled Nftlb struct
+	return &types.Nftlb{
+		Farms: []types.Farm{
+			farm,
+		},
 	}
 }
 
-// CreateServicePort appends farms parsed from a ServicePort to a Farm slice.
-func CreateServicePort(service *corev1.Service, servicePort *corev1.ServicePort, persistence string, persistTTL string, farms *[]types.Farm, wg *sync.WaitGroup) {
-	// Get a formatted farm name from Service and ServicePort
-	farmName := FormatFarmName(service.Name, servicePort.Name)
-
-	// Read the annotations collected in the "annotations" field of the service
-	mode, scheduler, schedParam, helper, log, logPrefix := getAnnotations(service, farmName)
-
-	// Get farm struct with default values
-	farm := types.Farm{
-		Name:         farmName,
-		Mode:         mode,
-		Helper:       helper,
-		Log:          log,
-		LogPrefix:    logPrefix,
-		Persistence:  persistence,
-		PersistTTL:   persistTTL,
-		Scheduler:    scheduler,
-		SchedParam:   schedParam,
-		VirtualAddr:  service.Spec.ClusterIP,
-		VirtualPorts: findVirtualPorts(servicePort),
-		Protocol:     findProtocol(servicePort),
-		Family:       findFamily(service),
-		Iface:        findIface(mode),
-		IntraConnect: "on",
-		State:        "up",
-		Backends:     make([]types.Backend, 0),
-	}
-	*farms = append(*farms, farm)
-
-	go func() {
-		// Append farm name to the slice of farm names based on the Service name
-		farmsPerServiceMap[service.Name] = append(farmsPerServiceMap[service.Name], farm.Name)
-
-		// Check DSR mode
-		if farm.Mode == "dsr" {
-			dsr.CreateInterfaceDsr(farm, service)
-		}
-	}()
-
-	// If the Service type is NodePort, modify the farm name, its VP and its VIP
-	if service.Spec.Type == "NodePort" || service.Spec.Type == "LoadBalancer" && servicePort.NodePort >= 0 {
-		farm.Name = FormatNodePortFarmName(service.Name, servicePort.Name)
-		farm.VirtualAddr = ""
-		farm.VirtualPorts = findVirtualPortsNodePort(servicePort)
-		*farms = append(*farms, farm)
-
-		go func() {
-			// Append NodePort farm name to the slice of farm names and NodePort based on the Service name
-			farmsPerServiceMap[service.Name] = append(farmsPerServiceMap[service.Name], farm.Name)
-
-			// Check DSR mode
-			if farm.Mode == "dsr" {
-				dsr.CreateInterfaceDsr(farm, service)
-			}
-		}()
+// servicePortAsAddress returns an Address struct filled with data from a ServicePort and some ServiceData values.
+func servicePortAsAddress(servicePort *corev1.ServicePort, serviceData *types.ServiceData) types.Address {
+	// Make Address for this ServicePort
+	address := types.Address{
+		Family:   serviceData.Family,
+		Protocol: strings.ToLower(string(servicePort.Protocol)),
 	}
 
-	// Make a farm for every externalIP found in the Service
-	for index, externalIP := range service.Spec.ExternalIPs {
-		farm.Name = FormatExternalIPFarmName(service.Name, servicePort.Name, index+1)
-		farm.VirtualAddr = externalIP
-		*farms = append(*farms, farm)
-
-		go func() {
-			// Append ExternalIP farm name to the slice of farm names based on the Service name
-			farmsPerExternalIPResourceMap[service.Name] = append(farmsPerExternalIPResourceMap[service.Name], farm.Name)
-		}()
+	if serviceData.Type == "ClusterIP" {
+		// If the Service type is ClusterIP, add name, Service ClusterIP as ip-addr and ports
+		address.Name = FormatName(serviceData.Name, servicePort.Name)
+		address.IPAddr = serviceData.ClusterIP
+		address.Ports = strconv.FormatInt(int64(servicePort.Port), 10)
+	} else if serviceData.Type != "ExternalName" {
+		// If the Service type isn't ExternalName, add name and NodePort port ("ip-addr" is empty)
+		address.Name = FormatNodePortName(serviceData.Name, servicePort.Name)
+		address.Ports = strconv.FormatInt(int64(servicePort.NodePort), 10)
 	}
 
-	// Release lock
-	wg.Done()
+	return address
 }
 
-// DeleteServiceFarms sends farm paths through a channel to the controller. The controller then deletes every farm.
-func DeleteServiceFarms(service *corev1.Service, farmPathsChan chan<- string) {
-	for _, farmName := range farmsPerServiceMap[service.Name] {
-		farmPathsChan <- fmt.Sprintf("farms/%s", farmName)
-		go dsr.DeleteService(farmName)
+func findFamily(service *corev1.Service) string {
+	if localhostIP := net.ParseIP(service.Spec.ClusterIP); localhostIP.To4() != nil {
+		return "ipv4"
 	}
-	farmsPerServiceMap[service.Name] = []string{}
-
-	for _, farmName := range farmsPerExternalIPResourceMap[service.Name] {
-		farmPathsChan <- fmt.Sprintf("farms/%s", farmName)
-	}
-	farmsPerExternalIPResourceMap[service.Name] = []string{}
-
-	close(farmPathsChan)
+	return "ipv6"
 }
 
-// DeleteMaxConnsService deletes the key:value pair from maxConnsMap.
-func DeleteMaxConnsService(service *corev1.Service) {
-	delete(maxConnsMap, service.Name)
+func findIface(mode string) string {
+	if mode == "dsr" {
+		return config.DockerInterfaceBridge
+	}
+	return ""
 }
