@@ -1,6 +1,6 @@
 package types
 
-// Backend defines any backend with its properties.
+// Backend defines a nftlb backend object with its properties. Equivalent to a k8s Pod.
 type Backend struct {
 	Name         string `json:"name"`
 	IPAddr       string `json:"ip-addr"`
@@ -12,14 +12,10 @@ type Backend struct {
 	EstConnlimit string `json:"est-connlimit,omitempty"`
 }
 
-// Farm defines any farm with its properties.
+// Farm defines a nftlb farm object with its properties. Equivalent to a k8s Service.
 type Farm struct {
 	Name         string    `json:"name"`
-	Family       string    `json:"family,omitempty"`
-	VirtualAddr  string    `json:"virtual-addr,omitempty"`
-	VirtualPorts string    `json:"virtual-ports,omitempty"`
 	Mode         string    `json:"mode,omitempty"`
-	Protocol     string    `json:"protocol,omitempty"`
 	Scheduler    string    `json:"scheduler,omitempty"`
 	SchedParam   string    `json:"sched-param,omitempty"`
 	Helper       string    `json:"helper,omitempty"`
@@ -32,10 +28,7 @@ type Farm struct {
 	Persistence  string    `json:"persistence,omitempty"`
 	PersistTTL   string    `json:"persist-ttl,omitempty"`
 	Iface        string    `json:"iface,omitempty"`
-	Backends     []Backend `json:"backends"`
-}
-
-// Farms defines a struct made for nftlb requests.
-type Farms struct {
-	Farms []Farm `json:"farms"`
+	EstConnlimit string    `json:"est-connlimit,omitempty"`
+	Backends     []Backend `json:"backends,omitempty"`
+	Addresses    []Address `json:"addresses,omitempty"`
 }
