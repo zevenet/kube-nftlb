@@ -1,5 +1,8 @@
 package controller
 
+// TODO Adapt NetworkPolicies to new Addresses nftlb object
+
+/*
 import (
 	"strings"
 
@@ -128,3 +131,4 @@ func UpdateNftlbPolicies(oldObj, newObj interface{}) {
 	DeleteNftlbPolicies(oldObj)
 	AddNftlbPolicies(newObj)
 }
+*/

@@ -1,5 +1,8 @@
 package parser
 
+// TODO See pkg/controller/networkpolicy.go
+
+/*
 import (
 	"context"
 	"fmt"
@@ -230,3 +233,4 @@ func getPodIPListFromPodSelector(namespace string, labelPodSelector *metav1.Labe
 func formatPolicyName(name string, policyType string, listType string) string {
 	return fmt.Sprintf("%s--%s-%s", name, policyType, listType)
 }
+*/

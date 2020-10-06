@@ -1,5 +1,8 @@
 package dsr
 
+// TODO Adapt DSR mode to new Addresses nftlb object
+
+/*
 import (
 	"context"
 	"fmt"
@@ -191,3 +194,4 @@ func GetVirtualAddr(farmName string) string {
 func GetVirtualPorts(farmName string) string {
 	return mapServiceDsr[farmName].VirtualPorts
 }
+*/

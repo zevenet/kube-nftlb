@@ -1,5 +1,8 @@
 package parser
 
+// TODO See pkg/controller/endpoints.go
+
+/*
 import (
 	"fmt"
 	"sync"
@@ -77,16 +80,6 @@ func CreateEndpointAddress(endpoints *corev1.Endpoints, address *corev1.Endpoint
 				backendsPerFarm[farm.Name] = append(backendsPerFarm[farm.Name], backendName)
 			}()
 		}
-
-		// The ExternalIP Service is assigned the same backends as the original service
-		for _, farmNameExternalIP := range farmsPerExternalIPResourceMap[endpoints.Name] {
-			farm.Name = farmNameExternalIP
-			*farms = append(*farms, farm)
-			go func() {
-				farmsPerEndpointMap[endpoints.Name] = append(farmsPerEndpointMap[endpoints.Name], farm.Name)
-				backendsPerFarm[farm.Name] = append(backendsPerFarm[farm.Name], backendName)
-			}()
-		}
 	}
 
 	// Release lock
@@ -104,3 +97,4 @@ func DeleteEndpointsBackends(endpoints *corev1.Endpoints, backendPathsChan chan<
 	farmsPerEndpointMap[endpoints.Name] = []string{}
 	close(backendPathsChan)
 }
+*/

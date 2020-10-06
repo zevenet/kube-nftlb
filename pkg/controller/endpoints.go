@@ -1,5 +1,8 @@
 package controller
 
+// TODO Adapt Endpoints to new Addresses nftlb object
+
+/*
 import (
 	"fmt"
 	"strings"
@@ -44,17 +47,17 @@ func AddNftlbBackends(obj interface{}) {
 
 	// Don't accept empty farms
 	if farms.Farms == nil || len(farms.Farms) == 0 {
-		go log.WriteLog(types.DetailedLog, fmt.Sprintf("AddNftlbBackends: Endpoints name: %s\nFarms struct is empty", ep.Name))
+		log.WriteLog(types.DetailedLog, fmt.Sprintf("AddNftlbBackends: Endpoints name: %s\nFarms struct is empty", ep.Name))
 		return
 	}
 
 	// Parse Farms struct as a JSON string
 	farmsJSON, err := parser.StructAsJSON(farms)
 	if err != nil {
-		go log.WriteLog(types.ErrorLog, fmt.Sprintf("AddNftlbBackends: Endpoints name: %s\n%s", ep.Name, err.Error()))
+		log.WriteLog(types.ErrorLog, fmt.Sprintf("AddNftlbBackends: Endpoints name: %s\n%s", ep.Name, err.Error()))
 		return
 	}
-	go log.WriteLog(types.StandardLog, fmt.Sprintf("AddNftlbBackends: Endpoints name: %s\n%s", ep.Name, farmsJSON))
+	log.WriteLog(types.StandardLog, fmt.Sprintf("AddNftlbBackends: Endpoints name: %s\n%s", ep.Name, farmsJSON))
 
 	// Fill the request data for farms
 	requestData := &types.RequestData{
@@ -66,10 +69,11 @@ func AddNftlbBackends(obj interface{}) {
 	// Get the response from that request
 	response, err := http.Send(requestData)
 	if err != nil {
-		go log.WriteLog(types.ErrorLog, fmt.Sprintf("AddNftlbBackends: Endpoints name: %s\n%s", ep.Name, err.Error()))
+		log.WriteLog(types.ErrorLog, fmt.Sprintf("AddNftlbBackends: Endpoints name: %s\n%s", ep.Name, err.Error()))
 		return
 	}
-	go log.WriteLog(types.StandardLog, string(response))
+
+	log.WriteLog(types.StandardLog, string(response))
 }
 
 // DeleteNftlbBackends
@@ -97,6 +101,7 @@ func DeleteNftlbBackends(obj interface{}) {
 
 // UpdateNftlbBackends
 func UpdateNftlbBackends(oldObj, newObj interface{}) {
-	DeleteNftlbBackends(oldObj.(*corev1.Endpoints))
-	AddNftlbBackends(newObj.(*corev1.Endpoints))
+	DeleteNftlbBackends(oldObj)
+	AddNftlbBackends(newObj)
 }
+*/
