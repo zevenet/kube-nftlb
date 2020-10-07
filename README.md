@@ -13,7 +13,7 @@
     - [Persistence](#persistence)
     - [Scheduler](#scheduler)
     - [Helper](#helper)
-    - [Logs](#logs)
+    - [Log](#log)
   - [Benchmarks 📊](#benchmarks-)
     - [Environment](#environment)
     - [Summary](#summary)
@@ -101,18 +101,36 @@ root@debian:kube-nftlb# kubectl apply -f yaml
 We have to remove the chains that kubernetes configures by default. To achieve this we have to stop the kubelet service, add a variable to the configuration file and reactivate the service. Follow the following commands:
 
 ```console
-systemctl stop kubelet.service
-echo "makeIPTablesUtilChains: false" >> /var/lib/kubelet/config.yaml
-nft delete table ip nat
-nft delete table ip filter
-nft delete table ip mangle
-systemctl start kubelet.service
+# Stop kubelet
+root@debian:~# systemctl stop kubelet.service
+
+# Disable iptables rules
+root@debian:~# echo "makeIPTablesUtilChains: false" >> /var/lib/kubelet/config.yaml
+
+# Empty tables (don't forget to backup your ruleset)
+root@debian:~# nft flush table ip nat
+root@debian:~# nft flush table ip filter
+root@debian:~# nft delete table ip mangle
+
+# Start kubelet
+root@debian:~# systemctl start kubelet.service
 ```
-If everything has gone well the kubelet service will not create those tables again. Now you will have to apply a rule to recover the connection with your deployments:
+
+If everything has gone well, the kubelet service will not create those tables again. Now you will have to apply some commands to recover the connection with your deployments:
 
 ```console
-iptables -N POSTROUTING -t filter
-iptables -A POSTROUTING -t nat -s 172.17.0.0/16 ! -o docker0 -j MASQUERADE
+# Add chains to filter table
+root@debian:~# nft add chain ip filter POSTROUTING
+root@debian:~# nft add chain ip filter INPUT '{ type filter hook input priority filter; policy accept; }'
+root@debian:~# nft add chain ip filter FORWARD '{ type filter hook forward priority filter; policy accept; }'
+root@debian:~# nft add chain ip filter OUTPUT '{ type filter hook output priority filter; policy accept; }'
+
+# Add chains and rules to nat table
+root@debian:~# nft add chain ip nat PREROUTING '{ type nat hook prerouting priority dstnat; policy accept; }'
+root@debian:~# nft add chain ip nat POSTROUTING '{ type nat hook postrouting priority srcnat; policy accept; }'
+root@debian:~# nft add rule ip nat POSTROUTING oifname != "docker0" ip saddr 172.17.0.0/16 counter masquerade
+root@debian:~# nft add chain ip nat INPUT '{ type nat hook input priority 100; policy accept; }'
+root@debian:~# nft add chain ip nat OUTPUT '{ type nat hook output priority -100; policy accept; }'
 ```
 
 ## Creating resources ✏
@@ -406,9 +424,9 @@ We can configure the type of load balancing scheduling used to dispatch the traf
 
 ```
 service.kubernetes.io/kube-nftlb-load-balancer-scheduler: "rr"
-service.kubernetes.io/kube-nftlb-load-balancer-persistence: "symhash"
-service.kubernetes.io/kube-nftlb-load-balancer-persistence: "hash-srcip"
-service.kubernetes.io/kube-nftlb-load-balancer-persistence: "hash-srcip-srcport"
+service.kubernetes.io/kube-nftlb-load-balancer-scheduler: "symhash"
+service.kubernetes.io/kube-nftlb-load-balancer-scheduler: "hash-srcip"
+service.kubernetes.io/kube-nftlb-load-balancer-scheduler: "hash-srcip-srcport"
 ```
 
 ### Helper
@@ -441,7 +459,7 @@ service.kubernetes.io/kube-nftlb-load-balancer-helper: "snmp"
 service.kubernetes.io/kube-nftlb-load-balancer-helper: "tftp"
 ```
 
-### Logs
+### Log
 
 We can define in which netfilter flow in which stage you are going to print logs. The options are:
 
