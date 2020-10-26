@@ -1,4 +1,4 @@
-#!/usr/bin/env sh
+#!/usr/bin/env bash
 
 # This is a script that helps you set up a fresh Debian Buster system
 # running in a virtualized environment. It installs everything you need
