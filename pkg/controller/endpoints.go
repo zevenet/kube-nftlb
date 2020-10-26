@@ -42,9 +42,13 @@ func AddNftlbBackends(obj interface{}) {
 	// Parse this Endpoints struct as a Nftlb struct
 	data := parser.EndpointsAsNftlb(ep)
 
-	// Reject farm without backends
-	if data.Farms[0].Backends == nil || len(data.Farms[0].Backends) == 0 {
-		log.WriteLog(types.DetailedLog, fmt.Sprintf("AddNftlbFarms: Endpoints name: %s\nInvalid Farm, Backends should not be empty", ep.Name))
+	if len(data.Farms) == 0 {
+		// Reject object without farms
+		log.WriteLog(types.DetailedLog, fmt.Sprintf("AddNftlbFarms: Endpoints name: %s\nEmpty Farms slice", ep.Name))
+		return
+	} else if len(data.Farms[0].Backends) == 0 {
+		// Reject farm without backends
+		log.WriteLog(types.DetailedLog, fmt.Sprintf("AddNftlbFarms: Endpoints name: %s\nFarms[0] has no backends", ep.Name))
 		return
 	}
 

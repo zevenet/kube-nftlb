@@ -41,7 +41,7 @@ func AddNftlbFarm(obj interface{}) {
 	svc := obj.(*corev1.Service)
 
 	// Reject an invalid Service
-	if svc.Spec.ClusterIP == "" {
+	if svc.Spec.ClusterIP == "" || svc.Spec.ClusterIP == "None" {
 		log.WriteLog(types.DetailedLog, fmt.Sprintf("AddNftlbFarms: Service name: %s\nInvalid Service, ClusterIP should not be empty", svc.Name))
 		return
 	}
@@ -99,5 +99,6 @@ func DeleteNftlbFarm(obj interface{}) {
 // UpdateNftlbFarm takes in two Services (both are the same, but one it's before the update and the other it's updated)
 // and applies the changes from the updated Service.
 func UpdateNftlbFarm(oldObj, newObj interface{}) {
+	DeleteNftlbFarm(oldObj)
 	AddNftlbFarm(newObj)
 }
