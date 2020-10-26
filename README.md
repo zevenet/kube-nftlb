@@ -1,17 +1,19 @@
 - [kube-nftlb](#kube-nftlb)
+  - [Features 🌟](#features-)
   - [Prerequisites 📋](#prerequisites-)
   - [Installation 🔧](#installation-)
   - [Deployment 🚀](#deployment-)
-  - [Local Configuration ⚙](#local-configuration-)
-  - [Creation of a simple service ✏](#creation-of-a-simple-service-)
-  - [Creation and assignment of deployments ✏](#creation-and-assignment-of-deployments-)
-  - [Setting up our service 📌](#setting-up-our-service-)
-    - [Configure Mode](#configure-mode)
-    - [Configure Persistence](#configure-persistence)
-    - [Configure Scheduler](#configure-scheduler)
-    - [Configure Helper](#configure-helper)
-    - [Configure Logs](#configure-logs)
+  - [Host settings ⚙](#host-settings-)
+  - [Creating resources ✏](#creating-resources-)
+    - [Service](#service)
+    - [Deployment](#deployment)
+  - [Setting up annotations for a Service 📌](#setting-up-annotations-for-a-service-)
     - [How to set up annotations](#how-to-set-up-annotations)
+    - [Mode](#mode)
+    - [Persistence](#persistence)
+    - [Scheduler](#scheduler)
+    - [Helper](#helper)
+    - [Log](#log)
   - [Benchmarks 📊](#benchmarks-)
     - [Environment](#environment)
     - [Summary](#summary)
@@ -28,6 +30,14 @@
 `kube-nftlb` is a Kubernetes Daemonset able to communicate the Kubernetes API Server, based on a Debian Buster image with [`nftlb`](https://github.com/zevenet/nftlb) installed.
 
 It can request information from the API Server such as new, updated or deleted Services/Endpoints, and make rules in `nftables` accordingly.
+
+## Features 🌟
+
+- ✅ `nftables` backend, the new packet classification framework that replaces the existing {ip,ip6,arp,eb}_tables infrastructure.
+- ✅ Support for Services and Endpoints.
+- ✅ Annotations can be used to configure Services.
+- ✅ Functional and performance tests.
+- ⏹ _(Coming soon)_ Support for Network Policies.
 
 ## Prerequisites 📋
 
@@ -52,7 +62,11 @@ user@debian:~# git clone https://github.com/zevenet/kube-nftlb
 
 # Change directory
 user@debian:~# cd kube-nftlb
+```
 
+**For development:**
+
+```console
 # Copy and rename .env.example to .env
 user@debian:kube-nftlb# cp .env.example .env
 
@@ -82,26 +96,46 @@ root@debian:kube-nftlb# minikube start --vm-driver=none --extra-config=kubeadm.s
 root@debian:kube-nftlb# kubectl apply -f yaml
 ```
 
-## Local Configuration ⚙
+## Host settings ⚙
 
 We have to remove the chains that kubernetes configures by default. To achieve this we have to stop the kubelet service, add a variable to the configuration file and reactivate the service. Follow the following commands:
 
 ```console
-systemctl stop kubelet.service
-echo "makeIPTablesUtilChains: false" >> /var/lib/kubelet/config.yaml
-nft delete table ip nat
-nft delete table ip filter
-nft delete table ip mangle
-systemctl start kubelet.service
+# Stop kubelet
+root@debian:~# systemctl stop kubelet.service
+
+# Disable iptables rules
+root@debian:~# echo "makeIPTablesUtilChains: false" >> /var/lib/kubelet/config.yaml
+
+# Empty tables (don't forget to backup your ruleset)
+root@debian:~# nft flush table ip nat
+root@debian:~# nft flush table ip filter
+root@debian:~# nft delete table ip mangle
+
+# Start kubelet
+root@debian:~# systemctl start kubelet.service
 ```
-If everything has gone well the kubelet service will not create those tables again. Now you will have to apply a rule to recover the connection with your deployments:
+
+If everything has gone well, the kubelet service will not create those tables again. Now you will have to apply some commands to recover the connection with your deployments:
 
 ```console
-iptables -N POSTROUTING -t filter
-iptables -A POSTROUTING -t nat -s 172.17.0.0/16 ! -o docker0 -j MASQUERADE
+# Add chains to filter table
+root@debian:~# nft add chain ip filter POSTROUTING
+root@debian:~# nft add chain ip filter INPUT '{ type filter hook input priority filter; policy accept; }'
+root@debian:~# nft add chain ip filter FORWARD '{ type filter hook forward priority filter; policy accept; }'
+root@debian:~# nft add chain ip filter OUTPUT '{ type filter hook output priority filter; policy accept; }'
+
+# Add chains and rules to nat table
+root@debian:~# nft add chain ip nat PREROUTING '{ type nat hook prerouting priority dstnat; policy accept; }'
+root@debian:~# nft add chain ip nat POSTROUTING '{ type nat hook postrouting priority srcnat; policy accept; }'
+root@debian:~# nft add rule ip nat POSTROUTING oifname != "docker0" ip saddr 172.17.0.0/16 counter masquerade
+root@debian:~# nft add chain ip nat INPUT '{ type nat hook input priority 100; policy accept; }'
+root@debian:~# nft add chain ip nat OUTPUT '{ type nat hook output priority -100; policy accept; }'
 ```
 
-## Creation of a simple service ✏
+## Creating resources ✏
+
+### Service
 
 In this section we are going to see the different settings that we can apply to create our service. The first thing we have to know is that it is a service and how we can create a simple one and check that it has been created correctly.
 
@@ -190,7 +224,7 @@ source .env; curl -H "Key: $NFTLB_KEY" "$NFTLB_PROTOCOL://$NFTLB_HOST:$NFTLB_POR
 
 *The curl that we have launched returns JSON data with the information configured in our farms.*
 
-## Creation and assignment of deployments ✏
+### Deployment
 
 In this section we will see how to create a deployment and how we can assign it to other pods (our service). But first we have to know what a deployment is.
 
@@ -289,21 +323,45 @@ curl -H "Key: $NFTLB_KEY" http://localhost:5555/farms/my-service--http
                                         "est-connlimit": "0",
                                         "state": "up"
                                 }
-                        ],
-
-                        "policies": []
+                        ]
                 }
         ]
 }
 ```
 
-## Setting up our service 📌
+## Setting up annotations for a Service 📌
 
 We can configure our service with different settings. In general, to configure our service we will use annotations, a field used in our configuration file yaml. In a few words, annotations are a field that will allow us to enter data outside kubernetes.
 
 Through this field we can configure our service with different values that nftlb supports. For example, we can configure the mode of our service, if our backends have persistence or change our load balancing scheduling. We are going to see all the configuration that we can add using annotations, and then we are going to see a small example of the syntax of our annotations.
 
-### Configure Mode
+### How to set up annotations
+
+All we have to do is to add it to the `metadata.annotations` field in the configuration file of our service. Let's see an example:
+
+```yaml
+# annotations-service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: my-service
+  labels:
+    app: front
+  annotations:
+    service.kubernetes.io/kube-nftlb-load-balancer-mode: "snat"
+    service.kubernetes.io/kube-nftlb-load-balancer-scheduler: "hash-srcip"
+spec:
+  type: ClusterIP
+  selector:
+    app: front
+  ports:
+    - name: http
+      protocol: TCP
+      port: 8080
+      targetPort: 80
+```
+
+### Mode
 
 We can configure how the load balancer layer 4 core is going to operate. The options are:
 
@@ -319,7 +377,7 @@ service.kubernetes.io/kube-nftlb-load-balancer-mode: "stlsdnat"
 service.kubernetes.io/kube-nftlb-load-balancer-mode: "dsr"
 ```
 
-### Configure Persistence
+### Persistence
 
 We can configure the type of persistence that is used on the configured farm. This can be configured in two ways. Via annotations and with the sessionAffinity field.
 
@@ -364,7 +422,7 @@ spec:
 
 By default, settings made with annotations have priority, even if the sessionAffinity field is defined. The "stickiness timeout in seconds" cannot be configured via annotations. The default value is chosen unless there is a sessionAffinity field and a sessionAffinityConfig where it will collect the value of that field.
 
-### Configure Scheduler
+### Scheduler
 
 We can configure the type of load balancing scheduling used to dispatch the traffic between the backends. The options are:
 
@@ -376,7 +434,7 @@ service.kubernetes.io/kube-nftlb-load-balancer-scheduler: "rr"
 service.kubernetes.io/kube-nftlb-load-balancer-scheduler: "symhash"
 ```
 
-### Configure Helper
+### Helper
 
 We can configure the helper of the layer 4 protocol to be balanced to be used. The options are:
 
@@ -406,7 +464,7 @@ service.kubernetes.io/kube-nftlb-load-balancer-helper: "snmp"
 service.kubernetes.io/kube-nftlb-load-balancer-helper: "tftp"
 ```
 
-### Configure Logs
+### Log
 
 We can define in which netfilter flow in which stage you are going to print logs. The options are:
 
@@ -418,31 +476,6 @@ We can define in which netfilter flow in which stage you are going to print logs
 service.kubernetes.io/kube-nftlb-load-balancer-log: "none"
 service.kubernetes.io/kube-nftlb-load-balancer-log: "output"
 service.kubernetes.io/kube-nftlb-load-balancer-log: "forward"
-```
-
-### How to set up annotations
-
-Add them to the configuration file of our Service, in the `metadata.annotations` field. Let's see an example:
-
-```yaml
-# annotations-service.yaml
-apiVersion: v1
-kind: Service
-metadata:
-  name: my-service
-  labels:
-    app: front
-  annotations:
-    service.kubernetes.io/kube-nftlb-load-balancer-mode: "snat"
-spec:
-  type: ClusterIP
-  selector:
-    app: front
-  ports:
-    - name: http
-      protocol: TCP
-      port: 8080
-      targetPort: 80
 ```
 
 ## Benchmarks 📊
