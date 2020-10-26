@@ -1,0 +1,41 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: persistence-priority
+  labels:
+    app: persistence-priority
+  annotations:
+    service.kubernetes.io/kube-nftlb-load-balancer-persistence: "srcport"
+spec:
+  type: ClusterIP
+  selector:
+    app: persistence-priority
+  sessionAffinity: ClientIP
+  sessionAffinityConfig:
+    clientIP:
+      timeoutSeconds: 75
+  ports:
+    - name: http
+      protocol: TCP
+      port: 8080
+      targetPort: 80
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: persistence-priority
+  labels:
+    app: persistence-priority
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: persistence-priority
+  template:
+    metadata:
+      labels:
+        app: persistence-priority
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:alpine

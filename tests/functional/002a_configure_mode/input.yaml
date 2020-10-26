@@ -1,0 +1,118 @@
+# SNAT
+apiVersion: v1
+kind: Service
+metadata:
+  name: configure-mode-snat
+  labels:
+    app: configure-mode-snat
+  annotations:
+    service.kubernetes.io/kube-nftlb-load-balancer-mode: "snat"
+spec:
+  type: ClusterIP
+  selector:
+    app: configure-mode-snat
+  ports:
+    - name: http
+      protocol: TCP
+      port: 8080
+      targetPort: 80
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: configure-mode-snat
+  labels:
+    app: configure-mode-snat
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: configure-mode-snat
+  template:
+    metadata:
+      labels:
+        app: configure-mode-snat
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:alpine
+---
+
+# DNAT
+apiVersion: v1
+kind: Service
+metadata:
+  name: configure-mode-dnat
+  labels:
+    app: configure-mode-dnat
+  annotations:
+    service.kubernetes.io/kube-nftlb-load-balancer-mode: "dnat"
+spec:
+  type: ClusterIP
+  selector:
+    app: configure-mode-dnat
+  ports:
+    - name: http
+      protocol: TCP
+      port: 8080
+      targetPort: 80
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: configure-mode-dnat
+  labels:
+    app: configure-mode-dnat
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: configure-mode-dnat
+  template:
+    metadata:
+      labels:
+        app: configure-mode-dnat
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:alpine
+---
+
+# STLSDNAT
+apiVersion: v1
+kind: Service
+metadata:
+  name: configure-mode-stlsdnat
+  labels:
+    app: configure-mode-stlsdnat
+  annotations:
+    service.kubernetes.io/kube-nftlb-load-balancer-mode: "stlsdnat"
+spec:
+  type: ClusterIP
+  selector:
+    app: configure-mode-stlsdnat
+  ports:
+    - name: http
+      protocol: TCP
+      port: 8080
+      targetPort: 80
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: configure-mode-stlsdnat
+  labels:
+    app: configure-mode-stlsdnat
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: configure-mode-stlsdnat
+  template:
+    metadata:
+      labels:
+        app: configure-mode-stlsdnat
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:alpine
