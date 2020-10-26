@@ -51,7 +51,7 @@ It can request information from the API Server such as new, updated or deleted S
 Also, you can run `debian_tools_installer.sh` **as root** after a fresh Debian Buster install.
 
 ```console
-root@debian:kube-nftlb# ./debian_tools_installer.sh
+root@debian:kube-nftlb# ./scripts/debian_tools_installer.sh
 ```
 
 ## Installation 🔧
@@ -77,7 +77,8 @@ user@debian:kube-nftlb# NFTLB_KEY=$(base64 -w 32 /dev/urandom | tr -d /+ | head 
 user@debian:kube-nftlb# su
 
 # Modify scripts permissions to grant root execute access
-root@debian:kube-nftlb# chmod +x *.sh
+root@debian:kube-nftlb# chmod +x scripts/*.sh
+root@debian:kube-nftlb# chmod +x build.sh
 
 # Build the Docker image with build.sh (prerequisites must be met before this)
 root@debian:kube-nftlb# ./build.sh
@@ -94,6 +95,12 @@ root@debian:kube-nftlb# minikube start --vm-driver=none --extra-config=kubeadm.s
 
 ```console
 root@debian:kube-nftlb# kubectl apply -f yaml
+```
+
+If for some reason `kube-proxy` is running, you have to delete it running the following command:
+
+```console
+root@debian:kube-nftlb# ./scripts/remove_kube_proxy.sh
 ```
 
 ## Host settings ⚙
@@ -254,6 +261,7 @@ spec:
       - name: nginx
         image: nginx:alpine
 ```
+
 Through the "matchLabels" field we can find the pod of our service. We are going to apply our deployment and check that it has been created correctly.
 
 ```console
@@ -349,7 +357,7 @@ metadata:
     app: front
   annotations:
     service.kubernetes.io/kube-nftlb-load-balancer-mode: "snat"
-    service.kubernetes.io/kube-nftlb-load-balancer-scheduler: "hash-srcip"
+    service.kubernetes.io/kube-nftlb-load-balancer-scheduler: "rr"
 spec:
   type: ClusterIP
   selector:
