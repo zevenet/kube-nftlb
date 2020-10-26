@@ -4,103 +4,72 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/zevenet/kube-nftlb/pkg/dsr"
 	"github.com/zevenet/kube-nftlb/pkg/types"
 
 	corev1 "k8s.io/api/core/v1"
 )
 
-// EndpointsAsFarms reads a Endpoints and returns a filled Farms struct.
-func EndpointsAsFarms(endpoints *corev1.Endpoints) *types.Farms {
-	farms := make([]types.Farm, 0)
-	var wg sync.WaitGroup
+// EndpointsAsPaths sends backend paths through a channel to the controller. The controller then deletes every backend.
+func EndpointsAsPaths(endpoints *corev1.Endpoints, pathsChan chan<- string) {
+	for _, farmName := range farmsPerService[endpoints.Name] {
+		for _, backendName := range backendsPerFarm[farmName] {
+			pathsChan <- fmt.Sprintf("farms/%s/backends/%s", farmName, backendName)
+		}
+		delete(backendsPerFarm, farmName)
+	}
+
+	close(pathsChan)
+}
+
+// EndpointsAsNftlb reads a Endpoints object and returns a filled Nftlb struct.
+func EndpointsAsNftlb(endpoints *corev1.Endpoints) *types.Nftlb {
+	nftlb := &types.Nftlb{
+		Farms: make([]types.Farm, 0),
+	}
 
 	for idxSubset, subset := range endpoints.Subsets {
-		for idxAddress := range subset.Addresses {
+		// 1 EndpointPort (k8s) = 1 Farm (nftlb)
+		for idxPort, port := range subset.Ports {
+			farm := types.Farm{
+				Name:     FormatName(endpoints.Name, port.Name),
+				Backends: make([]types.Backend, len(subset.Addresses)),
+			}
+			backendsPerFarm[farm.Name] = make([]string, len(subset.Addresses))
+
 			// Add a lock for every EndpointAddress
-			wg.Add(1)
-			go CreateEndpointAddress(endpoints, &subset.Addresses[idxAddress], &endpoints.Subsets[idxSubset], &farms, &wg)
+			wg := new(sync.WaitGroup)
+			wg.Add(len(subset.Addresses))
+
+			// 1 EndpointAddress for every EndpointPort in a EndpointSubset (k8s) = 1 Backend (nftlb)
+			for idxAddress := range subset.Addresses {
+				//fmt.Printf("len(addresses): %d, idxAddress: %d | %s\n", len(subset.Addresses), idxAddress, farm.Name)
+				go func(epPort *corev1.EndpointPort, epAddress *corev1.EndpointAddress, idxAddress int) {
+					defer wg.Done()
+
+					backend := types.Backend{
+						IPAddr: epAddress.IP,
+						State:  "up",
+						Port:   fmt.Sprint(epPort.Port),
+					}
+
+					if epAddress.TargetRef != nil {
+						backend.Name = FormatName(epAddress.TargetRef.Name, epPort.Name)
+					} else {
+						backend.Name = FormatName(endpoints.Name, epPort.Name)
+					}
+
+					farm.Backends[idxAddress] = backend
+					backendsPerFarm[farm.Name][idxAddress] = backend.Name
+				}(&endpoints.Subsets[idxSubset].Ports[idxPort], &endpoints.Subsets[idxSubset].Addresses[idxAddress], idxAddress)
+			}
+
+			// Wait until all EndpointPort locks are released
+			wg.Wait()
+
+			nftlb.Farms = append(nftlb.Farms, farm)
 		}
 	}
 
-	// Wait until all locks are released
-	wg.Wait()
-
-	// Returns the filled struct
-	return &types.Farms{
-		Farms: farms,
-	}
-}
-
-// CreateEndpointAddress appends farms parsed from a EndpointAddress to a Farm slice.
-func CreateEndpointAddress(endpoints *corev1.Endpoints, address *corev1.EndpointAddress, subset *corev1.EndpointSubset, farms *[]types.Farm, wg *sync.WaitGroup) {
-	// If the name field is empty, it is assigned the same as the service.
-	backendName := endpoints.Name
-	if address.TargetRef != nil {
-		backendName = address.TargetRef.Name
-	}
-
-	// We proceed to create each of the backends
-	for _, endpointPort := range subset.Ports {
-		farm := types.Farm{
-			Name: FormatFarmName(endpoints.Name, endpointPort.Name),
-		}
-
-		// Get backend ports
-		portBackend := fmt.Sprint(endpointPort.Port)
-		if dsr.ExistsServiceDSR(farm.Name) {
-			portBackend = dsr.GetVirtualPorts(farm.Name)
-			go dsr.AddInterfaceDsr(farm.Name, backendName, dsr.GetVirtualAddr(farm.Name))
-		}
-
-		farm.Backends = []types.Backend{
-			{
-				Name:         backendName,
-				IPAddr:       address.IP,
-				State:        "up",
-				Port:         portBackend,
-				EstConnlimit: maxConnsMap[farm.Name],
-			},
-		}
-		*farms = append(*farms, farm)
-		go func() {
-			farmsPerEndpointMap[endpoints.Name] = append(farmsPerEndpointMap[endpoints.Name], farm.Name)
-			backendsPerFarm[farm.Name] = append(backendsPerFarm[farm.Name], backendName)
-		}()
-
-		// The NodePort Service is assigned the same backends as the original service
-		if farmNameNodePort := FormatNodePortFarmName(endpoints.Name, endpointPort.Name); existsFarm(endpoints.Name, farmNameNodePort) {
-			farm.Name = farmNameNodePort
-			*farms = append(*farms, farm)
-			go func() {
-				farmsPerEndpointMap[endpoints.Name] = append(farmsPerEndpointMap[endpoints.Name], farm.Name)
-				backendsPerFarm[farm.Name] = append(backendsPerFarm[farm.Name], backendName)
-			}()
-		}
-
-		// The ExternalIP Service is assigned the same backends as the original service
-		for _, farmNameExternalIP := range farmsPerExternalIPResourceMap[endpoints.Name] {
-			farm.Name = farmNameExternalIP
-			*farms = append(*farms, farm)
-			go func() {
-				farmsPerEndpointMap[endpoints.Name] = append(farmsPerEndpointMap[endpoints.Name], farm.Name)
-				backendsPerFarm[farm.Name] = append(backendsPerFarm[farm.Name], backendName)
-			}()
-		}
-	}
-
-	// Release lock
-	wg.Done()
-}
-
-// DeleteEndpointsBackends sends backend paths through a channel to the controller. The controller then deletes every backend.
-func DeleteEndpointsBackends(endpoints *corev1.Endpoints, backendPathsChan chan<- string) {
-	for _, farmName := range farmsPerEndpointMap[endpoints.Name] {
-		for _, backendName := range backendsPerFarm[farmName] {
-			backendPathsChan <- fmt.Sprintf("farms/%s/backends/%s", farmName, backendName)
-		}
-		backendsPerFarm[farmName] = []string{}
-	}
-	farmsPerEndpointMap[endpoints.Name] = []string{}
-	close(backendPathsChan)
+	// Return a filled Nftlb struct
+	return nftlb
 }

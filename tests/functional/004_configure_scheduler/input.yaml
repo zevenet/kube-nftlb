@@ -1,0 +1,78 @@
+# rr
+apiVersion: v1
+kind: Service
+metadata:
+  name: configure-scheduler-rr
+  labels:
+    app: configure-scheduler-rr
+  annotations:
+    service.kubernetes.io/kube-nftlb-load-balancer-scheduler: "rr"
+spec:
+  type: ClusterIP
+  selector:
+    app: configure-scheduler-rr
+  ports:
+    - name: http
+      protocol: TCP
+      port: 8080
+      targetPort: 80
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: configure-scheduler-rr
+  labels:
+    app: configure-scheduler-rr
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: configure-scheduler-rr
+  template:
+    metadata:
+      labels:
+        app: configure-scheduler-rr
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:alpine
+---
+
+# symhash
+apiVersion: v1
+kind: Service
+metadata:
+  name: configure-scheduler-symhash
+  labels:
+    app: configure-scheduler-symhash
+  annotations:
+    service.kubernetes.io/kube-nftlb-load-balancer-scheduler: "symhash"
+spec:
+  type: ClusterIP
+  selector:
+    app: configure-scheduler-symhash
+  ports:
+    - name: http
+      protocol: TCP
+      port: 8080
+      targetPort: 80
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: configure-scheduler-symhash
+  labels:
+    app: configure-scheduler-symhash
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: configure-scheduler-symhash
+  template:
+    metadata:
+      labels:
+        app: configure-scheduler-symhash
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:alpine

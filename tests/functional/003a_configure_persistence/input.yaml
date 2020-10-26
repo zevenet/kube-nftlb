@@ -1,0 +1,160 @@
+# srcip
+apiVersion: v1
+kind: Service
+metadata:
+  name: configure-persistence-srcip
+  labels:
+    app: configure-persistence-srcip
+  annotations:
+    service.kubernetes.io/kube-nftlb-load-balancer-persistence: "srcip"
+spec:
+  type: ClusterIP
+  selector:
+    app: configure-persistence-srcip
+  ports:
+    - name: http
+      protocol: TCP
+      port: 8080
+      targetPort: 80
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: configure-persistence-srcip
+  labels:
+    app: configure-persistence-srcip
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: configure-persistence-srcip
+  template:
+    metadata:
+      labels:
+        app: configure-persistence-srcip
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:alpine
+---
+
+# srcport
+apiVersion: v1
+kind: Service
+metadata:
+  name: configure-persistence-srcport
+  labels:
+    app: configure-persistence-srcport
+  annotations:
+    service.kubernetes.io/kube-nftlb-load-balancer-persistence: "srcport"
+spec:
+  type: ClusterIP
+  selector:
+    app: configure-persistence-srcport
+  ports:
+    - name: http
+      protocol: TCP
+      port: 8080
+      targetPort: 80
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: configure-persistence-srcport
+  labels:
+    app: configure-persistence-srcport
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: configure-persistence-srcport
+  template:
+    metadata:
+      labels:
+        app: configure-persistence-srcport
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:alpine
+---
+
+# srcmac
+apiVersion: v1
+kind: Service
+metadata:
+  name: configure-persistence-srcmac
+  labels:
+    app: configure-persistence-srcmac
+  annotations:
+    service.kubernetes.io/kube-nftlb-load-balancer-persistence: "srcmac"
+spec:
+  type: ClusterIP
+  selector:
+    app: configure-persistence-srcmac
+  ports:
+    - name: http
+      protocol: TCP
+      port: 8080
+      targetPort: 80
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: configure-persistence-srcmac
+  labels:
+    app: configure-persistence-srcmac
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: configure-persistence-srcmac
+  template:
+    metadata:
+      labels:
+        app: configure-persistence-srcmac
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:alpine
+---
+
+# sessionAffinity
+apiVersion: v1
+kind: Service
+metadata:
+  name: configure-persistence-sessionaffinity
+  labels:
+    app: configure-persistence-sessionaffinity
+spec:
+  type: ClusterIP
+  selector:
+    app: configure-persistence-sessionaffinity
+  sessionAffinity: ClientIP
+  sessionAffinityConfig:
+    clientIP:
+      timeoutSeconds: 10
+  ports:
+    - name: http
+      protocol: TCP
+      port: 8080
+      targetPort: 80
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: configure-persistence-sessionaffinity
+  labels:
+    app: configure-persistence-sessionaffinity
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: configure-persistence-sessionaffinity
+  template:
+    metadata:
+      labels:
+        app: configure-persistence-sessionaffinity
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:alpine

@@ -1,0 +1,78 @@
+# output
+apiVersion: v1
+kind: Service
+metadata:
+  name: configure-log-output
+  labels:
+    app: configure-log-output
+  annotations:
+    service.kubernetes.io/kube-nftlb-load-balancer-log: "output"
+spec:
+  type: ClusterIP
+  selector:
+    app: configure-log-output
+  ports:
+    - name: http
+      protocol: TCP
+      port: 8080
+      targetPort: 80
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: configure-log-output
+  labels:
+    app: configure-log-output
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: configure-log-output
+  template:
+    metadata:
+      labels:
+        app: configure-log-output
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:alpine
+---
+
+# forward
+apiVersion: v1
+kind: Service
+metadata:
+  name: configure-log-forward
+  labels:
+    app: configure-log-forward
+  annotations:
+    service.kubernetes.io/kube-nftlb-load-balancer-log: "forward"
+spec:
+  type: ClusterIP
+  selector:
+    app: configure-log-forward
+  ports:
+    - name: http
+      protocol: TCP
+      port: 8080
+      targetPort: 80
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: configure-log-forward
+  labels:
+    app: configure-log-forward
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: configure-log-forward
+  template:
+    metadata:
+      labels:
+        app: configure-log-forward
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:alpine

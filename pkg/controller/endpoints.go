@@ -39,64 +39,65 @@ func NewEndpointsController(clientset *kubernetes.Clientset) cache.Controller {
 func AddNftlbBackends(obj interface{}) {
 	ep := obj.(*corev1.Endpoints)
 
-	// Parse this Service struct as a Farms struct
-	farms := parser.EndpointsAsFarms(ep)
+	// Parse this Endpoints struct as a Nftlb struct
+	data := parser.EndpointsAsNftlb(ep)
 
-	// Don't accept empty farms
-	if farms.Farms == nil || len(farms.Farms) == 0 {
-		go log.WriteLog(types.DetailedLog, fmt.Sprintf("AddNftlbBackends: Endpoints name: %s\nFarms struct is empty", ep.Name))
+	if len(data.Farms) == 0 {
+		// Reject object without farms
+		log.WriteLog(types.DetailedLog, fmt.Sprintf("AddNftlbFarms: Endpoints name: %s\nEmpty Farms slice", ep.Name))
+		return
+	} else if len(data.Farms[0].Backends) == 0 {
+		// Reject farm without backends
+		log.WriteLog(types.DetailedLog, fmt.Sprintf("AddNftlbFarms: Endpoints name: %s\nFarms[0] has no backends", ep.Name))
 		return
 	}
 
-	// Parse Farms struct as a JSON string
-	farmsJSON, err := parser.StructAsJSON(farms)
+	// Parse Nftlb struct as a JSON string
+	nftlbJSON, err := parser.NftlbAsJSON(data)
 	if err != nil {
-		go log.WriteLog(types.ErrorLog, fmt.Sprintf("AddNftlbBackends: Endpoints name: %s\n%s", ep.Name, err.Error()))
+		log.WriteLog(types.ErrorLog, fmt.Sprintf("AddNftlbBackends: Endpoints name: %s\n%s", ep.Name, err.Error()))
 		return
 	}
-	go log.WriteLog(types.StandardLog, fmt.Sprintf("AddNftlbBackends: Endpoints name: %s\n%s", ep.Name, farmsJSON))
-
-	// Fill the request data for farms
-	requestData := &types.RequestData{
-		Method: "POST",
-		Path:   "farms",
-		Body:   strings.NewReader(farmsJSON),
-	}
+	log.WriteLog(types.StandardLog, fmt.Sprintf("AddNftlbBackends: Endpoints name: %s\n%s", ep.Name, nftlbJSON))
 
 	// Get the response from that request
-	response, err := http.Send(requestData)
+	response, err := http.Send(&types.RequestData{
+		Method: "POST",
+		Path:   "farms",
+		Body:   strings.NewReader(nftlbJSON),
+	})
 	if err != nil {
-		go log.WriteLog(types.ErrorLog, fmt.Sprintf("AddNftlbBackends: Endpoints name: %s\n%s", ep.Name, err.Error()))
+		log.WriteLog(types.ErrorLog, fmt.Sprintf("AddNftlbBackends: Endpoints name: %s\n%s", ep.Name, err.Error()))
 		return
 	}
-	go log.WriteLog(types.StandardLog, string(response))
+
+	log.WriteLog(types.StandardLog, string(response))
 }
 
 // DeleteNftlbBackends
 func DeleteNftlbBackends(obj interface{}) {
 	ep := obj.(*corev1.Endpoints)
-	backendsChan := make(chan string, 1)
+	pathsChan := make(chan string)
 
-	go parser.DeleteEndpointsBackends(ep, backendsChan)
-
-	for backendPath := range backendsChan {
-		// Fills the request data
-		requestData := &types.RequestData{
-			Method: "DELETE",
-			Path:   backendPath,
+	go func() {
+		for path := range pathsChan {
+			// Get the response from that request
+			if response, err := http.Send(&types.RequestData{
+				Method: "DELETE",
+				Path:   path,
+			}); err != nil {
+				log.WriteLog(types.ErrorLog, fmt.Sprintf("DeleteNftlbBackends: Endpoints name: %s, path: %s\n%s", ep.Name, path, err.Error()))
+			} else {
+				log.WriteLog(types.StandardLog, fmt.Sprintf("DeleteNftlbBackends: Endpoints name: %s, path: %s\n%s", ep.Name, path, string(response)))
+			}
 		}
+	}()
 
-		// Get the response from that request
-		if response, err := http.Send(requestData); err != nil {
-			go log.WriteLog(types.ErrorLog, fmt.Sprintf("DeleteNftlbBackends: Endpoints name: %s, backend path: %s\n%s", ep.Name, backendPath, err.Error()))
-		} else {
-			go log.WriteLog(types.StandardLog, fmt.Sprintf("DeleteNftlbBackends: Endpoints name: %s, backend path: %s\n%s", ep.Name, backendPath, string(response)))
-		}
-	}
+	parser.EndpointsAsPaths(ep, pathsChan)
 }
 
 // UpdateNftlbBackends
 func UpdateNftlbBackends(oldObj, newObj interface{}) {
-	DeleteNftlbBackends(oldObj.(*corev1.Endpoints))
-	AddNftlbBackends(newObj.(*corev1.Endpoints))
+	DeleteNftlbBackends(oldObj)
+	AddNftlbBackends(newObj)
 }

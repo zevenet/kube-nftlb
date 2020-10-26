@@ -1,0 +1,38 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: configure-external-ips
+  labels:
+    app: configure-external-ips
+spec:
+  externalIPs:
+    - 192.168.10.89
+    - 192.168.10.90
+    - 192.168.10.91
+  selector:
+    app: configure-external-ips
+  ports:
+    - name: http
+      protocol: TCP
+      port: 8080
+      targetPort: 80
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: configure-external-ips
+  labels:
+    app: configure-external-ips
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: configure-external-ips
+  template:
+    metadata:
+      labels:
+        app: configure-external-ips
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:alpine

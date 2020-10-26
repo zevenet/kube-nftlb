@@ -15,14 +15,15 @@ import (
 	corev1 "k8s.io/api/core/v1"
 )
 
-// NewServiceController
+// NewServiceController returns a k8s controller with a Service resource watcher, and runs different functions based on the
+// event type that the watcher notifies.
 func NewServiceController(clientset *kubernetes.Clientset) cache.Controller {
 	listWatch := watcher.NewServiceListWatch(clientset)
 
 	eventHandler := cache.ResourceEventHandlerFuncs{
-		AddFunc:    AddNftlbFarms,
-		DeleteFunc: DeleteNftlbFarms,
-		UpdateFunc: UpdateNftlbFarms,
+		AddFunc:    AddNftlbFarm,
+		DeleteFunc: DeleteNftlbFarm,
+		UpdateFunc: UpdateNftlbFarm,
 	}
 
 	_, controller := cache.NewInformer(
@@ -35,70 +36,69 @@ func NewServiceController(clientset *kubernetes.Clientset) cache.Controller {
 	return controller
 }
 
-// AddNftlbFarms
-func AddNftlbFarms(obj interface{}) {
+// AddNftlbFarm takes in a Service object (k8s) and creates a farm with addresses (nftlb).
+func AddNftlbFarm(obj interface{}) {
 	svc := obj.(*corev1.Service)
 
-	// Parse this Service struct as a Farms struct
-	farms := parser.ServiceAsFarms(svc)
-
-	// Don't accept empty farms
-	if farms.Farms == nil || len(farms.Farms) == 0 {
-		go log.WriteLog(types.DetailedLog, fmt.Sprintf("AddNftlbFarms: Service name: %s\nFarms struct is empty", svc.Name))
+	// Reject an invalid Service
+	if svc.Spec.ClusterIP == "" || svc.Spec.ClusterIP == "None" {
+		log.WriteLog(types.DetailedLog, fmt.Sprintf("AddNftlbFarms: Service name: %s\nInvalid Service, ClusterIP should not be empty", svc.Name))
 		return
 	}
 
-	// Parse Farms struct as a parser string
-	farmsJSON, err := parser.StructAsJSON(farms)
+	// Parse Service as a Nftlb struct
+	data := parser.ServiceAsNftlb(svc)
+
+	// Parse Nftlb struct as JSON
+	nftlbJSON, err := parser.NftlbAsJSON(data)
 	if err != nil {
-		go log.WriteLog(types.ErrorLog, fmt.Sprintf("AddNftlbFarms: Service name: %s\n%s", svc.Name, err.Error()))
+		log.WriteLog(types.ErrorLog, fmt.Sprintf("AddNftlbFarms: Service name: %s\n%s", svc.Name, err.Error()))
 		return
 	}
 
-	// Fill the request data for farms
-	requestData := &types.RequestData{
+	// Send that JSON data to nftlb
+	response, err := http.Send(&types.RequestData{
 		Method: "POST",
 		Path:   "farms",
-		Body:   strings.NewReader(farmsJSON),
-	}
-
-	// Get the response from that request
-	response, err := http.Send(requestData)
+		Body:   strings.NewReader(nftlbJSON),
+	})
 	if err != nil {
-		go log.WriteLog(types.ErrorLog, fmt.Sprintf("AddNftlbFarms: Service name: %s\n%s", svc.Name, err.Error()))
+		log.WriteLog(types.ErrorLog, fmt.Sprintf("AddNftlbFarms: Service name: %s\n%s", svc.Name, err.Error()))
 		return
 	}
-	go log.WriteLog(types.StandardLog, fmt.Sprintf("AddNftlbFarms: Service name: %s\n%s", svc.Name, string(response)))
+
+	// Read the response
+	log.WriteLog(types.StandardLog, fmt.Sprintf("AddNftlbFarms: Service name: %s\n%s", svc.Name, string(response)))
 }
 
-// DeleteNftlbFarms
-func DeleteNftlbFarms(obj interface{}) {
+// DeleteNftlbFarm takes in a Service object (k8s) and deletes the farm related to the service and its addresses (nftlb).
+func DeleteNftlbFarm(obj interface{}) {
 	svc := obj.(*corev1.Service)
 
-	// Make channel where farm path will arrive
-	farmPathsChan := make(chan string, 1)
+	// Make channel where paths will come through
+	pathChan := make(chan string)
 
-	// Handle shared channel
-	go parser.DeleteMaxConnsService(svc)
-	go parser.DeleteServiceFarms(svc, farmPathsChan)
-
-	for farmPath := range farmPathsChan {
-		// Fill the request data
-		requestData := &types.RequestData{
-			Method: "DELETE",
-			Path:   farmPath,
+	go func() {
+		for path := range pathChan {
+			// Get the response from that request
+			if response, err := http.Send(&types.RequestData{
+				Method: "DELETE",
+				Path:   path,
+			}); err != nil {
+				log.WriteLog(types.ErrorLog, fmt.Sprintf("DeleteNftlbFarms: Service name: %s\n%s", svc.Name, err.Error()))
+			} else {
+				log.WriteLog(types.StandardLog, fmt.Sprintf("DeleteNftlbFarms: Service name: %s\n%s", svc.Name, string(response)))
+			}
 		}
+	}()
 
-		// Get the response from that request
-		if response, err := http.Send(requestData); err != nil {
-			go log.WriteLog(types.ErrorLog, fmt.Sprintf("DeleteNftlbFarms: Service name: %s\n%s", svc.Name, err.Error()))
-		} else {
-			go log.WriteLog(types.StandardLog, fmt.Sprintf("DeleteNftlbFarms: Service name: %s\n%s", svc.Name, string(response)))
-		}
-	}
+	// Read paths and send them through the channel
+	parser.ServiceAsPaths(svc, pathChan)
 }
 
-// UpdateNftlbFarms
-func UpdateNftlbFarms(oldObj, newObj interface{}) {
-	AddNftlbFarms(newObj.(*corev1.Service))
+// UpdateNftlbFarm takes in two Services (both are the same, but one it's before the update and the other it's updated)
+// and applies the changes from the updated Service.
+func UpdateNftlbFarm(oldObj, newObj interface{}) {
+	DeleteNftlbFarm(oldObj)
+	AddNftlbFarm(newObj)
 }

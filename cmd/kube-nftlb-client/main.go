@@ -15,7 +15,8 @@ func main() {
 	controllers := []cache.Controller{
 		controller.NewServiceController(clientset),
 		controller.NewEndpointsController(clientset),
-		controller.NewNetworkPolicyController(clientset),
+		//controller.NewNetworkPolicyController(clientset),
+		// TODO Enable controllers after giving full support to new Addresses nftlb object
 	}
 
 	// Run controllers as background processes

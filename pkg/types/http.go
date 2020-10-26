@@ -12,7 +12,7 @@ type RequestData struct {
 	Body   io.Reader
 }
 
-// URL is a formatted URL string with some parameters.
+// URL makes a formatted URL string with some parameters.
 func URL(protocol string, host string, port int, path string) string {
 	return fmt.Sprintf("%s://%s:%d/%s", protocol, host, port, path)
 }

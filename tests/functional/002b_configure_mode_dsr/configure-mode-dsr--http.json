@@ -1,0 +1,71 @@
+{
+    "farms": [
+        {
+            "addresses": [
+                {
+                    "family": "ipv4",
+                    "ip-addr": "IP",
+                    "name": "NAME",
+                    "ports": "",
+                    "protocol": "tcp",
+                    "used": "1"
+                },
+                {
+                    "family": "ipv4",
+                    "ip-addr": "IP",
+                    "name": "NAME",
+                    "ports": "8080",
+                    "protocol": "tcp",
+                    "used": "1"
+                }
+            ],
+            "backends": [
+                {
+                    "est-connlimit": "0",
+                    "ip-addr": "IP",
+                    "mark": "MARK",
+                    "name": "NAME",
+                    "port": "80",
+                    "priority": "1",
+                    "state": "config_error",
+                    "weight": "1"
+                },
+                {
+                    "est-connlimit": "0",
+                    "ip-addr": "IP",
+                    "mark": "MARK",
+                    "name": "NAME",
+                    "port": "80",
+                    "priority": "1",
+                    "state": "config_error",
+                    "weight": "1"
+                }
+            ],
+            "est-connlimit": "0",
+            "family": "ipv4",
+            "helper": "none",
+            "intra-connect": "on",
+            "log": "none",
+            "mark": "MARK",
+            "mode": "dsr",
+            "name": "configure-mode-dsr--http",
+            "new-rtlimit": "0",
+            "new-rtlimit-burst": "0",
+            "persist-ttl": "60",
+            "persistence": "none",
+            "policies": [],
+            "priority": "1",
+            "protocol": "tcp",
+            "queue": "-1",
+            "rst-rtlimit": "0",
+            "rst-rtlimit-burst": "0",
+            "sched-param": "none",
+            "scheduler": "rr",
+            "source-addr": "",
+            "state": "config_error",
+            "tcp-strict": "off",
+            "virtual-addr": "IP",
+            "virtual-ports": ""
+        }
+    ]
+}
