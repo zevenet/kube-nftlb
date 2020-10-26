@@ -62,5 +62,7 @@ func getAnnotations(service *corev1.Service) *types.Annotations {
 		}
 	}
 
+	annotations.Iface = findIface(annotations.Mode)
+
 	return annotations
 }
