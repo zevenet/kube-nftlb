@@ -1,9 +1,12 @@
 package parser
 
 var (
-	// Map [Service name] to []{ addresses names }
-	addressesPerService = make(map[string][]string)
+	// Map [Service-Endpoints (name)] to []{ farms }
+	farmsPerService = make(map[string][]string)
 
-	// Map [Endpoints name] to []{ backends names }
-	backendsPerEndpoints = make(map[string][]string)
+	// Map [farm (name)] to []{ backends }
+	backendsPerFarm = make(map[string][]string)
+
+	// Map [farm (name)] to []{ addresses }
+	addressesPerFarm = make(map[string][]string)
 )
