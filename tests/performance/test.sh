@@ -141,7 +141,6 @@ function create_deployment {
 
     kubectl apply -f "$DEPLOYMENT_PATH" --timeout="$TIMEOUT"
     kubectl wait --for=condition=Ready pods -l app="$RESOURCE_NAME" --timeout="$TIMEOUT"
-    sleep 120
 }
 
 function delete_deployment {
