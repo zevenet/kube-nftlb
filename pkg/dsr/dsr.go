@@ -1,197 +1,139 @@
 package dsr
 
-// TODO Adapt DSR mode to new Addresses nftlb object
-
-/*
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strings"
 
-	"github.com/zevenet/kube-nftlb/pkg/auth"
 	"github.com/zevenet/kube-nftlb/pkg/types"
 
-	dockerTypes "github.com/docker/docker/api/types"
-	dockerClient "github.com/docker/docker/client"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 var (
-	mapServiceDsr = make(map[string]*types.DSR)
-	clientset     = auth.GetClientset()
+	// Map [farm (name)] to { DSR object }
+	farmsDSR = make(map[string]types.DSR)
 )
 
-// CreateInterfaceDsr looks for the label fields within our YAML configuration file and lets us to identify which deployment is assigned to our service.
-func CreateInterfaceDsr(farm types.Farm, service *corev1.Service) {
-	if !ExistsServiceDSR(farm.Name) {
-		mapServiceDsr[farm.Name] = new(types.DSR)
-	}
-	mapServiceDsr[farm.Name].VirtualAddr = farm.VirtualAddr
-	mapServiceDsr[farm.Name].VirtualPorts = farm.VirtualPorts
+// IsEnabled ...
+func IsEnabled(farm *types.Farm) bool {
+	_, exists := farmsDSR[farm.Name]
+	return exists
+}
 
+// Enable ...
+func Enable(farm *types.Farm) {
+	farmsDSR[farm.Name] = types.DSR{
+		DockerUIDs:   make([]string, 0),
+		AddressesIPs: make([]string, len(farm.Addresses)),
+	}
+
+	for index, address := range farm.Addresses {
+		farmsDSR[farm.Name].AddressesIPs[index] = address.IPAddr
+	}
+}
+
+// Disable ...
+func Disable(farm *types.Farm) {
+	deleteInterfaces(farm.Name)
+	delete(farmsDSR, farm.Name)
+}
+
+// createInterface looks for the label fields within our YAML configuration file and lets us to identify which deployment is assigned to our service.
+func createInterfaces(farm *types.Farm, service *corev1.Service) {
+	podList := getPodList(service)
+	if podList == nil {
+		return
+	}
+
+	// If both labels match, add every pod (backend) name to the interface
+	for _, pod := range podList {
+		// Configure the loopback interface with the IP of the service
+		addPodInterface(farm.Name, pod.ObjectMeta.Name)
+	}
+}
+
+// addPodInterface
+func addPodInterface(farmName string, backendName string) error {
+	UID, err := getPodUID(backendName)
+	if err != nil {
+		return err
+	}
+
+	// Store the UID of this container to use it later
+	farmDSR := farmsDSR[farmName]
+	farmDSR.DockerUIDs = append(farmDSR.DockerUIDs, UID)
+	farmsDSR[farmName] = farmDSR
+
+	for _, virtualIP := range farmsDSR[farmName].AddressesIPs {
+		if err := dockerCmdRun("add", virtualIP, UID); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+// DeleteInterfaces
+func deleteInterfaces(farmName string) {
+	// Delete the configuration of the loopback interface of our deployments
+	for indexUID := range farmsDSR[farmName].DockerUIDs {
+		for _, virtualIP := range farmsDSR[farmName].AddressesIPs {
+			if err := dockerCmdRun("del", virtualIP, farmsDSR[farmName].DockerUIDs[indexUID]); err != nil {
+				panic(err)
+			}
+		}
+	}
+}
+
+func getPodList(service *corev1.Service) []corev1.Pod {
 	// Get service label and check if it exists
 	labelService, ok := service.ObjectMeta.Labels["app"]
 	if !ok {
-		return
+		return nil
 	}
 
 	// Get pod list
-	podList, err := clientset.CoreV1().Pods("default").List(context.TODO(), metav1.ListOptions{})
+	podList, err := clientset.CoreV1().Pods(corev1.NamespaceAll).List(context.TODO(), metav1.ListOptions{})
 	if err != nil {
 		// Don't continue if there are errors
-		return
+		return nil
 	} else if len(podList.Items) == 0 {
 		// Don't continue if there aren't pods
-		return
+		return nil
 	}
 
 	// If the first pods has "app=" label, match it with the deployment label
 	labelDeployment, ok := podList.Items[0].ObjectMeta.Labels["app"]
 	if !ok {
 		// Don't continue if there are errors
-		return
+		return nil
 	} else if labelService != labelDeployment {
 		// Don't continue if both labels don't match
-		return
+		return nil
 	}
 
-	// If both labels match, add every pod (backend) name to the interface
-	for _, pod := range podList.Items {
-		// Configure the loopback interface with the IP of the service
-		go AddInterfaceDsr(farm.Name, pod.ObjectMeta.Name, service.Spec.ClusterIP)
-	}
+	return podList.Items
 }
 
-// AddInterfaceDsr
-func AddInterfaceDsr(farmName string, backendName string, virtualAddr string) {
-	// What we do in this function is use the "dockerclient" to get the dockerUID of our containers.
-	// This is necessary to locate the specific container on which we are going to configure the interface and
-	// then on which we are going to execute the commands. For example: Search among all the pods, those that
-	// are in the "default" namespace for those that are called as one of our deployments (this is launched once for each of them)
-	pod, err := clientset.CoreV1().Pods("default").Get(context.TODO(), backendName, metav1.GetOptions{})
+func getPodUID(backendName string) (string, error) {
+	pod, err := clientset.CoreV1().Pods(corev1.NamespaceAll).Get(context.TODO(), backendName, metav1.GetOptions{})
 	if err != nil {
 		// Don't continue if there are errors
-		return
+		return "", err
 	} else if len(pod.Status.ContainerStatuses) == 0 {
 		// Don't continue if pod doesn't have any status
-		return
+		return "", errors.New("pod.Status.ContainerStatuses is empty")
 	}
 
-	// Get UID list
-	dockerUID := pod.Status.ContainerStatuses[0].ContainerID
-	UIDs := strings.SplitAfter(dockerUID, "docker://")
-	if len(UIDs) == 0 {
-		// Don't continue if UID list is empty
-		return
+	splittedUID := strings.SplitAfter(pod.Status.ContainerStatuses[0].ContainerID, "docker://")
+	if len(splittedUID) != 2 {
+		// Don't continue if the splitted UID doesn't have 2 elements
+		return "", fmt.Errorf("Invalid length after splitting %s from \"docker://\"", pod.Status.ContainerStatuses[0].ContainerID)
 	}
 
-	// We specify the configuration to apply on the container. The CMD field are the commands to apply.
-	// The users field are the privileges with which these commands will be executed.
-	// Network configuration needs to be run in root mode.
-	execConfig := dockerTypes.ExecConfig{
-		AttachStderr: true,
-		AttachStdin:  true,
-		AttachStdout: true,
-		Cmd:          []string{"/bin/sh", "-c", "ip ad add " + virtualAddr + "/32 dev lo"},
-		Tty:          true,
-		Detach:       false,
-		Privileged:   true,
-		User:         "root",
-		WorkingDir:   "/",
-	}
-
-	execAttachConfig := dockerTypes.ExecStartCheck{
-		Detach: false,
-		Tty:    true,
-	}
-
-	// Use the docker client to make requests to the docker rest api, from it we get the UID
-	// of the pod that we want to apply DSR
-	cli, err := dockerClient.NewClientWithOpts(dockerClient.FromEnv)
-	if err != nil {
-		panic(err)
-	}
-
-	// Link the configuration to the container where we want to apply said configuration
-	// (once linked, it is only necessary to launch the "Start" command)
-	exec, err := cli.ContainerExecCreate(context.TODO(), UIDs[1], execConfig)
-	if err != nil {
-		panic(err)
-	}
-
-	err = cli.ContainerExecStart(context.TODO(), exec.ID, execAttachConfig)
-	if err != nil {
-		panic(err)
-	}
-
-	// Store the UID of this container to use it later
-	mapServiceDsr[farmName].DockerUID = append(mapServiceDsr[farmName].DockerUID, UIDs[1])
+	// Return the second element from ["docker://", UID]
+	return splittedUID[1], nil
 }
-
-// DeleteInterfaceDsr
-func DeleteInterfaceDsr(farmName string) {
-	// Delete the configuration of the loopback interface of our deployments
-	for UID := range mapServiceDsr[farmName].DockerUID {
-		// Get configs
-		execConfig := dockerTypes.ExecConfig{
-			AttachStderr: true,
-			AttachStdin:  true,
-			AttachStdout: true,
-			Cmd:          []string{"/bin/sh", "-c", "ip ad del " + mapServiceDsr[farmName].VirtualAddr + "/32 dev lo"},
-			Tty:          true,
-			Detach:       false,
-			Privileged:   true,
-			User:         "root",
-			WorkingDir:   "/",
-		}
-
-		execAttachConfig := dockerTypes.ExecStartCheck{
-			Detach: false,
-			Tty:    true,
-		}
-
-		// New Docker client
-		cli, err := dockerClient.NewClientWithOpts(dockerClient.FromEnv)
-		if err != nil {
-			panic(err)
-		}
-
-		// Create container with exec config
-		exec, err := cli.ContainerExecCreate(context.TODO(), fmt.Sprintf("%s", mapServiceDsr[farmName].DockerUID[UID]), execConfig)
-		if err != nil {
-			panic(err)
-		}
-
-		// Start container with exec attach config
-		err = cli.ContainerExecStart(context.TODO(), exec.ID, execAttachConfig)
-		if err != nil {
-			panic(err)
-		}
-	}
-
-	// Remove this service from the DSR map
-	go DeleteService(farmName)
-}
-
-// DeleteService
-func DeleteService(farmName string) {
-	if ExistsServiceDSR(farmName) {
-		delete(mapServiceDsr, farmName)
-	}
-}
-
-// ExistsServiceDSR
-func ExistsServiceDSR(farmName string) bool {
-	_, exists := mapServiceDsr[farmName]
-	return exists
-}
-
-func GetVirtualAddr(farmName string) string {
-	return mapServiceDsr[farmName].VirtualAddr
-}
-
-func GetVirtualPorts(farmName string) string {
-	return mapServiceDsr[farmName].VirtualPorts
-}
-*/
