@@ -1,8 +1,7 @@
 package types
 
-// DSR stores data to create a DSR interface.
+// DSR stores data to add or delete DSR interfaces.
 type DSR struct {
-	VirtualAddr  string
-	VirtualPorts string
-	DockerUID    []string
+	DockerUIDs   []string
+	AddressesIPs []string
 }

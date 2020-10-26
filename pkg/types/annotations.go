@@ -11,4 +11,5 @@ type Annotations struct {
 	Log          string
 	LogPrefix    string
 	EstConnlimit string
+	Iface        string
 }
