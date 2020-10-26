@@ -16,7 +16,7 @@ func main() {
 		controller.NewServiceController(clientset),
 		controller.NewEndpointsController(clientset),
 		//controller.NewNetworkPolicyController(clientset),
-		// TODO Enable controllers after giving full support to new Addresses nftlb object
+		// TODO Enable NetworkPolicyController after nftlb fully supports policies
 	}
 
 	// Run controllers as background processes
