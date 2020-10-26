@@ -15,7 +15,7 @@ This is a directory with basic files to test the functionality of `kube-nftlb`.
 
 ### **FARM_NAME.json**
 
-The expected and filtered JSON object after requesting that farm from `nftlb`.
+The expected JSON raw object after requesting that farm from `nftlb`.
 
 ### **input.yaml**
 

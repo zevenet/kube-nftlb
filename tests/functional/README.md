@@ -3,6 +3,7 @@
 ## Requirements
 
 - `curl`
+- `jq`
 
 ## Setup scripts
 

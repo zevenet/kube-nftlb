@@ -1,21 +1,167 @@
-ct mark & MARK == MARK masquerade
-ct mark vmap @forward-proto-services
-ct state new ct mark MARK ct mark set numgen inc mod 1 map { 0 : MARK }
-ct state new ct mark MARK ct mark set numgen inc mod 1 map { 0 : MARK }
-ct state new ct mark MARK ct mark set numgen inc mod 1 map { 0 : MARK }
-ct state new ct mark MARK ct mark set numgen inc mod 1 map { 0 : MARK }
-ct state new ct mark MARK ct mark set numgen inc mod 1 map { 0 : MARK }
-ct state new ct mark MARK ct mark set numgen inc mod 1 map { 0 : MARK }
-dnat ip addr . port to ct mark map { MARK : IP . 53 }
-dnat ip addr . port to ct mark map { MARK : IP . 53 }
-dnat ip addr . port to ct mark map { MARK : IP . 80 }
-dnat ip addr . port to ct mark map { MARK : IP . 80 }
-dnat ip addr . port to ct mark map { MARK : IP . 8443 }
-dnat ip addr . port to ct mark map { MARK : IP . 9153 }
-ip protocol . ip daddr . th dport vmap @filter-proto-services
-ip protocol . ip daddr . th dport vmap @nat-proto-services
-ip protocol . ip daddr . th dport vmap @output-filter-proto-services
-ip protocol . ip daddr . th dport vmap @output-nat-proto-services
-log prefix "configure-log-forward"
-meta mark set ct mark
-snat to ct mark map @proto-services-back-m
+table ip nftlb {
+	map nat-proto-services {
+		type inet_proto . ipv4_addr . inet_service : verdict
+		elements = { tcp . 10.96.0.1 . 443 : goto nat-kubernetes--https,
+			     tcp . 10.96.0.10 . 53 : goto nat-kube-dns--dns-tcp,
+			     tcp . 10.96.0.10 . 9153 : goto nat-kube-dns--metrics,
+			     tcp . 10.96.158.218 . 8080 : goto nat-configure-log-forward--http,
+			     tcp . 10.100.75.132 . 8080 : goto nat-configure-external-ips--http,
+			     tcp . 192.168.10.89 . 8080 : goto nat-configure-external-ips--http--externalIP-1,
+			     tcp . 192.168.10.90 . 8080 : goto nat-configure-external-ips--http--externalIP-2,
+			     tcp . 192.168.10.91 . 8080 : goto nat-configure-external-ips--http--externalIP-3,
+			     udp . 10.96.0.10 . 53 : goto nat-kube-dns--dns }
+	}
+
+	map proto-services-back-m {
+		type mark : ipv4_addr
+	}
+
+	map filter-proto-services {
+		type inet_proto . ipv4_addr . inet_service : verdict
+		elements = { tcp . 10.96.0.1 . 443 : goto filter-kubernetes--https,
+			     tcp . 10.96.0.10 . 53 : goto filter-kube-dns--dns-tcp,
+			     tcp . 10.96.0.10 . 9153 : goto filter-kube-dns--metrics,
+			     tcp . 10.96.158.218 . 8080 : goto filter-configure-log-forward--http,
+			     tcp . 10.100.75.132 . 8080 : goto filter-configure-external-ips--http,
+			     tcp . 192.168.10.89 . 8080 : goto filter-configure-external-ips--http--externalIP-1,
+			     tcp . 192.168.10.90 . 8080 : goto filter-configure-external-ips--http--externalIP-2,
+			     tcp . 192.168.10.91 . 8080 : goto filter-configure-external-ips--http--externalIP-3,
+			     udp . 10.96.0.10 . 53 : goto filter-kube-dns--dns }
+	}
+
+	map output-filter-proto-services {
+		type inet_proto . ipv4_addr . inet_service : verdict
+		elements = { tcp . 10.96.0.1 . 443 : goto filter-kubernetes--https,
+			     tcp . 10.96.0.10 . 53 : goto filter-kube-dns--dns-tcp,
+			     tcp . 10.96.0.10 . 9153 : goto filter-kube-dns--metrics,
+			     tcp . 10.96.158.218 . 8080 : goto filter-configure-log-forward--http,
+			     tcp . 10.100.75.132 . 8080 : goto filter-configure-external-ips--http,
+			     tcp . 192.168.10.89 . 8080 : goto filter-configure-external-ips--http--externalIP-1,
+			     tcp . 192.168.10.90 . 8080 : goto filter-configure-external-ips--http--externalIP-2,
+			     tcp . 192.168.10.91 . 8080 : goto filter-configure-external-ips--http--externalIP-3,
+			     udp . 10.96.0.10 . 53 : goto filter-kube-dns--dns }
+	}
+
+	map output-nat-proto-services {
+		type inet_proto . ipv4_addr . inet_service : verdict
+		elements = { tcp . 10.96.0.1 . 443 : goto nat-kubernetes--https,
+			     tcp . 10.96.0.10 . 53 : goto nat-kube-dns--dns-tcp,
+			     tcp . 10.96.0.10 . 9153 : goto nat-kube-dns--metrics,
+			     tcp . 10.96.158.218 . 8080 : goto nat-configure-log-forward--http,
+			     tcp . 10.100.75.132 . 8080 : goto nat-configure-external-ips--http,
+			     tcp . 192.168.10.89 . 8080 : goto nat-configure-external-ips--http--externalIP-1,
+			     tcp . 192.168.10.90 . 8080 : goto nat-configure-external-ips--http--externalIP-2,
+			     tcp . 192.168.10.91 . 8080 : goto nat-configure-external-ips--http--externalIP-3,
+			     udp . 10.96.0.10 . 53 : goto nat-kube-dns--dns }
+	}
+
+	map forward-proto-services {
+		type mark : verdict
+	}
+
+	chain prerouting {
+		type nat hook prerouting priority dstnat; policy accept;
+		ip protocol . ip daddr . th dport vmap @nat-proto-services
+	}
+
+	chain postrouting {
+		type nat hook postrouting priority srcnat; policy accept;
+		ct mark & 0x40000000 == 0x40000000 masquerade
+		snat to ct mark map @proto-services-back-m
+	}
+
+	chain filter {
+		type filter hook prerouting priority mangle; policy accept;
+		meta mark set ct mark
+		ip protocol . ip daddr . th dport vmap @filter-proto-services
+	}
+
+	chain filter-kubernetes--https {
+		ct state new ct mark 0x00000000 ct mark set numgen inc mod 1 map { 0 : 0x40000001 }
+	}
+
+	chain nat-kubernetes--https {
+		dnat ip addr . port to ct mark map { 0x40000001 : 192.168.1.11 . 8443 }
+	}
+
+	chain output-filter {
+		type filter hook output priority mangle; policy accept;
+		ip protocol . ip daddr . th dport vmap @output-filter-proto-services
+	}
+
+	chain output-nat {
+		type nat hook output priority -100; policy accept;
+		ip protocol . ip daddr . th dport vmap @output-nat-proto-services
+	}
+
+	chain filter-kube-dns--dns-tcp {
+		ct state new ct mark 0x00000000 ct mark set numgen inc mod 1 map { 0 : 0x40000002 }
+	}
+
+	chain nat-kube-dns--dns-tcp {
+		dnat ip addr . port to ct mark map { 0x40000002 : 172.17.0.2 . 53 }
+	}
+
+	chain filter-kube-dns--metrics {
+		ct state new ct mark 0x00000000 ct mark set numgen inc mod 1 map { 0 : 0x40000003 }
+	}
+
+	chain nat-kube-dns--metrics {
+		dnat ip addr . port to ct mark map { 0x40000003 : 172.17.0.2 . 9153 }
+	}
+
+	chain filter-kube-dns--dns {
+		ct state new ct mark 0x00000000 ct mark set numgen inc mod 1 map { 0 : 0x40000004 }
+	}
+
+	chain nat-kube-dns--dns {
+		dnat ip addr . port to ct mark map { 0x40000004 : 172.17.0.2 . 53 }
+	}
+
+	chain filter-configure-log-forward--http {
+		ct state new ct mark 0x00000000 ct mark set numgen inc mod 1 map { 0 : 0x40000005 }
+	}
+
+	chain nat-configure-log-forward--http {
+		dnat ip addr . port to ct mark map { 0x40000005 : 172.17.0.3 . 80 }
+	}
+
+	chain forward {
+		type filter hook forward priority -100; policy accept;
+		ct mark vmap @forward-proto-services
+	}
+
+	chain forward-configure-log-forward--http {
+		log prefix "configure-log-forward--http"
+	}
+
+	chain filter-configure-external-ips--http {
+		ct state new ct mark 0x00000000 ct mark set numgen inc mod 1 map { 0 : 0x40000005 }
+	}
+
+	chain nat-configure-external-ips--http {
+		dnat ip addr . port to ct mark map { 0x40000005 : 172.17.0.3 . 80 }
+	}
+
+	chain filter-configure-external-ips--http--externalIP-1 {
+		ct state new ct mark 0x00000000 ct mark set 0x40000000
+	}
+
+	chain nat-configure-external-ips--http--externalIP-1 {
+	}
+
+	chain filter-configure-external-ips--http--externalIP-2 {
+		ct state new ct mark 0x00000000 ct mark set 0x40000000
+	}
+
+	chain nat-configure-external-ips--http--externalIP-2 {
+	}
+
+	chain filter-configure-external-ips--http--externalIP-3 {
+		ct state new ct mark 0x00000000 ct mark set numgen inc mod 1 map { 0 : 0x40000006 }
+	}
+
+	chain nat-configure-external-ips--http--externalIP-3 {
+		dnat ip addr . port to ct mark map { 0x40000006 : 172.17.0.3 . 80 }
+	}
+}

@@ -1,19 +1,120 @@
-ct mark & MARK == MARK masquerade
-ct state new ct mark MARK ct mark set numgen inc mod 1 map { 0 : MARK }
-ct state new ct mark MARK ct mark set numgen inc mod 1 map { 0 : MARK }
-ct state new ct mark MARK ct mark set numgen inc mod 1 map { 0 : MARK }
-ct state new ct mark MARK ct mark set numgen inc mod 1 map { 0 : MARK }
-ct state new ct mark MARK ct mark set numgen inc mod 2 map { 0 : MARK, 1 : MARK }
-ct state new ct mark MARK ct mark set numgen inc mod 2 map { 0 : MARK, 1 : MARK }
-dnat ip addr . port to ct mark map { MARK : IP . 53 }
-dnat ip addr . port to ct mark map { MARK : IP . 53 }
-dnat ip addr . port to ct mark map { MARK : IP . 80, MARK : IP . 80 }
-dnat ip addr . port to ct mark map { MARK : IP . 81, MARK : IP . 81 }
-dnat ip addr . port to ct mark map { MARK : IP . 8443 }
-dnat ip addr . port to ct mark map { MARK : IP . 9153 }
-ip protocol . ip daddr . th dport vmap @filter-proto-services
-ip protocol . ip daddr . th dport vmap @nat-proto-services
-ip protocol . ip daddr . th dport vmap @output-filter-proto-services
-ip protocol . ip daddr . th dport vmap @output-nat-proto-services
-meta mark set ct mark
-snat to ct mark map @proto-services-back-m
+table ip nftlb {
+	map nat-proto-services {
+		type inet_proto . ipv4_addr . inet_service : verdict
+		elements = { tcp . 10.96.0.1 . 443 : goto nat-kubernetes--https,
+			     tcp . 10.96.0.10 . 53 : goto nat-kube-dns--dns-tcp,
+			     tcp . 10.96.0.10 . 9153 : goto nat-kube-dns--metrics,
+			     tcp . 10.101.125.112 . 8080 : goto nat-creation-farms--http,
+			     tcp . 10.101.125.112 . 8181 : goto nat-creation-farms--https,
+			     udp . 10.96.0.10 . 53 : goto nat-kube-dns--dns }
+	}
+
+	map proto-services-back-m {
+		type mark : ipv4_addr
+	}
+
+	map filter-proto-services {
+		type inet_proto . ipv4_addr . inet_service : verdict
+		elements = { tcp . 10.96.0.1 . 443 : goto filter-kubernetes--https,
+			     tcp . 10.96.0.10 . 53 : goto filter-kube-dns--dns-tcp,
+			     tcp . 10.96.0.10 . 9153 : goto filter-kube-dns--metrics,
+			     tcp . 10.101.125.112 . 8080 : goto filter-creation-farms--http,
+			     tcp . 10.101.125.112 . 8181 : goto filter-creation-farms--https,
+			     udp . 10.96.0.10 . 53 : goto filter-kube-dns--dns }
+	}
+
+	map output-filter-proto-services {
+		type inet_proto . ipv4_addr . inet_service : verdict
+		elements = { tcp . 10.96.0.1 . 443 : goto filter-kubernetes--https,
+			     tcp . 10.96.0.10 . 53 : goto filter-kube-dns--dns-tcp,
+			     tcp . 10.96.0.10 . 9153 : goto filter-kube-dns--metrics,
+			     tcp . 10.101.125.112 . 8080 : goto filter-creation-farms--http,
+			     tcp . 10.101.125.112 . 8181 : goto filter-creation-farms--https,
+			     udp . 10.96.0.10 . 53 : goto filter-kube-dns--dns }
+	}
+
+	map output-nat-proto-services {
+		type inet_proto . ipv4_addr . inet_service : verdict
+		elements = { tcp . 10.96.0.1 . 443 : goto nat-kubernetes--https,
+			     tcp . 10.96.0.10 . 53 : goto nat-kube-dns--dns-tcp,
+			     tcp . 10.96.0.10 . 9153 : goto nat-kube-dns--metrics,
+			     tcp . 10.101.125.112 . 8080 : goto nat-creation-farms--http,
+			     tcp . 10.101.125.112 . 8181 : goto nat-creation-farms--https,
+			     udp . 10.96.0.10 . 53 : goto nat-kube-dns--dns }
+	}
+
+	chain prerouting {
+		type nat hook prerouting priority dstnat; policy accept;
+		ip protocol . ip daddr . th dport vmap @nat-proto-services
+	}
+
+	chain postrouting {
+		type nat hook postrouting priority srcnat; policy accept;
+		ct mark & 0x40000000 == 0x40000000 masquerade
+		snat to ct mark map @proto-services-back-m
+	}
+
+	chain filter {
+		type filter hook prerouting priority mangle; policy accept;
+		meta mark set ct mark
+		ip protocol . ip daddr . th dport vmap @filter-proto-services
+	}
+
+	chain filter-kubernetes--https {
+		ct state new ct mark 0x00000000 ct mark set numgen inc mod 1 map { 0 : 0x40000001 }
+	}
+
+	chain nat-kubernetes--https {
+		dnat ip addr . port to ct mark map { 0x40000001 : 192.168.1.11 . 8443 }
+	}
+
+	chain output-filter {
+		type filter hook output priority mangle; policy accept;
+		ip protocol . ip daddr . th dport vmap @output-filter-proto-services
+	}
+
+	chain output-nat {
+		type nat hook output priority -100; policy accept;
+		ip protocol . ip daddr . th dport vmap @output-nat-proto-services
+	}
+
+	chain filter-kube-dns--dns-tcp {
+		ct state new ct mark 0x00000000 ct mark set numgen inc mod 1 map { 0 : 0x40000002 }
+	}
+
+	chain nat-kube-dns--dns-tcp {
+		dnat ip addr . port to ct mark map { 0x40000002 : 172.17.0.2 . 53 }
+	}
+
+	chain filter-kube-dns--metrics {
+		ct state new ct mark 0x00000000 ct mark set numgen inc mod 1 map { 0 : 0x40000003 }
+	}
+
+	chain nat-kube-dns--metrics {
+		dnat ip addr . port to ct mark map { 0x40000003 : 172.17.0.2 . 9153 }
+	}
+
+	chain filter-kube-dns--dns {
+		ct state new ct mark 0x00000000 ct mark set numgen inc mod 1 map { 0 : 0x40000004 }
+	}
+
+	chain nat-kube-dns--dns {
+		dnat ip addr . port to ct mark map { 0x40000004 : 172.17.0.2 . 53 }
+	}
+
+	chain filter-creation-farms--https {
+		ct state new ct mark 0x00000000 ct mark set numgen inc mod 2 map { 0 : 0x40000005, 1 : 0x40000007 }
+	}
+
+	chain nat-creation-farms--https {
+		dnat ip addr . port to ct mark map { 0x40000005 : 172.17.0.7 . 81, 0x40000007 : 172.17.0.6 . 81 }
+	}
+
+	chain filter-creation-farms--http {
+		ct state new ct mark 0x00000000 ct mark set numgen inc mod 2 map { 0 : 0x40000006, 1 : 0x40000008 }
+	}
+
+	chain nat-creation-farms--http {
+		dnat ip addr . port to ct mark map { 0x40000006 : 172.17.0.7 . 80, 0x40000008 : 172.17.0.6 . 80 }
+	}
+}

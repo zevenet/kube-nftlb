@@ -1,54 +1,44 @@
 {
-    "farms": [
-        {
-            "addresses": [
+        "farms": [
                 {
-                    "family": "ipv4",
-                    "ip-addr": "IP",
-                    "name": "NAME",
-                    "ports": "8080",
-                    "protocol": "tcp",
-                    "used": "1"
+                        "name": "configure-mode-stlsdnat--http",
+                        "family": "ipv4",
+                        "virtual-addr": "10.96.69.143",
+                        "virtual-ports": "8080",
+                        "source-addr": "",
+                        "mode": "stlsdnat",
+                        "responsettl": "60",
+                        "protocol": "tcp",
+                        "scheduler": "rr",
+                        "sched-param": "none",
+                        "persistence": "none",
+                        "persist-ttl": "60",
+                        "helper": "none",
+                        "log": "none",
+                        "mark": "0x0",
+                        "priority": "1",
+                        "state": "config_error",
+                        "new-rtlimit": "0",
+                        "new-rtlimit-burst": "0",
+                        "rst-rtlimit": "0",
+                        "rst-rtlimit-burst": "0",
+                        "est-connlimit": "0",
+                        "tcp-strict": "off",
+                        "queue": "-1",
+                        "intra-connect": "on",
+                        "backends": [
+                                {
+                                        "name": "configure-mode-stlsdnat-5fd86db5dc-s9ptd",
+                                        "ip-addr": "172.17.0.5",
+                                        "port": "80",
+                                        "weight": "1",
+                                        "priority": "1",
+                                        "mark": "0x5",
+                                        "est-connlimit": "0",
+                                        "state": "config_error"
+                                }
+                        ],
+                        "policies": []
                 }
-            ],
-            "backends": [
-                {
-                    "est-connlimit": "0",
-                    "ip-addr": "IP",
-                    "mark": "MARK",
-                    "name": "NAME",
-                    "port": "80",
-                    "priority": "1",
-                    "state": "config_error",
-                    "weight": "1"
-                }
-            ],
-            "est-connlimit": "0",
-            "family": "ipv4",
-            "helper": "none",
-            "intra-connect": "on",
-            "log": "none",
-            "mark": "MARK",
-            "mode": "stlsdnat",
-            "name": "configure-mode-stlsdnat--http",
-            "new-rtlimit": "0",
-            "new-rtlimit-burst": "0",
-            "persist-ttl": "60",
-            "persistence": "none",
-            "policies": [],
-            "priority": "1",
-            "protocol": "tcp",
-            "queue": "-1",
-            "responsettl": "60",
-            "rst-rtlimit": "0",
-            "rst-rtlimit-burst": "0",
-            "sched-param": "none",
-            "scheduler": "rr",
-            "source-addr": "",
-            "state": "config_error",
-            "tcp-strict": "off",
-            "virtual-addr": "IP",
-            "virtual-ports": "8080"
-        }
-    ]
+        ]
 }

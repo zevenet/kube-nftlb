@@ -1,42 +1,32 @@
 {
-    "farms": [
-        {
-            "addresses": [
+        "farms": [
                 {
-                    "family": "ipv4",
-                    "ip-addr": "IP",
-                    "name": "NAME",
-                    "ports": "8080",
-                    "protocol": "tcp",
-                    "used": "1"
+                        "name": "creation-farm--http",
+                        "family": "ipv4",
+                        "virtual-addr": "10.101.77.4",
+                        "virtual-ports": "8080",
+                        "source-addr": "",
+                        "mode": "snat",
+                        "protocol": "tcp",
+                        "scheduler": "rr",
+                        "sched-param": "none",
+                        "persistence": "none",
+                        "persist-ttl": "60",
+                        "helper": "none",
+                        "log": "none",
+                        "mark": "0x0",
+                        "priority": "1",
+                        "state": "up",
+                        "new-rtlimit": "0",
+                        "new-rtlimit-burst": "0",
+                        "rst-rtlimit": "0",
+                        "rst-rtlimit-burst": "0",
+                        "est-connlimit": "0",
+                        "tcp-strict": "off",
+                        "queue": "-1",
+                        "intra-connect": "on",
+                        "backends": [],
+                        "policies": []
                 }
-            ],
-            "backends": [],
-            "est-connlimit": "0",
-            "family": "ipv4",
-            "helper": "none",
-            "intra-connect": "on",
-            "log": "none",
-            "mark": "MARK",
-            "mode": "snat",
-            "name": "creation-farm--http",
-            "new-rtlimit": "0",
-            "new-rtlimit-burst": "0",
-            "persist-ttl": "60",
-            "persistence": "none",
-            "policies": [],
-            "priority": "1",
-            "protocol": "tcp",
-            "queue": "-1",
-            "rst-rtlimit": "0",
-            "rst-rtlimit-burst": "0",
-            "sched-param": "none",
-            "scheduler": "rr",
-            "source-addr": "",
-            "state": "up",
-            "tcp-strict": "off",
-            "virtual-addr": "IP",
-            "virtual-ports": "8080"
-        }
-    ]
+        ]
 }

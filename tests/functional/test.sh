@@ -32,7 +32,7 @@ for TEST_DIR in $DIRS; do
 
         # Get actual and expected JSON
         JSON=$(curl -s -H "Key: $NFTLB_KEY" "$NFTLB_PROTOCOL://$NFTLB_HOST:$NFTLB_PORT/farms/$FARM_NAME" | sed -f filters/replace-farm-values.sed | jq --indent 4 -S .)
-        EXPECTED_JSON=$(cat "$FILENAME_JSON")
+        EXPECTED_JSON=$(cat "$FILENAME_JSON" | sed -f filters/replace-farm-values.sed | jq --indent 4 -S .)
 
         # Compare both JSON strings
         if [ "$JSON" != "$EXPECTED_JSON" ]; then
@@ -45,7 +45,7 @@ for TEST_DIR in $DIRS; do
 
     # Get actual and expected nft rulesets
     NFT_RULESET=$(nft list table ip nftlb | awk -f filters/select-chains-nft-ruleset.awk | sed -f filters/clean-chains-nft-ruleset.sed | sort)
-    EXPECTED_NFT_RULESET=$(cat "$TEST_DIR/ruleset.nft")
+    EXPECTED_NFT_RULESET=$(cat "$TEST_DIR/ruleset.nft" | awk -f filters/select-chains-nft-ruleset.awk | sed -f filters/clean-chains-nft-ruleset.sed | sort)
 
     # Compare both rulesets
     if [ "$NFT_RULESET" != "$EXPECTED_NFT_RULESET" ]; then
