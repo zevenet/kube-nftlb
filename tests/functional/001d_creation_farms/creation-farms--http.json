@@ -15,7 +15,7 @@
                 {
                     "est-connlimit": "0",
                     "ip-addr": "IP",
-                    "mark": "0x7",
+                    "mark": "MARK",
                     "name": "NAME",
                     "port": "80",
                     "priority": "1",
@@ -25,7 +25,7 @@
                 {
                     "est-connlimit": "0",
                     "ip-addr": "IP",
-                    "mark": "0x8",
+                    "mark": "MARK",
                     "name": "NAME",
                     "port": "80",
                     "priority": "1",
@@ -38,7 +38,7 @@
             "helper": "none",
             "intra-connect": "on",
             "log": "none",
-            "mark": "0x0",
+            "mark": "MARK",
             "mode": "snat",
             "name": "creation-farms--http",
             "new-rtlimit": "0",

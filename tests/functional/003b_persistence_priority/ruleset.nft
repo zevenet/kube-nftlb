@@ -1,17 +1,17 @@
-ct mark != 0x00000000 update @persist-persistence-priority--http { tcp sport : ct mark }
-ct mark & 0x40000000 == 0x40000000 masquerade
+ct mark & MARK == MARK masquerade
+ct mark != MARK update @persist-persistence-priority--http { tcp sport : ct mark }
 ct mark set tcp sport map @static-sessions-persistence-priority--http accept
-ct state new ct mark 0x00000000 ct mark set numgen inc mod 1 map { 0 : 0x40000001 }
-ct state new ct mark 0x00000000 ct mark set numgen inc mod 1 map { 0 : 0x40000002 }
-ct state new ct mark 0x00000000 ct mark set numgen inc mod 1 map { 0 : 0x40000003 }
-ct state new ct mark 0x00000000 ct mark set numgen inc mod 1 map { 0 : 0x40000004 }
-ct state new ct mark 0x00000000 ct mark set numgen inc mod 1 map { 0 : 0x40000005 }
+ct state new ct mark MARK ct mark set numgen inc mod 1 map { 0 : MARK }
+ct state new ct mark MARK ct mark set numgen inc mod 1 map { 0 : MARK }
+ct state new ct mark MARK ct mark set numgen inc mod 1 map { 0 : MARK }
+ct state new ct mark MARK ct mark set numgen inc mod 1 map { 0 : MARK }
+ct state new ct mark MARK ct mark set numgen inc mod 1 map { 0 : MARK }
 ct state new ct mark set tcp sport map @persist-persistence-priority--http
-dnat ip addr . port to ct mark map { 0x40000001 : IP . 53 }
-dnat ip addr . port to ct mark map { 0x40000002 : IP . 9153 }
-dnat ip addr . port to ct mark map { 0x40000003 : IP . 53 }
-dnat ip addr . port to ct mark map { 0x40000004 : IP . 8443 }
-dnat ip addr . port to ct mark map { 0x40000005 : IP . 80 }
+dnat ip addr . port to ct mark map { MARK : IP . 53 }
+dnat ip addr . port to ct mark map { MARK : IP . 53 }
+dnat ip addr . port to ct mark map { MARK : IP . 80 }
+dnat ip addr . port to ct mark map { MARK : IP . 8443 }
+dnat ip addr . port to ct mark map { MARK : IP . 9153 }
 ip protocol . ip daddr . th dport vmap @filter-proto-services
 ip protocol . ip daddr . th dport vmap @nat-proto-services
 ip protocol . ip daddr . th dport vmap @output-filter-proto-services

@@ -39,7 +39,7 @@
                 {
                     "est-connlimit": "0",
                     "ip-addr": "IP",
-                    "mark": "0x5",
+                    "mark": "MARK",
                     "name": "NAME",
                     "port": "80",
                     "priority": "1",
@@ -52,7 +52,7 @@
             "helper": "none",
             "intra-connect": "on",
             "log": "none",
-            "mark": "0x0",
+            "mark": "MARK",
             "mode": "snat",
             "name": "configure-external-ips--http",
             "new-rtlimit": "0",

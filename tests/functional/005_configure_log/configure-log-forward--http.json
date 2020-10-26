@@ -15,7 +15,7 @@
                 {
                     "est-connlimit": "0",
                     "ip-addr": "IP",
-                    "mark": "0x6",
+                    "mark": "MARK",
                     "name": "NAME",
                     "port": "80",
                     "priority": "1",
@@ -29,7 +29,7 @@
             "intra-connect": "on",
             "log": "forward ",
             "log-prefix": "configure-log-forward",
-            "mark": "0x0",
+            "mark": "MARK",
             "mode": "snat",
             "name": "configure-log-forward--http",
             "new-rtlimit": "0",

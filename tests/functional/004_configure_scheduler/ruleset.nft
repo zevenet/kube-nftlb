@@ -1,15 +1,15 @@
-ct mark & 0x40000000 == 0x40000000 masquerade
-ct state new ct mark 0x00000000 ct mark set 0x40000000
-ct state new ct mark 0x00000000 ct mark set numgen inc mod 1 map { 0 : 0x40000001 }
-ct state new ct mark 0x00000000 ct mark set numgen inc mod 1 map { 0 : 0x40000002 }
-ct state new ct mark 0x00000000 ct mark set numgen inc mod 1 map { 0 : 0x40000003 }
-ct state new ct mark 0x00000000 ct mark set numgen inc mod 1 map { 0 : 0x40000004 }
-ct state new ct mark 0x00000000 ct mark set numgen inc mod 1 map { 0 : 0x40000005 }
-dnat ip addr . port to ct mark map { 0x40000001 : IP . 53 }
-dnat ip addr . port to ct mark map { 0x40000002 : IP . 9153 }
-dnat ip addr . port to ct mark map { 0x40000003 : IP . 53 }
-dnat ip addr . port to ct mark map { 0x40000004 : IP . 8443 }
-dnat ip addr . port to ct mark map { 0x40000005 : IP . 80 }
+ct mark & MARK == MARK masquerade
+ct state new ct mark MARK ct mark set MARK
+ct state new ct mark MARK ct mark set numgen inc mod 1 map { 0 : MARK }
+ct state new ct mark MARK ct mark set numgen inc mod 1 map { 0 : MARK }
+ct state new ct mark MARK ct mark set numgen inc mod 1 map { 0 : MARK }
+ct state new ct mark MARK ct mark set numgen inc mod 1 map { 0 : MARK }
+ct state new ct mark MARK ct mark set numgen inc mod 1 map { 0 : MARK }
+dnat ip addr . port to ct mark map { MARK : IP . 53 }
+dnat ip addr . port to ct mark map { MARK : IP . 53 }
+dnat ip addr . port to ct mark map { MARK : IP . 80 }
+dnat ip addr . port to ct mark map { MARK : IP . 8443 }
+dnat ip addr . port to ct mark map { MARK : IP . 9153 }
 ip protocol . ip daddr . th dport vmap @filter-proto-services
 ip protocol . ip daddr . th dport vmap @nat-proto-services
 ip protocol . ip daddr . th dport vmap @output-filter-proto-services
