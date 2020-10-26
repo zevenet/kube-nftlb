@@ -108,7 +108,7 @@ In this section we are going to see the different settings that we can apply to 
 A Service is an abstraction which defines a logical set of Pods and a policy by which to access them. A Service in Kubernetes is a REST object, similar to a Pod. Like all the REST objects, you can POST a Service definition to the API server to create a new instance. The name of a Service object must be a valid DNS label name. For example:
 
 ```yaml
-# service.yaml configuration creates a service
+# service.yaml
 apiVersion: v1
 kind: Service
 metadata:
@@ -147,10 +147,10 @@ NAMESPACE     NAME         TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)    
 default       my-service   ClusterIP   IP_cluster      <none>        8080/TCP                 6m12s
 ```
 
-Now we are going to check that after the creation of our service our farm has been correctly configured. To do that we need the nftlb key generated during compilation to be able to make requests to the nftlb api. The key in the '.env' file. You can copy it from there or launch the following commands from the kube-nftlb directory:
+Now we are going to check that after the creation of our Service, our farm has been correctly configured. To do that we need the nftlb env values. You can launch the following command from the kube-nftlb directory:
 
 ```console
-NFTLB_KEY=$(grep 'NFTLB_KEY' .env | sed 's/NFTLB_KEY=//'); curl -H "Key: $NFTLB_KEY" http://localhost:5555/farms/my-service--http
+source .env; curl -H "Key: $NFTLB_KEY" "$NFTLB_PROTOCOL://$NFTLB_HOST:$NFTLB_PORT/farms/my-service--http"
 ```
 
 ```json
@@ -188,7 +188,7 @@ NFTLB_KEY=$(grep 'NFTLB_KEY' .env | sed 's/NFTLB_KEY=//'); curl -H "Key: $NFTLB_
 }
 ```
 
-*The curl that we have launched returns a json with the information configured in our farms.*
+*The curl that we have launched returns JSON data with the information configured in our farms.*
 
 ## Creation and assignment of deployments ✏
 
@@ -306,16 +306,17 @@ Through this field we can configure our service with different values that nftlb
 ### Configure Mode
 
 We can configure how the load balancer layer 4 core is going to operate. The options are:
+
 - **snat** the backend responds to the load balancer in order to send the response to the client.
 - **dnat** the backend will respond directly to the client, load balancer has to be configured as gateway in the backend server.
-- **dsr (Direct Server Return)** the client connects to the VIP, then the load balancer changes its destination MAC address for the backend MAC address.
 - **stlsdnat (Stateless DNAT)** the load balancer switch destination address for the backend address and forward it to the backend as DNAT does, but it doesn’t manage any kind of connection information.
+- **dsr (Direct Server Return)** the client connects to the VIP, then the load balancer changes its destination MAC address for the backend MAC address.
 
-```
+```yaml
 service.kubernetes.io/kube-nftlb-load-balancer-mode: "snat"
 service.kubernetes.io/kube-nftlb-load-balancer-mode: "dnat"
-service.kubernetes.io/kube-nftlb-load-balancer-mode: "dsr"
 service.kubernetes.io/kube-nftlb-load-balancer-mode: "stlsdnat"
+service.kubernetes.io/kube-nftlb-load-balancer-mode: "dsr"
 ```
 
 ### Configure Persistence
@@ -327,14 +328,22 @@ Through annotations:
 - **srcip** Source IP, will assign the same backend for every incoming connection depending on the source IP address only.
 - **srcport** Source Port, will assign the same backend for every incoming connection depending on the source port only.
 - **srcmac** Source MAC, With this option, the farm will assign the same backend for every incoming connection depending on link-layer MAC address of the packet.
-- **srcip-srcport** Source IP and Source Port, will assign the same backend for every incoming connection depending on both, source IP and source port.
-- **srcip-dstport** Source IP and Destination Port, will assign the same backend for every incoming connection depending on both, source IP and destination port.
 
-```
+```yaml
 service.kubernetes.io/kube-nftlb-load-balancer-persistence: "srcip"
 service.kubernetes.io/kube-nftlb-load-balancer-persistence: "srcport"
-service.kubernetes.io/kube-nftlb-load-balancer-persistence: "srcip-srcport"
-service.kubernetes.io/kube-nftlb-load-balancer-persistence: "srcip-dstport"
+service.kubernetes.io/kube-nftlb-load-balancer-persistence: "srcmac"
+```
+
+- **srcip srcport** Source IP and Source Port, will assign the same backend for every incoming connection depending on both, source IP and source port.
+- **srcip dstport** Source IP and Destination Port, will assign the same backend for every incoming connection depending on both, source IP and destination port.
+
+```yaml
+service.kubernetes.io/kube-nftlb-load-balancer-persistence: "srcip srcport"
+service.kubernetes.io/kube-nftlb-load-balancer-persistence: "srcip dstport"
+
+# The following annotation must be specified in this case
+service.kubernetes.io/kube-nftlb-load-balancer-scheduler: "hash"
 ```
 
 Through sessionAffinity field:
@@ -361,14 +370,10 @@ We can configure the type of load balancing scheduling used to dispatch the traf
 
 - **rr** does a sequential select between the backend pool, each backend will receive the same number of requests.
 - **symhash** balance packets that match the same source IP and port and destination IP and port, so it could hash a connection in both ways (during inbound and outbound).
-- **hash-srcip** balances packets that match the same source IP to the same backend.
-- **hash-srcip-srcport** balances packets that match the same source IP and port to the same backend.
 
-```
+```yaml
 service.kubernetes.io/kube-nftlb-load-balancer-scheduler: "rr"
-service.kubernetes.io/kube-nftlb-load-balancer-persistence: "symhash"
-service.kubernetes.io/kube-nftlb-load-balancer-persistence: "hash-srcip"
-service.kubernetes.io/kube-nftlb-load-balancer-persistence: "hash-srcip-srcport"
+service.kubernetes.io/kube-nftlb-load-balancer-scheduler: "symhash"
 ```
 
 ### Configure Helper
@@ -387,7 +392,7 @@ We can configure the helper of the layer 4 protocol to be balanced to be used. T
 - **snmp** enabling this option, the farm will be listening for incoming UDP packets to the current virtual IP and port and then will parse the SNMP headers for each packet in order to be correctly distributed to the backends.
 - **tftp** enabling this option, the farm will be listening for incoming UDP packets to the current virtual IP and port 69 by default, and then will parse TFTP headers for each packet in order to be correctly distributed to the backends.
 
-```
+```yaml
 service.kubernetes.io/kube-nftlb-load-balancer-helper: "none"
 service.kubernetes.io/kube-nftlb-load-balancer-helper: "amanda"
 service.kubernetes.io/kube-nftlb-load-balancer-helper: "ftp"
@@ -406,10 +411,10 @@ service.kubernetes.io/kube-nftlb-load-balancer-helper: "tftp"
 We can define in which netfilter flow in which stage you are going to print logs. The options are:
 
 - **none** it's the default option.
-- **output** log for traffic going from the host to the pods.
+- **output** for traffic going from the host to the pods.
 - **forward** for traffic that passes through the host. It can be between two pods or from outside to a pod.
 
-```
+```yaml
 service.kubernetes.io/kube-nftlb-load-balancer-log: "none"
 service.kubernetes.io/kube-nftlb-load-balancer-log: "output"
 service.kubernetes.io/kube-nftlb-load-balancer-log: "forward"
@@ -417,7 +422,7 @@ service.kubernetes.io/kube-nftlb-load-balancer-log: "forward"
 
 ### How to set up annotations
 
-It is very simple, all we have to do is add it to the configuration file of our service. Let's see an example:
+Add them to the configuration file of our Service, in the `metadata.annotations` field. Let's see an example:
 
 ```yaml
 # annotations-service.yaml
@@ -429,7 +434,6 @@ metadata:
     app: front
   annotations:
     service.kubernetes.io/kube-nftlb-load-balancer-mode: "snat"
-    service.kubernetes.io/kube-nftlb-load-balancer-scheduler: "hash-srcip"
 spec:
   type: ClusterIP
   selector:
