@@ -113,12 +113,12 @@ func servicePortAsFarm(servicePort *corev1.ServicePort, serviceData *types.Servi
 
 	if serviceData.Type == "ClusterIP" {
 		// If the Service type is ClusterIP, add name, Service ClusterIP as ip-addr and ports
-		address.Name = FormatName(serviceData.Name, servicePort.Name)
+		address.Name = fmt.Sprintf("%s--address", FormatName(serviceData.Name, servicePort.Name))
 		address.IPAddr = serviceData.ClusterIP
 		address.Ports = strconv.FormatInt(int64(servicePort.Port), 10)
 	} else {
 		// If the Service type is NodePort, add name and NodePort port ("ip-addr" is empty)
-		address.Name = FormatNodePortName(serviceData.Name, servicePort.Name)
+		address.Name = fmt.Sprintf("%s--address", FormatNodePortName(serviceData.Name, servicePort.Name))
 		address.Ports = strconv.FormatInt(int64(servicePort.NodePort), 10)
 	}
 
@@ -127,10 +127,12 @@ func servicePortAsFarm(servicePort *corev1.ServicePort, serviceData *types.Servi
 
 	// Add externalIPs as addresses
 	for index, externalIP := range serviceData.ExternalIPs {
-		farm.Addresses[index+1] = types.Address{
+		// Don't override the address at index 0
+		offsetIndex := index + 1
+		farm.Addresses[offsetIndex] = types.Address{
 			Family:   serviceData.Family,
 			Protocol: strings.ToLower(string(servicePort.Protocol)),
-			Name:     FormatExternalIPName(serviceData.Name, servicePort.Name, index+1),
+			Name:     fmt.Sprintf("%s--address", FormatExternalIPName(serviceData.Name, servicePort.Name, offsetIndex)),
 			IPAddr:   externalIP,
 			Ports:    strconv.FormatInt(int64(servicePort.Port), 10),
 		}
