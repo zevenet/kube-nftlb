@@ -88,6 +88,24 @@ func ServiceAsNftlb(service *corev1.Service) *types.Nftlb {
 
 // servicePortAsFarm returns a Farm struct filled with data from a ServicePort and some ServiceData values.
 func servicePortAsFarm(servicePort *corev1.ServicePort, serviceData *types.ServiceData, annotations *types.Annotations) *types.Farm {
+	farm := &types.Farm{
+		Name:         FormatName(serviceData.Name, servicePort.Name),
+		Mode:         annotations.Mode,
+		Persistence:  annotations.Persistence,
+		PersistTTL:   annotations.PersistTTL,
+		Scheduler:    annotations.Scheduler,
+		SchedParam:   annotations.SchedParam,
+		Helper:       annotations.Helper,
+		Log:          annotations.Log,
+		LogPrefix:    annotations.LogPrefix,
+		EstConnlimit: annotations.EstConnlimit,
+		Iface:        annotations.Iface,
+		IntraConnect: "on",
+		State:        "up",
+		Addresses:    make([]types.Address, len(serviceData.ExternalIPs)+1),
+	}
+
+	// ClusterIP address
 	address := types.Address{
 		Family:   serviceData.Family,
 		Protocol: strings.ToLower(string(servicePort.Protocol)),
@@ -104,34 +122,18 @@ func servicePortAsFarm(servicePort *corev1.ServicePort, serviceData *types.Servi
 		address.Ports = strconv.FormatInt(int64(servicePort.NodePort), 10)
 	}
 
-	farm := &types.Farm{
-		Name:         FormatName(serviceData.Name, servicePort.Name),
-		Mode:         annotations.Mode,
-		Persistence:  annotations.Persistence,
-		PersistTTL:   annotations.PersistTTL,
-		Scheduler:    annotations.Scheduler,
-		SchedParam:   annotations.SchedParam,
-		Helper:       annotations.Helper,
-		Log:          annotations.Log,
-		LogPrefix:    annotations.LogPrefix,
-		EstConnlimit: annotations.EstConnlimit,
-		Iface:        annotations.Iface,
-		IntraConnect: "on",
-		State:        "up",
-		Addresses: []types.Address{
-			address,
-		},
-	}
+	// Add address at index 0
+	farm.Addresses[0] = address
 
 	// Add externalIPs as addresses
 	for index, externalIP := range serviceData.ExternalIPs {
-		farm.Addresses = append(farm.Addresses, types.Address{
+		farm.Addresses[index+1] = types.Address{
 			Family:   serviceData.Family,
 			Protocol: strings.ToLower(string(servicePort.Protocol)),
-			Name:     FormatExternalIPName(serviceData.Name, servicePort.Name, index),
+			Name:     FormatExternalIPName(serviceData.Name, servicePort.Name, index+1),
 			IPAddr:   externalIP,
 			Ports:    strconv.FormatInt(int64(servicePort.Port), 10),
-		})
+		}
 	}
 
 	return farm

@@ -42,7 +42,6 @@ func EndpointsAsNftlb(endpoints *corev1.Endpoints) *types.Nftlb {
 
 			// 1 EndpointAddress for every EndpointPort in a EndpointSubset (k8s) = 1 Backend (nftlb)
 			for idxAddress := range subset.Addresses {
-				//fmt.Printf("len(addresses): %d, idxAddress: %d | %s\n", len(subset.Addresses), idxAddress, farm.Name)
 				go func(epPort *corev1.EndpointPort, epAddress *corev1.EndpointAddress, idxAddress int) {
 					defer wg.Done()
 
