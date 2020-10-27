@@ -20,7 +20,7 @@ for FILENAME_JSON in "$1"/*.json; do
 done
 
 # Get expected nft ruleset and save that as a file
-NFT_RULESET=$(nft list table ip nftlb)
+NFT_RULESET=$(echo -n "$(nft list table ip nftlb)$(nft list table ip netdev 2>/dev/null)")
 echo -n "$NFT_RULESET" > "$1/ruleset.nft"
 
 # Delete YAML resources

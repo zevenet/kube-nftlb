@@ -44,7 +44,7 @@ for TEST_DIR in $DIRS; do
     done
 
     # Get actual and expected nft rulesets
-    NFT_RULESET=$(nft list table ip nftlb | awk -f filters/select-chains-nft-ruleset.awk | sed -f filters/clean-chains-nft-ruleset.sed | sort)
+    NFT_RULESET=$(echo -n "$(nft list table ip nftlb)$(nft list table ip netdev 2>/dev/null)" | awk -f filters/select-chains-nft-ruleset.awk | sed -f filters/clean-chains-nft-ruleset.sed | sort)
     EXPECTED_NFT_RULESET=$(cat "$TEST_DIR/ruleset.nft" | awk -f filters/select-chains-nft-ruleset.awk | sed -f filters/clean-chains-nft-ruleset.sed | sort)
 
     # Compare both rulesets
@@ -60,7 +60,7 @@ for TEST_DIR in $DIRS; do
     sleep 15
 
     # Check ruleset against the clean one
-    NFT_RULESET=$(nft list table ip nftlb | awk -f filters/select-chains-nft-ruleset.awk | sed -f filters/clean-chains-nft-ruleset.sed | sort)
+    NFT_RULESET=$(echo -n "$(nft list table ip nftlb)$(nft list table ip netdev 2>/dev/null)" | awk -f filters/select-chains-nft-ruleset.awk | sed -f filters/clean-chains-nft-ruleset.sed | sort)
     EXPECTED_NFT_RULESET=$(cat clean-ruleset.nft | awk -f filters/select-chains-nft-ruleset.awk | sed -f filters/clean-chains-nft-ruleset.sed | sort)
 
     if [ "$NFT_RULESET" != "$EXPECTED_NFT_RULESET" ]; then
