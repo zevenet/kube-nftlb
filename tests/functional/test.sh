@@ -23,7 +23,7 @@ for TEST_DIR in $DIRS; do
 
     # Apply YAML resources
     kubectl apply -f "$TEST_DIR/input.yaml" >/dev/null
-    sleep 20
+    sleep 45
 
     # Read filenames from .json files
     for FILENAME_JSON in "$TEST_DIR"/*.json; do
@@ -49,7 +49,22 @@ for TEST_DIR in $DIRS; do
 
     # Compare both rulesets
     if [ "$NFT_RULESET" != "$EXPECTED_NFT_RULESET" ]; then
-        echo "🚨 nft ruleset doesn't match the expected result"
+        echo "🚨 nft ruleset after applying input.yaml doesn't match the expected result"
+        diff --color -u <(echo "$EXPECTED_NFT_RULESET") <(echo "$NFT_RULESET")
+        TEST_PASSED="false"
+        echo # Empty line
+    fi
+
+    # Delete YAML resources
+    kubectl delete -f "$TEST_DIR/input.yaml" >/dev/null
+    sleep 15
+
+    # Check ruleset against the clean one
+    NFT_RULESET=$(nft list table ip nftlb | awk -f filters/select-chains-nft-ruleset.awk | sed -f filters/clean-chains-nft-ruleset.sed | sort)
+    EXPECTED_NFT_RULESET=$(cat clean-ruleset.nft | awk -f filters/select-chains-nft-ruleset.awk | sed -f filters/clean-chains-nft-ruleset.sed | sort)
+
+    if [ "$NFT_RULESET" != "$EXPECTED_NFT_RULESET" ]; then
+        echo "🚨 nft ruleset after deleting input.yaml doesn't match the expected result"
         diff --color -u <(echo "$EXPECTED_NFT_RULESET") <(echo "$NFT_RULESET")
         TEST_PASSED="false"
         echo # Empty line
@@ -61,7 +76,4 @@ for TEST_DIR in $DIRS; do
         echo "❌ TEST FAILED"
     fi
     echo # Empty line
-
-    # Delete YAML resources
-    kubectl delete -f "$TEST_DIR/input.yaml" >/dev/null
 done
