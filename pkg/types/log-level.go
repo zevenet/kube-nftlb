@@ -1,7 +1,7 @@
 package types
 
 // LogLevel is used to check if a message must be shown.
-type LogLevel uint
+type LogLevel int
 
 const (
 	// StandardLog shows only successful operations.
