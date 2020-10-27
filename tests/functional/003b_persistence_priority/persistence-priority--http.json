@@ -3,7 +3,7 @@
                 {
                         "name": "persistence-priority--http",
                         "family": "ipv4",
-                        "virtual-addr": "10.103.252.69",
+                        "virtual-addr": "10.99.95.218",
                         "virtual-ports": "8080",
                         "source-addr": "",
                         "mode": "snat",
@@ -27,9 +27,9 @@
                         "intra-connect": "on",
                         "addresses": [
                                 {
-                                        "name": "persistence-priority--http",
+                                        "name": "persistence-priority--http--address",
                                         "family": "ipv4",
-                                        "ip-addr": "10.103.252.69",
+                                        "ip-addr": "10.99.95.218",
                                         "ports": "8080",
                                         "protocol": "tcp",
                                         "used": "1"
@@ -37,8 +37,8 @@
                         ],
                         "backends": [
                                 {
-                                        "name": "persistence-priority-7b5765bb5f-m6mlm--http",
-                                        "ip-addr": "172.17.0.3",
+                                        "name": "persistence-priority-7b5765bb5f-pfx99--http",
+                                        "ip-addr": "172.17.0.2",
                                         "port": "80",
                                         "weight": "1",
                                         "priority": "1",

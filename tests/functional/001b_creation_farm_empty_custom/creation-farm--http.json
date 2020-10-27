@@ -3,7 +3,7 @@
                 {
                         "name": "creation-farm--http",
                         "family": "ipv4",
-                        "virtual-addr": "10.101.71.179",
+                        "virtual-addr": "10.107.62.190",
                         "virtual-ports": "8080",
                         "source-addr": "",
                         "mode": "snat",
@@ -27,9 +27,9 @@
                         "intra-connect": "on",
                         "addresses": [
                                 {
-                                        "name": "creation-farm--http",
+                                        "name": "creation-farm--http--address",
                                         "family": "ipv4",
-                                        "ip-addr": "10.101.71.179",
+                                        "ip-addr": "10.107.62.190",
                                         "ports": "8080",
                                         "protocol": "tcp",
                                         "used": "1"

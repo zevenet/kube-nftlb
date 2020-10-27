@@ -4,7 +4,7 @@ table ip nftlb {
 		elements = { tcp . 10.96.0.1 . 443 : goto filter-kubernetes--https,
 			     tcp . 10.96.0.10 . 53 : goto filter-kube-dns--dns-tcp,
 			     tcp . 10.96.0.10 . 9153 : goto filter-kube-dns--metrics,
-			     tcp . 10.108.99.217 . 8080 : goto filter-configure-external-ips--http,
+			     tcp . 10.111.127.86 . 8080 : goto filter-configure-external-ips--http,
 			     tcp . 192.168.10.89 . 8080 : goto filter-configure-external-ips--http,
 			     tcp . 192.168.10.90 . 8080 : goto filter-configure-external-ips--http,
 			     tcp . 192.168.10.91 . 8080 : goto filter-configure-external-ips--http,
@@ -16,7 +16,7 @@ table ip nftlb {
 		elements = { tcp . 10.96.0.1 . 443 : goto nat-kubernetes--https,
 			     tcp . 10.96.0.10 . 53 : goto nat-kube-dns--dns-tcp,
 			     tcp . 10.96.0.10 . 9153 : goto nat-kube-dns--metrics,
-			     tcp . 10.108.99.217 . 8080 : goto nat-configure-external-ips--http,
+			     tcp . 10.111.127.86 . 8080 : goto nat-configure-external-ips--http,
 			     tcp . 192.168.10.89 . 8080 : goto nat-configure-external-ips--http,
 			     tcp . 192.168.10.90 . 8080 : goto nat-configure-external-ips--http,
 			     tcp . 192.168.10.91 . 8080 : goto nat-configure-external-ips--http,
@@ -32,7 +32,7 @@ table ip nftlb {
 		elements = { tcp . 10.96.0.1 . 443 : goto filter-kubernetes--https,
 			     tcp . 10.96.0.10 . 53 : goto filter-kube-dns--dns-tcp,
 			     tcp . 10.96.0.10 . 9153 : goto filter-kube-dns--metrics,
-			     tcp . 10.108.99.217 . 8080 : goto filter-configure-external-ips--http,
+			     tcp . 10.111.127.86 . 8080 : goto filter-configure-external-ips--http,
 			     tcp . 192.168.10.89 . 8080 : goto filter-configure-external-ips--http,
 			     tcp . 192.168.10.90 . 8080 : goto filter-configure-external-ips--http,
 			     tcp . 192.168.10.91 . 8080 : goto filter-configure-external-ips--http,
@@ -44,7 +44,7 @@ table ip nftlb {
 		elements = { tcp . 10.96.0.1 . 443 : goto nat-kubernetes--https,
 			     tcp . 10.96.0.10 . 53 : goto nat-kube-dns--dns-tcp,
 			     tcp . 10.96.0.10 . 9153 : goto nat-kube-dns--metrics,
-			     tcp . 10.108.99.217 . 8080 : goto nat-configure-external-ips--http,
+			     tcp . 10.111.127.86 . 8080 : goto nat-configure-external-ips--http,
 			     tcp . 192.168.10.89 . 8080 : goto nat-configure-external-ips--http,
 			     tcp . 192.168.10.90 . 8080 : goto nat-configure-external-ips--http,
 			     tcp . 192.168.10.91 . 8080 : goto nat-configure-external-ips--http,
@@ -91,7 +91,7 @@ table ip nftlb {
 	}
 
 	chain nat-kube-dns--dns {
-		dnat ip addr . port to ct mark map { 0x40000004 : 172.17.0.2 . 53 }
+		dnat ip addr . port to ct mark map { 0x40000004 : 172.17.0.3 . 53 }
 	}
 
 	chain filter-kube-dns--dns-tcp {
@@ -99,7 +99,7 @@ table ip nftlb {
 	}
 
 	chain nat-kube-dns--dns-tcp {
-		dnat ip addr . port to ct mark map { 0x40000002 : 172.17.0.2 . 53 }
+		dnat ip addr . port to ct mark map { 0x40000002 : 172.17.0.3 . 53 }
 	}
 
 	chain filter-kube-dns--metrics {
@@ -107,7 +107,7 @@ table ip nftlb {
 	}
 
 	chain nat-kube-dns--metrics {
-		dnat ip addr . port to ct mark map { 0x40000003 : 172.17.0.2 . 9153 }
+		dnat ip addr . port to ct mark map { 0x40000003 : 172.17.0.3 . 9153 }
 	}
 
 	chain filter-configure-external-ips--http {
@@ -115,6 +115,6 @@ table ip nftlb {
 	}
 
 	chain nat-configure-external-ips--http {
-		dnat ip addr . port to ct mark map { 0x40000005 : 172.17.0.3 . 80 }
+		dnat ip addr . port to ct mark map { 0x40000005 : 172.17.0.2 . 80 }
 	}
 }

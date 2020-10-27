@@ -3,7 +3,7 @@
                 {
                         "name": "configure-persistence-sessionaffinity--http",
                         "family": "ipv4",
-                        "virtual-addr": "10.103.47.205",
+                        "virtual-addr": "10.98.11.69",
                         "virtual-ports": "8080",
                         "source-addr": "",
                         "mode": "snat",
@@ -27,9 +27,9 @@
                         "intra-connect": "on",
                         "addresses": [
                                 {
-                                        "name": "configure-persistence-sessionaffinity--http",
+                                        "name": "configure-persistence-sessionaffinity--http--address",
                                         "family": "ipv4",
-                                        "ip-addr": "10.103.47.205",
+                                        "ip-addr": "10.98.11.69",
                                         "ports": "8080",
                                         "protocol": "tcp",
                                         "used": "1"
@@ -37,12 +37,12 @@
                         ],
                         "backends": [
                                 {
-                                        "name": "configure-persistence-sessionaffinity-5d4c8694b-f8lcc--http",
-                                        "ip-addr": "172.17.0.5",
+                                        "name": "configure-persistence-sessionaffinity-5d4c8694b-bxnvm--http",
+                                        "ip-addr": "172.17.0.6",
                                         "port": "80",
                                         "weight": "1",
                                         "priority": "1",
-                                        "mark": "0x8",
+                                        "mark": "0x6",
                                         "est-connlimit": "0",
                                         "state": "up"
                                 }

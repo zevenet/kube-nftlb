@@ -75,7 +75,7 @@ table ip nftlb {
 	}
 
 	chain nat-kube-dns--dns {
-		dnat ip addr . port to ct mark map { 0x40000004 : 172.17.0.2 . 53 }
+		dnat ip addr . port to ct mark map { 0x40000004 : 172.17.0.3 . 53 }
 	}
 
 	chain filter-kube-dns--dns-tcp {
@@ -83,7 +83,7 @@ table ip nftlb {
 	}
 
 	chain nat-kube-dns--dns-tcp {
-		dnat ip addr . port to ct mark map { 0x40000002 : 172.17.0.2 . 53 }
+		dnat ip addr . port to ct mark map { 0x40000002 : 172.17.0.3 . 53 }
 	}
 
 	chain filter-kube-dns--metrics {
@@ -91,6 +91,6 @@ table ip nftlb {
 	}
 
 	chain nat-kube-dns--metrics {
-		dnat ip addr . port to ct mark map { 0x40000003 : 172.17.0.2 . 9153 }
+		dnat ip addr . port to ct mark map { 0x40000003 : 172.17.0.3 . 9153 }
 	}
 }

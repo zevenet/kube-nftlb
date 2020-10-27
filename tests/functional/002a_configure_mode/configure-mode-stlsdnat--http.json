@@ -3,7 +3,7 @@
                 {
                         "name": "configure-mode-stlsdnat--http",
                         "family": "ipv4",
-                        "virtual-addr": "10.104.181.52",
+                        "virtual-addr": "10.96.246.21",
                         "virtual-ports": "8080",
                         "source-addr": "",
                         "mode": "stlsdnat",
@@ -28,9 +28,9 @@
                         "intra-connect": "on",
                         "addresses": [
                                 {
-                                        "name": "configure-mode-stlsdnat--http",
+                                        "name": "configure-mode-stlsdnat--http--address",
                                         "family": "ipv4",
-                                        "ip-addr": "10.104.181.52",
+                                        "ip-addr": "10.96.246.21",
                                         "ports": "8080",
                                         "protocol": "tcp",
                                         "used": "1"
@@ -38,7 +38,7 @@
                         ],
                         "backends": [
                                 {
-                                        "name": "configure-mode-stlsdnat-5fd86db5dc-kmvrc--http",
+                                        "name": "configure-mode-stlsdnat-5fd86db5dc-l5js7--http",
                                         "ip-addr": "172.17.0.4",
                                         "port": "80",
                                         "weight": "1",

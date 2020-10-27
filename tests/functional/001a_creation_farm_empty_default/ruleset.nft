@@ -4,7 +4,7 @@ table ip nftlb {
 		elements = { tcp . 10.96.0.1 . 443 : goto filter-kubernetes--https,
 			     tcp . 10.96.0.10 . 53 : goto filter-kube-dns--dns-tcp,
 			     tcp . 10.96.0.10 . 9153 : goto filter-kube-dns--metrics,
-			     tcp . 10.104.35.249 . 8080 : goto filter-creation-farm--default,
+			     tcp . 10.98.154.120 . 8080 : goto filter-creation-farm--default,
 			     udp . 10.96.0.10 . 53 : goto filter-kube-dns--dns }
 	}
 
@@ -13,7 +13,7 @@ table ip nftlb {
 		elements = { tcp . 10.96.0.1 . 443 : goto nat-kubernetes--https,
 			     tcp . 10.96.0.10 . 53 : goto nat-kube-dns--dns-tcp,
 			     tcp . 10.96.0.10 . 9153 : goto nat-kube-dns--metrics,
-			     tcp . 10.104.35.249 . 8080 : goto nat-creation-farm--default,
+			     tcp . 10.98.154.120 . 8080 : goto nat-creation-farm--default,
 			     udp . 10.96.0.10 . 53 : goto nat-kube-dns--dns }
 	}
 
@@ -26,7 +26,7 @@ table ip nftlb {
 		elements = { tcp . 10.96.0.1 . 443 : goto filter-kubernetes--https,
 			     tcp . 10.96.0.10 . 53 : goto filter-kube-dns--dns-tcp,
 			     tcp . 10.96.0.10 . 9153 : goto filter-kube-dns--metrics,
-			     tcp . 10.104.35.249 . 8080 : goto filter-creation-farm--default,
+			     tcp . 10.98.154.120 . 8080 : goto filter-creation-farm--default,
 			     udp . 10.96.0.10 . 53 : goto filter-kube-dns--dns }
 	}
 
@@ -35,7 +35,7 @@ table ip nftlb {
 		elements = { tcp . 10.96.0.1 . 443 : goto nat-kubernetes--https,
 			     tcp . 10.96.0.10 . 53 : goto nat-kube-dns--dns-tcp,
 			     tcp . 10.96.0.10 . 9153 : goto nat-kube-dns--metrics,
-			     tcp . 10.104.35.249 . 8080 : goto nat-creation-farm--default,
+			     tcp . 10.98.154.120 . 8080 : goto nat-creation-farm--default,
 			     udp . 10.96.0.10 . 53 : goto nat-kube-dns--dns }
 	}
 
@@ -45,8 +45,8 @@ table ip nftlb {
 		ip protocol . ip daddr . th dport vmap @filter-proto-services
 	}
 
-	chain filter-kube-dns--dns {
-		ct state new ct mark 0x00000000 ct mark set numgen inc mod 1 map { 0 : 0x40000004 }
+	chain filter-kubernetes--https {
+		ct state new ct mark 0x00000000 ct mark set numgen inc mod 1 map { 0 : 0x40000001 }
 	}
 
 	chain prerouting {
@@ -60,8 +60,8 @@ table ip nftlb {
 		snat to ct mark map @proto-services-back-m
 	}
 
-	chain nat-kube-dns--dns {
-		dnat ip addr . port to ct mark map { 0x40000004 : 172.17.0.2 . 53 }
+	chain nat-kubernetes--https {
+		dnat ip addr . port to ct mark map { 0x40000001 : 192.168.1.11 . 8443 }
 	}
 
 	chain output-filter {
@@ -74,12 +74,20 @@ table ip nftlb {
 		ip protocol . ip daddr . th dport vmap @output-nat-proto-services
 	}
 
+	chain filter-kube-dns--dns {
+		ct state new ct mark 0x00000000 ct mark set numgen inc mod 1 map { 0 : 0x40000004 }
+	}
+
+	chain nat-kube-dns--dns {
+		dnat ip addr . port to ct mark map { 0x40000004 : 172.17.0.3 . 53 }
+	}
+
 	chain filter-kube-dns--dns-tcp {
 		ct state new ct mark 0x00000000 ct mark set numgen inc mod 1 map { 0 : 0x40000002 }
 	}
 
 	chain nat-kube-dns--dns-tcp {
-		dnat ip addr . port to ct mark map { 0x40000002 : 172.17.0.2 . 53 }
+		dnat ip addr . port to ct mark map { 0x40000002 : 172.17.0.3 . 53 }
 	}
 
 	chain filter-kube-dns--metrics {
@@ -87,15 +95,7 @@ table ip nftlb {
 	}
 
 	chain nat-kube-dns--metrics {
-		dnat ip addr . port to ct mark map { 0x40000003 : 172.17.0.2 . 9153 }
-	}
-
-	chain filter-kubernetes--https {
-		ct state new ct mark 0x00000000 ct mark set numgen inc mod 1 map { 0 : 0x40000001 }
-	}
-
-	chain nat-kubernetes--https {
-		dnat ip addr . port to ct mark map { 0x40000001 : 192.168.1.11 . 8443 }
+		dnat ip addr . port to ct mark map { 0x40000003 : 172.17.0.3 . 9153 }
 	}
 
 	chain filter-creation-farm--default {

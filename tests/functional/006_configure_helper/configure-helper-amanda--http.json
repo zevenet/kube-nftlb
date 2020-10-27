@@ -3,7 +3,7 @@
                 {
                         "name": "configure-helper-amanda--http",
                         "family": "ipv4",
-                        "virtual-addr": "10.98.205.95",
+                        "virtual-addr": "10.108.238.87",
                         "virtual-ports": "8080",
                         "source-addr": "",
                         "mode": "snat",
@@ -27,9 +27,9 @@
                         "intra-connect": "on",
                         "addresses": [
                                 {
-                                        "name": "configure-helper-amanda--http",
+                                        "name": "configure-helper-amanda--http--address",
                                         "family": "ipv4",
-                                        "ip-addr": "10.98.205.95",
+                                        "ip-addr": "10.108.238.87",
                                         "ports": "8080",
                                         "protocol": "tcp",
                                         "used": "1"
@@ -37,8 +37,8 @@
                         ],
                         "backends": [
                                 {
-                                        "name": "configure-helper-amanda-77c4d9d785-lqq7k--http",
-                                        "ip-addr": "172.17.0.3",
+                                        "name": "configure-helper-amanda-77c4d9d785-ghlvd--http",
+                                        "ip-addr": "172.17.0.2",
                                         "port": "80",
                                         "weight": "1",
                                         "priority": "1",

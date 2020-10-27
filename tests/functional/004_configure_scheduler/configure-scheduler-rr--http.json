@@ -3,7 +3,7 @@
                 {
                         "name": "configure-scheduler-rr--http",
                         "family": "ipv4",
-                        "virtual-addr": "10.111.73.44",
+                        "virtual-addr": "10.110.218.253",
                         "virtual-ports": "8080",
                         "source-addr": "",
                         "mode": "snat",
@@ -27,9 +27,9 @@
                         "intra-connect": "on",
                         "addresses": [
                                 {
-                                        "name": "configure-scheduler-rr--http",
+                                        "name": "configure-scheduler-rr--http--address",
                                         "family": "ipv4",
-                                        "ip-addr": "10.111.73.44",
+                                        "ip-addr": "10.110.218.253",
                                         "ports": "8080",
                                         "protocol": "tcp",
                                         "used": "1"
@@ -37,8 +37,8 @@
                         ],
                         "backends": [
                                 {
-                                        "name": "configure-scheduler-rr-56f74566b-gxp8p--http",
-                                        "ip-addr": "172.17.0.3",
+                                        "name": "configure-scheduler-rr-56f74566b-n6db9--http",
+                                        "ip-addr": "172.17.0.2",
                                         "port": "80",
                                         "weight": "1",
                                         "priority": "1",

@@ -3,7 +3,7 @@
                 {
                         "name": "configure-persistence-srcip--http",
                         "family": "ipv4",
-                        "virtual-addr": "10.104.215.126",
+                        "virtual-addr": "10.97.66.149",
                         "virtual-ports": "8080",
                         "source-addr": "",
                         "mode": "snat",
@@ -27,9 +27,9 @@
                         "intra-connect": "on",
                         "addresses": [
                                 {
-                                        "name": "configure-persistence-srcip--http",
+                                        "name": "configure-persistence-srcip--http--address",
                                         "family": "ipv4",
-                                        "ip-addr": "10.104.215.126",
+                                        "ip-addr": "10.97.66.149",
                                         "ports": "8080",
                                         "protocol": "tcp",
                                         "used": "1"
@@ -37,12 +37,12 @@
                         ],
                         "backends": [
                                 {
-                                        "name": "configure-persistence-srcip-7f76d89f7-bb2r4--http",
-                                        "ip-addr": "172.17.0.3",
+                                        "name": "configure-persistence-srcip-7f76d89f7-bgjkk--http",
+                                        "ip-addr": "172.17.0.2",
                                         "port": "80",
                                         "weight": "1",
                                         "priority": "1",
-                                        "mark": "0x5",
+                                        "mark": "0x7",
                                         "est-connlimit": "0",
                                         "state": "up"
                                 }

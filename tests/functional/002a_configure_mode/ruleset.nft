@@ -4,8 +4,8 @@ table ip nftlb {
 		elements = { tcp . 10.96.0.1 . 443 : goto filter-kubernetes--https,
 			     tcp . 10.96.0.10 . 53 : goto filter-kube-dns--dns-tcp,
 			     tcp . 10.96.0.10 . 9153 : goto filter-kube-dns--metrics,
-			     tcp . 10.101.33.175 . 8080 : goto filter-configure-mode-dnat--http,
-			     tcp . 10.111.105.1 . 8080 : goto filter-configure-mode-snat--http,
+			     tcp . 10.108.147.55 . 8080 : goto filter-configure-mode-snat--http,
+			     tcp . 10.109.135.190 . 8080 : goto filter-configure-mode-dnat--http,
 			     udp . 10.96.0.10 . 53 : goto filter-kube-dns--dns }
 	}
 
@@ -14,8 +14,8 @@ table ip nftlb {
 		elements = { tcp . 10.96.0.1 . 443 : goto nat-kubernetes--https,
 			     tcp . 10.96.0.10 . 53 : goto nat-kube-dns--dns-tcp,
 			     tcp . 10.96.0.10 . 9153 : goto nat-kube-dns--metrics,
-			     tcp . 10.101.33.175 . 8080 : goto nat-configure-mode-dnat--http,
-			     tcp . 10.111.105.1 . 8080 : goto nat-configure-mode-snat--http,
+			     tcp . 10.108.147.55 . 8080 : goto nat-configure-mode-snat--http,
+			     tcp . 10.109.135.190 . 8080 : goto nat-configure-mode-dnat--http,
 			     udp . 10.96.0.10 . 53 : goto nat-kube-dns--dns }
 	}
 
@@ -28,8 +28,8 @@ table ip nftlb {
 		elements = { tcp . 10.96.0.1 . 443 : goto filter-kubernetes--https,
 			     tcp . 10.96.0.10 . 53 : goto filter-kube-dns--dns-tcp,
 			     tcp . 10.96.0.10 . 9153 : goto filter-kube-dns--metrics,
-			     tcp . 10.101.33.175 . 8080 : goto filter-configure-mode-dnat--http,
-			     tcp . 10.111.105.1 . 8080 : goto filter-configure-mode-snat--http,
+			     tcp . 10.108.147.55 . 8080 : goto filter-configure-mode-snat--http,
+			     tcp . 10.109.135.190 . 8080 : goto filter-configure-mode-dnat--http,
 			     udp . 10.96.0.10 . 53 : goto filter-kube-dns--dns }
 	}
 
@@ -38,8 +38,8 @@ table ip nftlb {
 		elements = { tcp . 10.96.0.1 . 443 : goto nat-kubernetes--https,
 			     tcp . 10.96.0.10 . 53 : goto nat-kube-dns--dns-tcp,
 			     tcp . 10.96.0.10 . 9153 : goto nat-kube-dns--metrics,
-			     tcp . 10.101.33.175 . 8080 : goto nat-configure-mode-dnat--http,
-			     tcp . 10.111.105.1 . 8080 : goto nat-configure-mode-snat--http,
+			     tcp . 10.108.147.55 . 8080 : goto nat-configure-mode-snat--http,
+			     tcp . 10.109.135.190 . 8080 : goto nat-configure-mode-dnat--http,
 			     udp . 10.96.0.10 . 53 : goto nat-kube-dns--dns }
 	}
 
@@ -49,8 +49,8 @@ table ip nftlb {
 		ip protocol . ip daddr . th dport vmap @filter-proto-services
 	}
 
-	chain filter-kube-dns--dns {
-		ct state new ct mark 0x00000000 ct mark set numgen inc mod 1 map { 0 : 0x40000004 }
+	chain filter-kubernetes--https {
+		ct state new ct mark 0x00000000 ct mark set numgen inc mod 1 map { 0 : 0x40000001 }
 	}
 
 	chain prerouting {
@@ -64,8 +64,8 @@ table ip nftlb {
 		snat to ct mark map @proto-services-back-m
 	}
 
-	chain nat-kube-dns--dns {
-		dnat ip addr . port to ct mark map { 0x40000004 : 172.17.0.2 . 53 }
+	chain nat-kubernetes--https {
+		dnat ip addr . port to ct mark map { 0x40000001 : 192.168.1.11 . 8443 }
 	}
 
 	chain output-filter {
@@ -78,12 +78,20 @@ table ip nftlb {
 		ip protocol . ip daddr . th dport vmap @output-nat-proto-services
 	}
 
+	chain filter-kube-dns--dns {
+		ct state new ct mark 0x00000000 ct mark set numgen inc mod 1 map { 0 : 0x40000004 }
+	}
+
+	chain nat-kube-dns--dns {
+		dnat ip addr . port to ct mark map { 0x40000004 : 172.17.0.3 . 53 }
+	}
+
 	chain filter-kube-dns--dns-tcp {
 		ct state new ct mark 0x00000000 ct mark set numgen inc mod 1 map { 0 : 0x40000002 }
 	}
 
 	chain nat-kube-dns--dns-tcp {
-		dnat ip addr . port to ct mark map { 0x40000002 : 172.17.0.2 . 53 }
+		dnat ip addr . port to ct mark map { 0x40000002 : 172.17.0.3 . 53 }
 	}
 
 	chain filter-kube-dns--metrics {
@@ -91,30 +99,22 @@ table ip nftlb {
 	}
 
 	chain nat-kube-dns--metrics {
-		dnat ip addr . port to ct mark map { 0x40000003 : 172.17.0.2 . 9153 }
-	}
-
-	chain filter-kubernetes--https {
-		ct state new ct mark 0x00000000 ct mark set numgen inc mod 1 map { 0 : 0x40000001 }
-	}
-
-	chain nat-kubernetes--https {
-		dnat ip addr . port to ct mark map { 0x40000001 : 192.168.1.11 . 8443 }
+		dnat ip addr . port to ct mark map { 0x40000003 : 172.17.0.3 . 9153 }
 	}
 
 	chain filter-configure-mode-snat--http {
-		ct state new ct mark 0x00000000 ct mark set numgen inc mod 1 map { 0 : 0x40000006 }
+		ct state new ct mark 0x00000000 ct mark set numgen inc mod 1 map { 0 : 0x40000007 }
 	}
 
 	chain nat-configure-mode-snat--http {
-		dnat ip addr . port to ct mark map { 0x40000006 : 172.17.0.5 . 80 }
+		dnat ip addr . port to ct mark map { 0x40000007 : 172.17.0.5 . 80 }
 	}
 
 	chain filter-configure-mode-dnat--http {
-		ct state new ct mark 0x00000000 ct mark set numgen inc mod 1 map { 0 : 0x00000007 }
+		ct state new ct mark 0x00000000 ct mark set numgen inc mod 1 map { 0 : 0x00000006 }
 	}
 
 	chain nat-configure-mode-dnat--http {
-		dnat ip addr . port to ct mark map { 0x00000007 : 172.17.0.3 . 80 }
+		dnat ip addr . port to ct mark map { 0x00000006 : 172.17.0.2 . 80 }
 	}
 }
