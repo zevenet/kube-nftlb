@@ -85,9 +85,9 @@ func DeleteNftlbFarm(obj interface{}) {
 				Method: "DELETE",
 				Path:   path,
 			}); err != nil {
-				log.WriteLog(types.ErrorLog, fmt.Sprintf("DeleteNftlbFarms: Service name: %s\n%s", svc.Name, err.Error()))
+				log.WriteLog(types.ErrorLog, fmt.Sprintf("DeleteNftlbFarms: Service name: %s, path: %s\n%s", svc.Name, path, err.Error()))
 			} else {
-				log.WriteLog(types.StandardLog, fmt.Sprintf("DeleteNftlbFarms: Service name: %s\n%s", svc.Name, string(response)))
+				log.WriteLog(types.StandardLog, fmt.Sprintf("DeleteNftlbFarms: Service name: %s, path: %s\n%s", svc.Name, path, string(response)))
 			}
 		}
 	}()
