@@ -3,7 +3,7 @@
                 {
                         "name": "configure-persistence-sessionaffinity--http",
                         "family": "ipv4",
-                        "virtual-addr": "10.107.49.109",
+                        "virtual-addr": "10.103.47.205",
                         "virtual-ports": "8080",
                         "source-addr": "",
                         "mode": "snat",
@@ -11,7 +11,7 @@
                         "scheduler": "rr",
                         "sched-param": "none",
                         "persistence": "srcip ",
-                        "persist-ttl": "10",
+                        "persist-ttl": "0",
                         "helper": "none",
                         "log": "none",
                         "mark": "0x0",
@@ -25,14 +25,24 @@
                         "tcp-strict": "off",
                         "queue": "-1",
                         "intra-connect": "on",
+                        "addresses": [
+                                {
+                                        "name": "configure-persistence-sessionaffinity--http",
+                                        "family": "ipv4",
+                                        "ip-addr": "10.103.47.205",
+                                        "ports": "8080",
+                                        "protocol": "tcp",
+                                        "used": "1"
+                                }
+                        ],
                         "backends": [
                                 {
-                                        "name": "configure-persistence-sessionaffinity-5d4c8694b-ww9k9",
-                                        "ip-addr": "172.17.0.4",
+                                        "name": "configure-persistence-sessionaffinity-5d4c8694b-f8lcc--http",
+                                        "ip-addr": "172.17.0.5",
                                         "port": "80",
                                         "weight": "1",
                                         "priority": "1",
-                                        "mark": "0x6",
+                                        "mark": "0x8",
                                         "est-connlimit": "0",
                                         "state": "up"
                                 }

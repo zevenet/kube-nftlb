@@ -3,7 +3,7 @@
                 {
                         "name": "configure-persistence-srcmac--http",
                         "family": "ipv4",
-                        "virtual-addr": "10.102.178.2",
+                        "virtual-addr": "10.102.231.82",
                         "virtual-ports": "8080",
                         "source-addr": "",
                         "mode": "snat",
@@ -25,10 +25,20 @@
                         "tcp-strict": "off",
                         "queue": "-1",
                         "intra-connect": "on",
+                        "addresses": [
+                                {
+                                        "name": "configure-persistence-srcmac--http",
+                                        "family": "ipv4",
+                                        "ip-addr": "10.102.231.82",
+                                        "ports": "8080",
+                                        "protocol": "tcp",
+                                        "used": "1"
+                                }
+                        ],
                         "backends": [
                                 {
-                                        "name": "configure-persistence-srcmac-78bcddb9c7-9tcqt",
-                                        "ip-addr": "172.17.0.5",
+                                        "name": "configure-persistence-srcmac-78bcddb9c7-bzbj5--http",
+                                        "ip-addr": "172.17.0.6",
                                         "port": "80",
                                         "weight": "1",
                                         "priority": "1",

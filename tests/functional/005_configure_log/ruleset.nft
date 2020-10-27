@@ -1,11 +1,21 @@
 table ip nftlb {
+	map filter-proto-services {
+		type inet_proto . ipv4_addr . inet_service : verdict
+		elements = { tcp . 10.96.0.1 . 443 : goto filter-kubernetes--https,
+			     tcp . 10.96.0.10 . 53 : goto filter-kube-dns--dns-tcp,
+			     tcp . 10.96.0.10 . 9153 : goto filter-kube-dns--metrics,
+			     tcp . 10.99.35.3 . 8080 : goto filter-configure-log-forward--http,
+			     tcp . 10.105.239.119 . 8080 : goto filter-configure-log-output--http,
+			     udp . 10.96.0.10 . 53 : goto filter-kube-dns--dns }
+	}
+
 	map nat-proto-services {
 		type inet_proto . ipv4_addr . inet_service : verdict
 		elements = { tcp . 10.96.0.1 . 443 : goto nat-kubernetes--https,
 			     tcp . 10.96.0.10 . 53 : goto nat-kube-dns--dns-tcp,
 			     tcp . 10.96.0.10 . 9153 : goto nat-kube-dns--metrics,
-			     tcp . 10.96.158.218 . 8080 : goto nat-configure-log-forward--http,
-			     tcp . 10.105.90.223 . 8080 : goto nat-configure-log-output--http,
+			     tcp . 10.99.35.3 . 8080 : goto nat-configure-log-forward--http,
+			     tcp . 10.105.239.119 . 8080 : goto nat-configure-log-output--http,
 			     udp . 10.96.0.10 . 53 : goto nat-kube-dns--dns }
 	}
 
@@ -13,23 +23,13 @@ table ip nftlb {
 		type mark : ipv4_addr
 	}
 
-	map filter-proto-services {
-		type inet_proto . ipv4_addr . inet_service : verdict
-		elements = { tcp . 10.96.0.1 . 443 : goto filter-kubernetes--https,
-			     tcp . 10.96.0.10 . 53 : goto filter-kube-dns--dns-tcp,
-			     tcp . 10.96.0.10 . 9153 : goto filter-kube-dns--metrics,
-			     tcp . 10.96.158.218 . 8080 : goto filter-configure-log-forward--http,
-			     tcp . 10.105.90.223 . 8080 : goto filter-configure-log-output--http,
-			     udp . 10.96.0.10 . 53 : goto filter-kube-dns--dns }
-	}
-
 	map output-filter-proto-services {
 		type inet_proto . ipv4_addr . inet_service : verdict
 		elements = { tcp . 10.96.0.1 . 443 : goto filter-kubernetes--https,
 			     tcp . 10.96.0.10 . 53 : goto filter-kube-dns--dns-tcp,
 			     tcp . 10.96.0.10 . 9153 : goto filter-kube-dns--metrics,
-			     tcp . 10.96.158.218 . 8080 : goto filter-configure-log-forward--http,
-			     tcp . 10.105.90.223 . 8080 : goto filter-configure-log-output--http,
+			     tcp . 10.99.35.3 . 8080 : goto filter-configure-log-forward--http,
+			     tcp . 10.105.239.119 . 8080 : goto filter-configure-log-output--http,
 			     udp . 10.96.0.10 . 53 : goto filter-kube-dns--dns }
 	}
 
@@ -38,13 +38,23 @@ table ip nftlb {
 		elements = { tcp . 10.96.0.1 . 443 : goto nat-kubernetes--https,
 			     tcp . 10.96.0.10 . 53 : goto nat-kube-dns--dns-tcp,
 			     tcp . 10.96.0.10 . 9153 : goto nat-kube-dns--metrics,
-			     tcp . 10.96.158.218 . 8080 : goto nat-configure-log-forward--http,
-			     tcp . 10.105.90.223 . 8080 : goto nat-configure-log-output--http,
+			     tcp . 10.99.35.3 . 8080 : goto nat-configure-log-forward--http,
+			     tcp . 10.105.239.119 . 8080 : goto nat-configure-log-output--http,
 			     udp . 10.96.0.10 . 53 : goto nat-kube-dns--dns }
 	}
 
 	map forward-proto-services {
 		type mark : verdict
+	}
+
+	chain filter {
+		type filter hook prerouting priority mangle; policy accept;
+		meta mark set ct mark
+		ip protocol . ip daddr . th dport vmap @filter-proto-services
+	}
+
+	chain filter-kube-dns--dns {
+		ct state new ct mark 0x00000000 ct mark set numgen inc mod 1 map { 0 : 0x40000004 }
 	}
 
 	chain prerouting {
@@ -58,18 +68,8 @@ table ip nftlb {
 		snat to ct mark map @proto-services-back-m
 	}
 
-	chain filter {
-		type filter hook prerouting priority mangle; policy accept;
-		meta mark set ct mark
-		ip protocol . ip daddr . th dport vmap @filter-proto-services
-	}
-
-	chain filter-kubernetes--https {
-		ct state new ct mark 0x00000000 ct mark set numgen inc mod 1 map { 0 : 0x40000001 }
-	}
-
-	chain nat-kubernetes--https {
-		dnat ip addr . port to ct mark map { 0x40000001 : 192.168.1.11 . 8443 }
+	chain nat-kube-dns--dns {
+		dnat ip addr . port to ct mark map { 0x40000004 : 172.17.0.2 . 53 }
 	}
 
 	chain output-filter {
@@ -98,28 +98,28 @@ table ip nftlb {
 		dnat ip addr . port to ct mark map { 0x40000003 : 172.17.0.2 . 9153 }
 	}
 
-	chain filter-kube-dns--dns {
-		ct state new ct mark 0x00000000 ct mark set numgen inc mod 1 map { 0 : 0x40000004 }
+	chain filter-kubernetes--https {
+		ct state new ct mark 0x00000000 ct mark set numgen inc mod 1 map { 0 : 0x40000001 }
 	}
 
-	chain nat-kube-dns--dns {
-		dnat ip addr . port to ct mark map { 0x40000004 : 172.17.0.2 . 53 }
+	chain nat-kubernetes--https {
+		dnat ip addr . port to ct mark map { 0x40000001 : 192.168.1.11 . 8443 }
 	}
 
 	chain filter-configure-log-output--http {
-		ct state new ct mark 0x00000000 ct mark set numgen inc mod 1 map { 0 : 0x40000006 }
-	}
-
-	chain nat-configure-log-output--http {
-		dnat ip addr . port to ct mark map { 0x40000006 : 172.17.0.4 . 80 }
-	}
-
-	chain filter-configure-log-forward--http {
 		ct state new ct mark 0x00000000 ct mark set numgen inc mod 1 map { 0 : 0x40000005 }
 	}
 
-	chain nat-configure-log-forward--http {
+	chain nat-configure-log-output--http {
 		dnat ip addr . port to ct mark map { 0x40000005 : 172.17.0.3 . 80 }
+	}
+
+	chain filter-configure-log-forward--http {
+		ct state new ct mark 0x00000000 ct mark set numgen inc mod 1 map { 0 : 0x40000006 }
+	}
+
+	chain nat-configure-log-forward--http {
+		dnat ip addr . port to ct mark map { 0x40000006 : 172.17.0.4 . 80 }
 	}
 
 	chain forward {
@@ -128,6 +128,6 @@ table ip nftlb {
 	}
 
 	chain forward-configure-log-forward--http {
-		log prefix "configure-log-forward--http"
+		log prefix "configure-log-forward"
 	}
 }

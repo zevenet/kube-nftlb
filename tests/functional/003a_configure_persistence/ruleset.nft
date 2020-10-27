@@ -1,13 +1,25 @@
 table ip nftlb {
+	map filter-proto-services {
+		type inet_proto . ipv4_addr . inet_service : verdict
+		elements = { tcp . 10.96.0.1 . 443 : goto filter-kubernetes--https,
+			     tcp . 10.96.0.10 . 53 : goto filter-kube-dns--dns-tcp,
+			     tcp . 10.96.0.10 . 9153 : goto filter-kube-dns--metrics,
+			     tcp . 10.102.231.82 . 8080 : goto filter-configure-persistence-srcmac--http,
+			     tcp . 10.103.47.205 . 8080 : goto filter-configure-persistence-sessionaffinity--http,
+			     tcp . 10.104.215.126 . 8080 : goto filter-configure-persistence-srcip--http,
+			     tcp . 10.105.243.174 . 8080 : goto filter-configure-persistence-srcport--http,
+			     udp . 10.96.0.10 . 53 : goto filter-kube-dns--dns }
+	}
+
 	map nat-proto-services {
 		type inet_proto . ipv4_addr . inet_service : verdict
 		elements = { tcp . 10.96.0.1 . 443 : goto nat-kubernetes--https,
 			     tcp . 10.96.0.10 . 53 : goto nat-kube-dns--dns-tcp,
 			     tcp . 10.96.0.10 . 9153 : goto nat-kube-dns--metrics,
-			     tcp . 10.102.178.2 . 8080 : goto nat-configure-persistence-srcmac--http,
-			     tcp . 10.105.202.23 . 8080 : goto nat-configure-persistence-srcip--http,
-			     tcp . 10.107.49.109 . 8080 : goto nat-configure-persistence-sessionaffinity--http,
-			     tcp . 10.110.215.33 . 8080 : goto nat-configure-persistence-srcport--http,
+			     tcp . 10.102.231.82 . 8080 : goto nat-configure-persistence-srcmac--http,
+			     tcp . 10.103.47.205 . 8080 : goto nat-configure-persistence-sessionaffinity--http,
+			     tcp . 10.104.215.126 . 8080 : goto nat-configure-persistence-srcip--http,
+			     tcp . 10.105.243.174 . 8080 : goto nat-configure-persistence-srcport--http,
 			     udp . 10.96.0.10 . 53 : goto nat-kube-dns--dns }
 	}
 
@@ -15,27 +27,15 @@ table ip nftlb {
 		type mark : ipv4_addr
 	}
 
-	map filter-proto-services {
-		type inet_proto . ipv4_addr . inet_service : verdict
-		elements = { tcp . 10.96.0.1 . 443 : goto filter-kubernetes--https,
-			     tcp . 10.96.0.10 . 53 : goto filter-kube-dns--dns-tcp,
-			     tcp . 10.96.0.10 . 9153 : goto filter-kube-dns--metrics,
-			     tcp . 10.102.178.2 . 8080 : goto filter-configure-persistence-srcmac--http,
-			     tcp . 10.105.202.23 . 8080 : goto filter-configure-persistence-srcip--http,
-			     tcp . 10.107.49.109 . 8080 : goto filter-configure-persistence-sessionaffinity--http,
-			     tcp . 10.110.215.33 . 8080 : goto filter-configure-persistence-srcport--http,
-			     udp . 10.96.0.10 . 53 : goto filter-kube-dns--dns }
-	}
-
 	map output-filter-proto-services {
 		type inet_proto . ipv4_addr . inet_service : verdict
 		elements = { tcp . 10.96.0.1 . 443 : goto filter-kubernetes--https,
 			     tcp . 10.96.0.10 . 53 : goto filter-kube-dns--dns-tcp,
 			     tcp . 10.96.0.10 . 9153 : goto filter-kube-dns--metrics,
-			     tcp . 10.102.178.2 . 8080 : goto filter-configure-persistence-srcmac--http,
-			     tcp . 10.105.202.23 . 8080 : goto filter-configure-persistence-srcip--http,
-			     tcp . 10.107.49.109 . 8080 : goto filter-configure-persistence-sessionaffinity--http,
-			     tcp . 10.110.215.33 . 8080 : goto filter-configure-persistence-srcport--http,
+			     tcp . 10.102.231.82 . 8080 : goto filter-configure-persistence-srcmac--http,
+			     tcp . 10.103.47.205 . 8080 : goto filter-configure-persistence-sessionaffinity--http,
+			     tcp . 10.104.215.126 . 8080 : goto filter-configure-persistence-srcip--http,
+			     tcp . 10.105.243.174 . 8080 : goto filter-configure-persistence-srcport--http,
 			     udp . 10.96.0.10 . 53 : goto filter-kube-dns--dns }
 	}
 
@@ -44,10 +44,10 @@ table ip nftlb {
 		elements = { tcp . 10.96.0.1 . 443 : goto nat-kubernetes--https,
 			     tcp . 10.96.0.10 . 53 : goto nat-kube-dns--dns-tcp,
 			     tcp . 10.96.0.10 . 9153 : goto nat-kube-dns--metrics,
-			     tcp . 10.102.178.2 . 8080 : goto nat-configure-persistence-srcmac--http,
-			     tcp . 10.105.202.23 . 8080 : goto nat-configure-persistence-srcip--http,
-			     tcp . 10.107.49.109 . 8080 : goto nat-configure-persistence-sessionaffinity--http,
-			     tcp . 10.110.215.33 . 8080 : goto nat-configure-persistence-srcport--http,
+			     tcp . 10.102.231.82 . 8080 : goto nat-configure-persistence-srcmac--http,
+			     tcp . 10.103.47.205 . 8080 : goto nat-configure-persistence-sessionaffinity--http,
+			     tcp . 10.104.215.126 . 8080 : goto nat-configure-persistence-srcip--http,
+			     tcp . 10.105.243.174 . 8080 : goto nat-configure-persistence-srcport--http,
 			     udp . 10.96.0.10 . 53 : goto nat-kube-dns--dns }
 	}
 
@@ -87,8 +87,16 @@ table ip nftlb {
 
 	map persist-configure-persistence-sessionaffinity--http {
 		type ipv4_addr : mark
-		size 65535
-		timeout 10s
+	}
+
+	chain filter {
+		type filter hook prerouting priority mangle; policy accept;
+		meta mark set ct mark
+		ip protocol . ip daddr . th dport vmap @filter-proto-services
+	}
+
+	chain filter-kube-dns--dns {
+		ct state new ct mark 0x00000000 ct mark set numgen inc mod 1 map { 0 : 0x40000004 }
 	}
 
 	chain prerouting {
@@ -102,18 +110,8 @@ table ip nftlb {
 		snat to ct mark map @proto-services-back-m
 	}
 
-	chain filter {
-		type filter hook prerouting priority mangle; policy accept;
-		meta mark set ct mark
-		ip protocol . ip daddr . th dport vmap @filter-proto-services
-	}
-
-	chain filter-kubernetes--https {
-		ct state new ct mark 0x00000000 ct mark set numgen inc mod 1 map { 0 : 0x40000001 }
-	}
-
-	chain nat-kubernetes--https {
-		dnat ip addr . port to ct mark map { 0x40000001 : 192.168.1.11 . 8443 }
+	chain nat-kube-dns--dns {
+		dnat ip addr . port to ct mark map { 0x40000004 : 172.17.0.2 . 53 }
 	}
 
 	chain output-filter {
@@ -142,34 +140,34 @@ table ip nftlb {
 		dnat ip addr . port to ct mark map { 0x40000003 : 172.17.0.2 . 9153 }
 	}
 
-	chain filter-kube-dns--dns {
-		ct state new ct mark 0x00000000 ct mark set numgen inc mod 1 map { 0 : 0x40000004 }
+	chain filter-kubernetes--https {
+		ct state new ct mark 0x00000000 ct mark set numgen inc mod 1 map { 0 : 0x40000001 }
 	}
 
-	chain nat-kube-dns--dns {
-		dnat ip addr . port to ct mark map { 0x40000004 : 172.17.0.2 . 53 }
+	chain nat-kubernetes--https {
+		dnat ip addr . port to ct mark map { 0x40000001 : 192.168.1.11 . 8443 }
 	}
 
 	chain filter-configure-persistence-srcip--http {
 		ct mark set ip saddr map @static-sessions-configure-persistence-srcip--http accept
 		ct state new ct mark set ip saddr map @persist-configure-persistence-srcip--http
-		ct state new ct mark 0x00000000 ct mark set numgen inc mod 1 map { 0 : 0x40000008 }
+		ct state new ct mark 0x00000000 ct mark set numgen inc mod 1 map { 0 : 0x40000005 }
 		ct mark != 0x00000000 update @persist-configure-persistence-srcip--http { ip saddr : ct mark }
 	}
 
 	chain nat-configure-persistence-srcip--http {
-		dnat ip addr . port to ct mark map { 0x40000008 : 172.17.0.3 . 80 }
+		dnat ip addr . port to ct mark map { 0x40000005 : 172.17.0.3 . 80 }
 	}
 
 	chain filter-configure-persistence-srcport--http {
 		ct mark set tcp sport map @static-sessions-configure-persistence-srcport--http accept
 		ct state new ct mark set tcp sport map @persist-configure-persistence-srcport--http
-		ct state new ct mark 0x00000000 ct mark set numgen inc mod 1 map { 0 : 0x40000005 }
+		ct state new ct mark 0x00000000 ct mark set numgen inc mod 1 map { 0 : 0x40000006 }
 		ct mark != 0x00000000 update @persist-configure-persistence-srcport--http { tcp sport : ct mark }
 	}
 
 	chain nat-configure-persistence-srcport--http {
-		dnat ip addr . port to ct mark map { 0x40000005 : 172.17.0.6 . 80 }
+		dnat ip addr . port to ct mark map { 0x40000006 : 172.17.0.4 . 80 }
 	}
 
 	chain filter-configure-persistence-srcmac--http {
@@ -180,17 +178,13 @@ table ip nftlb {
 	}
 
 	chain nat-configure-persistence-srcmac--http {
-		dnat ip addr . port to ct mark map { 0x40000007 : 172.17.0.5 . 80 }
+		dnat ip addr . port to ct mark map { 0x40000007 : 172.17.0.6 . 80 }
 	}
 
 	chain filter-configure-persistence-sessionaffinity--http {
-		ct mark set ip saddr map @static-sessions-configure-persistence-sessionaffinity--http accept
-		ct state new ct mark set ip saddr map @persist-configure-persistence-sessionaffinity--http
-		ct state new ct mark 0x00000000 ct mark set numgen inc mod 1 map { 0 : 0x40000006 }
-		ct mark != 0x00000000 update @persist-configure-persistence-sessionaffinity--http { ip saddr : ct mark }
+		ct state new ct mark 0x00000000 ct mark set 0x40000000
 	}
 
 	chain nat-configure-persistence-sessionaffinity--http {
-		dnat ip addr . port to ct mark map { 0x40000006 : 172.17.0.4 . 80 }
 	}
 }

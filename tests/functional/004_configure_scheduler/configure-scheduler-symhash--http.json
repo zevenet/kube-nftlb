@@ -3,7 +3,7 @@
                 {
                         "name": "configure-scheduler-symhash--http",
                         "family": "ipv4",
-                        "virtual-addr": "10.105.105.60",
+                        "virtual-addr": "10.101.197.236",
                         "virtual-ports": "8080",
                         "source-addr": "",
                         "mode": "snat",
@@ -25,14 +25,24 @@
                         "tcp-strict": "off",
                         "queue": "-1",
                         "intra-connect": "on",
+                        "addresses": [
+                                {
+                                        "name": "configure-scheduler-symhash--http",
+                                        "family": "ipv4",
+                                        "ip-addr": "10.101.197.236",
+                                        "ports": "8080",
+                                        "protocol": "tcp",
+                                        "used": "1"
+                                }
+                        ],
                         "backends": [
                                 {
-                                        "name": "configure-scheduler-symhash-6755754f67-xp47h",
-                                        "ip-addr": "172.17.0.5",
+                                        "name": "configure-scheduler-symhash-6755754f67-gfh28--http",
+                                        "ip-addr": "172.17.0.4",
                                         "port": "80",
                                         "weight": "1",
                                         "priority": "1",
-                                        "mark": "0x5",
+                                        "mark": "0x6",
                                         "est-connlimit": "0",
                                         "state": "up"
                                 }

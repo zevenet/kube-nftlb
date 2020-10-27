@@ -8,7 +8,7 @@ echo "Obtaining expected data for test $1..."
 
 # Apply YAML resources
 kubectl apply -f "$1/input.yaml" >/dev/null
-sleep 15
+sleep 45
 
 for FILENAME_JSON in "$1"/*.json; do
     # Get farm name to read the expected JSON

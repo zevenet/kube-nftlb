@@ -3,7 +3,7 @@
                 {
                         "name": "configure-external-ips--http",
                         "family": "ipv4",
-                        "virtual-addr": "10.100.75.132",
+                        "virtual-addr": "10.108.99.217",
                         "virtual-ports": "8080",
                         "source-addr": "",
                         "mode": "snat",
@@ -25,9 +25,43 @@
                         "tcp-strict": "off",
                         "queue": "-1",
                         "intra-connect": "on",
+                        "addresses": [
+                                {
+                                        "name": "configure-external-ips--http",
+                                        "family": "ipv4",
+                                        "ip-addr": "10.108.99.217",
+                                        "ports": "8080",
+                                        "protocol": "tcp",
+                                        "used": "1"
+                                },
+                                {
+                                        "name": "configure-external-ips--http--externalIP-1",
+                                        "family": "ipv4",
+                                        "ip-addr": "192.168.10.89",
+                                        "ports": "8080",
+                                        "protocol": "tcp",
+                                        "used": "1"
+                                },
+                                {
+                                        "name": "configure-external-ips--http--externalIP-2",
+                                        "family": "ipv4",
+                                        "ip-addr": "192.168.10.90",
+                                        "ports": "8080",
+                                        "protocol": "tcp",
+                                        "used": "1"
+                                },
+                                {
+                                        "name": "configure-external-ips--http--externalIP-3",
+                                        "family": "ipv4",
+                                        "ip-addr": "192.168.10.91",
+                                        "ports": "8080",
+                                        "protocol": "tcp",
+                                        "used": "1"
+                                }
+                        ],
                         "backends": [
                                 {
-                                        "name": "configure-external-ips-768d747c8b-2mk5j",
+                                        "name": "configure-external-ips-768d747c8b-rgwg2--http",
                                         "ip-addr": "172.17.0.3",
                                         "port": "80",
                                         "weight": "1",

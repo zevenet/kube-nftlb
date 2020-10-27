@@ -3,7 +3,7 @@
                 {
                         "name": "configure-mode-snat--http",
                         "family": "ipv4",
-                        "virtual-addr": "10.107.92.237",
+                        "virtual-addr": "10.111.105.1",
                         "virtual-ports": "8080",
                         "source-addr": "",
                         "mode": "snat",
@@ -25,14 +25,24 @@
                         "tcp-strict": "off",
                         "queue": "-1",
                         "intra-connect": "on",
+                        "addresses": [
+                                {
+                                        "name": "configure-mode-snat--http",
+                                        "family": "ipv4",
+                                        "ip-addr": "10.111.105.1",
+                                        "ports": "8080",
+                                        "protocol": "tcp",
+                                        "used": "1"
+                                }
+                        ],
                         "backends": [
                                 {
-                                        "name": "configure-mode-snat-7ff9b768cd-c5g4w",
-                                        "ip-addr": "172.17.0.3",
+                                        "name": "configure-mode-snat-7ff9b768cd-ghm5c--http",
+                                        "ip-addr": "172.17.0.5",
                                         "port": "80",
                                         "weight": "1",
                                         "priority": "1",
-                                        "mark": "0x7",
+                                        "mark": "0x6",
                                         "est-connlimit": "0",
                                         "state": "up"
                                 }

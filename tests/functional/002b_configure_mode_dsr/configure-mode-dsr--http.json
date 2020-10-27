@@ -3,8 +3,8 @@
                 {
                         "name": "configure-mode-dsr--http",
                         "family": "ipv4",
-                        "virtual-addr": "10.108.83.23",
-                        "virtual-ports": "8080",
+                        "virtual-addr": "",
+                        "virtual-ports": "",
                         "source-addr": "",
                         "mode": "dsr",
                         "protocol": "tcp",
@@ -25,11 +25,29 @@
                         "tcp-strict": "off",
                         "queue": "-1",
                         "intra-connect": "on",
+                        "addresses": [
+                                {
+                                        "name": "configure-mode-dsr--http-addr",
+                                        "family": "ipv4",
+                                        "ip-addr": "",
+                                        "ports": "",
+                                        "protocol": "tcp",
+                                        "used": "1"
+                                },
+                                {
+                                        "name": "configure-mode-dsr--http",
+                                        "family": "ipv4",
+                                        "ip-addr": "10.107.64.128",
+                                        "ports": "8080",
+                                        "protocol": "tcp",
+                                        "used": "1"
+                                }
+                        ],
                         "backends": [
                                 {
-                                        "name": "configure-mode-dsr-7954d9c78f-lxjlv",
-                                        "ip-addr": "172.17.0.7",
-                                        "port": "8080",
+                                        "name": "configure-mode-dsr-7954d9c78f-htswp--http",
+                                        "ip-addr": "172.17.0.3",
+                                        "port": "80",
                                         "weight": "1",
                                         "priority": "1",
                                         "mark": "0x5",
@@ -37,9 +55,9 @@
                                         "state": "config_error"
                                 },
                                 {
-                                        "name": "configure-mode-dsr-7954d9c78f-x86nl",
-                                        "ip-addr": "172.17.0.6",
-                                        "port": "8080",
+                                        "name": "configure-mode-dsr-7954d9c78f-px8jb--http",
+                                        "ip-addr": "172.17.0.4",
+                                        "port": "80",
                                         "weight": "1",
                                         "priority": "1",
                                         "mark": "0x6",

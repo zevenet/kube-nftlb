@@ -3,7 +3,7 @@
                 {
                         "name": "creation-farm-backends--http",
                         "family": "ipv4",
-                        "virtual-addr": "10.97.82.82",
+                        "virtual-addr": "10.98.110.21",
                         "virtual-ports": "8080",
                         "source-addr": "",
                         "mode": "snat",
@@ -25,10 +25,20 @@
                         "tcp-strict": "off",
                         "queue": "-1",
                         "intra-connect": "on",
+                        "addresses": [
+                                {
+                                        "name": "creation-farm-backends--http",
+                                        "family": "ipv4",
+                                        "ip-addr": "10.98.110.21",
+                                        "ports": "8080",
+                                        "protocol": "tcp",
+                                        "used": "1"
+                                }
+                        ],
                         "backends": [
                                 {
-                                        "name": "creation-farm-backends-59b587cbc-9grjp",
-                                        "ip-addr": "172.17.0.5",
+                                        "name": "creation-farm-backends-59b587cbc-vzkn7--http",
+                                        "ip-addr": "172.17.0.3",
                                         "port": "80",
                                         "weight": "1",
                                         "priority": "1",
@@ -37,8 +47,8 @@
                                         "state": "up"
                                 },
                                 {
-                                        "name": "creation-farm-backends-59b587cbc-twkm2",
-                                        "ip-addr": "172.17.0.3",
+                                        "name": "creation-farm-backends-59b587cbc-7hkdt--http",
+                                        "ip-addr": "172.17.0.4",
                                         "port": "80",
                                         "weight": "1",
                                         "priority": "1",
@@ -47,8 +57,8 @@
                                         "state": "up"
                                 },
                                 {
-                                        "name": "creation-farm-backends-59b587cbc-jw4mb",
-                                        "ip-addr": "172.17.0.4",
+                                        "name": "creation-farm-backends-59b587cbc-dnrn6--http",
+                                        "ip-addr": "172.17.0.5",
                                         "port": "80",
                                         "weight": "1",
                                         "priority": "1",
