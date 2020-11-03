@@ -44,15 +44,20 @@ function count_nftlb_rules {
 
 # kube-proxy
 function count_iptables_rules {
-    # echo -n "$(table)"    => Get every iptables table as a single ruleset
+    # echo -n "$(tables)"   => Get legacy and actual iptables rulesets
     # | sed                 => Pipe ruleset as input text to sed
-    # -e '/^Chain/d'        => Delete "Chain ..." lines
-    # -e '/^target/d'       => Delete "target ..." lines
+    # -e '/^#/d'            => Delete lines that start with "#"
+    # -e '/^*/d'            => Delete lines that start with "*"
+    # -e '/^:/d'            => Delete lines that start with ":"
+    # -e '/^COMMIT/d'       => Delete "COMMIT" lines
     # -e '/^$/d'            => Delete empty lines
     # | wc                  => Pipe filtered (valid) rules as input text to wc
     # -l                    => Every rule is a line, so count every line
 
-    echo -n "$(iptables -L -t nat)$(iptables -L -t filter)$(iptables -L -t mangle)$(iptables-legacy -L -t nat)$(iptables-legacy -L -t filter)$(iptables-legacy -L -t mangle)" | sed -e '/^Chain/d' -e '/^target/d' -e '/^$/d' | wc -l
+    echo -n "$(iptables-save)$(iptables-legacy-save)" | sed -e '/^#/d' -e '/^*/d' -e '/^:/d' -e '/^COMMIT/d' -e '/^$/d' | wc -l
+
+    # Sleep for 10ms not to block iptables, nftables doesn't have this problem
+    sleep 0.01
 }
 
 
@@ -140,7 +145,10 @@ function create_deployment {
     local RESOURCE_NAME=$2
 
     kubectl apply -f "$DEPLOYMENT_PATH" --timeout="$TIMEOUT"
-    kubectl wait --for=condition=Ready pods -l app="$RESOURCE_NAME" --timeout="$TIMEOUT"
+    while [ $(kubectl get pods -A | grep "$RESOURCE_NAME" | grep -v Running | wc -l) -gt 0 ]; do
+        sleep 1
+    done
+    sleep 5
 }
 
 function delete_deployment {
@@ -179,6 +187,7 @@ function create_kube {
 
     echo "Starting $KUBE_NAME..."
     kubectl apply -f "$KUBE_PATH" --timeout="$TIMEOUT"
+    sleep 3
     kubectl wait --namespace=kube-system --for=condition=Ready pods -l app="$KUBE_NAME" --timeout="$TIMEOUT"
 }
 
@@ -188,6 +197,7 @@ function delete_kube {
 
     echo "Deleting $KUBE_NAME..."
     kubectl delete -f "$KUBE_PATH" --timeout="$TIMEOUT"
+    sleep 3
     kubectl wait --namespace=kube-system --for=delete pods -l app="$KUBE_NAME" --timeout="$TIMEOUT"
 }
 
