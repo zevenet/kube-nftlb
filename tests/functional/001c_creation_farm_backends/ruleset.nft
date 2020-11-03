@@ -99,10 +99,10 @@ table ip nftlb {
 	}
 
 	chain filter-creation-farm-backends--http {
-		ct state new ct mark 0x00000000 ct mark set numgen inc mod 2 map { 0 : 0x40000005, 1 : 0x40000007 }
+		ct state new ct mark 0x00000000 ct mark set numgen inc mod 3 map { 0 : 0x40000005, 1 : 0x40000007, 2 : 0x40000006 }
 	}
 
 	chain nat-creation-farm-backends--http {
-		dnat ip addr . port to ct mark map { 0x40000005 : 172.17.0.2 . 80, 0x40000007 : 172.17.0.4 . 80 }
+		dnat ip addr . port to ct mark map { 0x40000005 : 172.17.0.2 . 80, 0x40000007 : 172.17.0.4 . 80, 0x40000006 : 172.17.0.3 . 80 }
 	}
 }

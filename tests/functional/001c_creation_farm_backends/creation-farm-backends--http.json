@@ -55,6 +55,16 @@
                                         "mark": "0x7",
                                         "est-connlimit": "0",
                                         "state": "up"
+                                },
+                                {
+                                        "name": "creation-farm-backends-59b587cbc-us8ql--http",
+                                        "ip-addr": "172.17.0.3",
+                                        "port": "80",
+                                        "weight": "1",
+                                        "priority": "1",
+                                        "mark": "0x6",
+                                        "est-connlimit": "0",
+                                        "state": "up"
                                 }
                         ],
                         "policies": []
