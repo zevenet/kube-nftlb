@@ -45,8 +45,8 @@ spec:
       hostNetwork: true
       containers:
         - name: kube-nftlb
-          image: kube-nftlb
-          imagePullPolicy: Never
+          image: zevenet/kube-nftlb
+          imagePullPolicy: IfNotPresent
           resources:
             limits:
               memory: 200Mi

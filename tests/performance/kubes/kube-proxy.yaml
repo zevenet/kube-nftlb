@@ -59,7 +59,7 @@ spec:
           command:
             - /bin/sh
             - -c
-            - kube-proxy --cluster-cidr="" --oom-score-adj=-998 1>>/var/log/kube-proxy.log 2>&1
+            - kube-proxy --cluster-cidr="" --oom-score-adj=-998
           securityContext:
             privileged: true
           volumeMounts:
