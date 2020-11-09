@@ -3,6 +3,7 @@ package main
 import (
 	"github.com/zevenet/kube-nftlb/pkg/auth"
 	"github.com/zevenet/kube-nftlb/pkg/controller"
+	"github.com/zevenet/kube-nftlb/pkg/metrics"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/client-go/tools/cache"
 )
@@ -18,6 +19,9 @@ func main() {
 		//controller.NewNetworkPolicyController(clientset),
 		// TODO Enable NetworkPolicyController after nftlb fully supports policies
 	}
+
+	// Start metrics server
+	go metrics.StartServer()
 
 	// Run controllers as background processes
 	for _, controller := range controllers {

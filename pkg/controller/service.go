@@ -6,6 +6,7 @@ import (
 
 	"github.com/zevenet/kube-nftlb/pkg/http"
 	"github.com/zevenet/kube-nftlb/pkg/log"
+	"github.com/zevenet/kube-nftlb/pkg/metrics"
 	"github.com/zevenet/kube-nftlb/pkg/parser"
 	"github.com/zevenet/kube-nftlb/pkg/types"
 	"github.com/zevenet/kube-nftlb/pkg/watcher"
@@ -56,12 +57,16 @@ func AddNftlbFarm(obj interface{}) {
 		return
 	}
 
+	metrics.ServicesChangesPending.Inc()
+	metrics.ServicesChangesTotal.Inc()
 	// Send that JSON data to nftlb
 	response, err := http.Send(&types.RequestData{
 		Method: "POST",
 		Path:   "farms",
 		Body:   strings.NewReader(nftlbJSON),
 	})
+	metrics.ServicesChangesPending.Dec()
+
 	if err != nil {
 		log.WriteLog(types.ErrorLog, fmt.Sprintf("AddNftlbFarms: Service name: %s\n%s", svc.Name, err.Error()))
 		return
@@ -73,6 +78,7 @@ func AddNftlbFarm(obj interface{}) {
 
 // DeleteNftlbFarm takes in a Service object (k8s) and deletes the farm related to the service and its addresses (nftlb).
 func DeleteNftlbFarm(obj interface{}) {
+	metrics.ServicesChangesTotal.Inc()
 	svc := obj.(*corev1.Service)
 
 	// Make channel where paths will come through

@@ -6,6 +6,7 @@ import (
 
 	"github.com/zevenet/kube-nftlb/pkg/http"
 	"github.com/zevenet/kube-nftlb/pkg/log"
+	"github.com/zevenet/kube-nftlb/pkg/metrics"
 	"github.com/zevenet/kube-nftlb/pkg/parser"
 	"github.com/zevenet/kube-nftlb/pkg/types"
 	"github.com/zevenet/kube-nftlb/pkg/watcher"
@@ -60,12 +61,16 @@ func AddNftlbBackends(obj interface{}) {
 	}
 	log.WriteLog(types.StandardLog, fmt.Sprintf("AddNftlbBackends: Endpoints name: %s\n%s", ep.Name, nftlbJSON))
 
+	metrics.EndpointsChangesPending.Inc()
+	metrics.EndpointsChangesTotal.Inc()
 	// Get the response from that request
 	response, err := http.Send(&types.RequestData{
 		Method: "POST",
 		Path:   "farms",
 		Body:   strings.NewReader(nftlbJSON),
 	})
+	metrics.EndpointsChangesPending.Dec()
+
 	if err != nil {
 		log.WriteLog(types.ErrorLog, fmt.Sprintf("AddNftlbBackends: Endpoints name: %s\n%s", ep.Name, err.Error()))
 		return
@@ -76,6 +81,7 @@ func AddNftlbBackends(obj interface{}) {
 
 // DeleteNftlbBackends
 func DeleteNftlbBackends(obj interface{}) {
+	metrics.EndpointsChangesTotal.Inc()
 	ep := obj.(*corev1.Endpoints)
 	pathsChan := make(chan string)
 

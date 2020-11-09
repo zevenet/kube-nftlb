@@ -25,6 +25,8 @@ spec:
         - name: kube-nftlb
           image: zevenet/kube-nftlb
           imagePullPolicy: IfNotPresent
+          ports:
+          - containerPort: 9195
           resources:
             limits:
               memory: 200Mi
