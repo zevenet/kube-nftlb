@@ -4,6 +4,8 @@
   - [Installation 🔧](#installation-)
   - [Deployment 🚀](#deployment-)
   - [Host settings ⚙](#host-settings-)
+  - [Metrics 📈](#metrics-)
+    - [Prometheus example](#prometheus-example)
   - [Creating resources ✏](#creating-resources-)
     - [Service](#service)
     - [Deployment](#deployment)
@@ -87,6 +89,7 @@ root@debian:kube-nftlb# ./build.sh
 ## Deployment 🚀
 
 1. Start Minikube without `kube-proxy` being deployed by default:
+
 ```console
 root@debian:kube-nftlb# minikube start --vm-driver=none --extra-config=kubeadm.skip-phases=addon/kube-proxy
 ```
@@ -138,6 +141,24 @@ root@debian:~# nft add chain ip nat POSTROUTING '{ type nat hook postrouting pri
 root@debian:~# nft add rule ip nat POSTROUTING oifname != "docker0" ip saddr 172.17.0.0/16 counter masquerade
 root@debian:~# nft add chain ip nat INPUT '{ type nat hook input priority 100; policy accept; }'
 root@debian:~# nft add chain ip nat OUTPUT '{ type nat hook output priority -100; policy accept; }'
+```
+
+## Metrics 📈
+
+`kube-nftlb` metrics are served in **localhost:9195/metrics**, although this is subject to change.
+
+### Prometheus example
+
+1. Build a Prometheus Docker image running the next command:
+
+```console
+root@debian:kube-nftlb# docker image build prometheus -t prometheus-zevenet
+```
+
+2. Deploy that container as Daemonset:
+
+```console
+root@debian:kube-nftlb# kubectl apply -f prometheus/daemonset.yml
 ```
 
 ## Creating resources ✏
