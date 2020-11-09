@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: prometheus
+  namespace: default
+  labels:
+    name: prometheus
+spec:
+  selector:
+    matchLabels:
+      name: prometheus
+  updateStrategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 10%
+  template:
+    metadata:
+      labels:
+        name: prometheus
+    spec:
+      dnsPolicy: ClusterFirst
+      hostNetwork: true
+      containers:
+        - name: prometheus
+          image: prometheus-zevenet
+          imagePullPolicy: IfNotPresent
+          ports:
+          - containerPort: 9090
+          resources:
+            limits:
+              memory: 200Mi
+            requests:
+              cpu: 100m
+              memory: 200Mi
+          securityContext:
+            privileged: true
