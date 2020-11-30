@@ -513,30 +513,30 @@ This data can be found at `resources/` directory.
 
 ### Environment
 
-- **Host**: Bare metal, not virtualized
-- **CPU**: Intel i5 7500 (4)
-- **OS**: Debian GNU/Linux 10.5 (buster) x86_64 (netinst, no DE)
-- **Kernel**: Linux debian 5.7.0-0.bpo.2-amd64 #1 SMP Debian 5.7.10-1~bpo10+1 (2020-07-30) x86_64 GNU/Linux
-- **Memory**: 3740MiB
-- **How many times was the test repeated**: 30
+- **Host**: Bare metal, not virtualized (single node)
+- **CPU**: Intel i5 660 (4)
+- **OS**: Debian GNU/Linux 10.6 (buster) x86_64 (netinst, no DE)
+- **Kernel**: Linux debian 5.8.0-0.bpo.2-amd64 #1 SMP Debian 5.8.10-1~bpo10+1 (2020-09-26) x86_64 GNU/Linux
+- **Memory**: 3738MiB
+- **How many times was the test repeated**: 50
 - **Software**:
-  - Minikube v1.12.3 (flags: `--vm-driver=none --extra-config=kubeadm.skip-phases=addon/kube-proxy`)
-  - Docker v19.03.12
+  - Minikube v1.15.0 (flags: `--vm-driver=none --extra-config=kubeadm.skip-phases=addon/kube-proxy`)
+  - Docker v19.03.13
   - iptables v1.8.3
   - nftables v0.9.4
-  - kubectl client v1.19.0, server v1.18.3
-  - kube-proxy v1.18.3 (iptables mode)
-  - kube-nftlb commit 4f89518e28efae24b88b5b42e8a0a4698bb17fa6
+  - kubectl client v1.19.4, server v1.19.4
+  - kube-proxy v1.19.4 (iptables mode)
+  - kube-nftlb commit 72549dff4c892fcc061033fa508ce0d45a5aa7a9
 
 _If we're missing something, open an issue and let us know._
 
 ### Summary
 
-Tests are based on the number of rules iptables/nftables set after a series of steps. There are scripts that do the heavy lifting for you in `performance-tests/` (make sure to understand the `README`).
+Tests are based on the number of rules iptables/nftables set after a series of steps. There are scripts that do the heavy lifting for you in `tests/performance` (make sure to understand the `README`).
 
-Rule count must be known beforehand. We can measure the time between steps if we know how many rules are set in those steps (example: measure how much time (in ms) does it take to change from X rules to Y rules). This counting could vary between systems, although it's a possibility that we don't expect to happen frequently, it could happen for some reason. It's the reason why `performance-tests/expected-rule-count.sh.example` exists and why the counting must be tailored to your individual system. This means that you shouldn't expect the **exact** (read carefully) same results from your testing, as we can't be 100% sure this value doesn't change.
+Rule count must be known beforehand. We can measure the time between steps if we know how many rules are set in those steps (example: measure how much time (in ms) does it take to change from X rules to Y rules). This counting could vary between systems, although it's a possibility that we don't expect to happen frequently, it could happen for some reason. It's the reason why `tests/performance/expected-rule-count.sh.example` exists and why the counting must be tailored to your individual system. This means that you shouldn't expect the **exact** (read carefully) same results from your testing, as we can't be 100% sure this value doesn't change.
 
-Rules are counted with a single shell command. To find out more about this, see `performance-tests/test.sh`.
+Rules are counted with a single shell command. To find out more about this, see `tests/performance/test.sh`.
 
 We can't do statistics based a single test, because an unique result isn't meaningful on its own and doesn't account for variation. After repeating the test over and over and storing every result individually, we can calculate statistics from those results (`ministat`) and draw [bar charts](https://en.wikipedia.org/wiki/Bar_chart) and [boxplots](https://en.wikipedia.org/wiki/Box_plot) (`gnuplot`).
 
@@ -552,15 +552,15 @@ The following sections are extracted from the same data (`resources/filtered-res
 user@debian:kube-nftlb# cat resources/filtered-results.txt | awk "/^kube-nftlb {$/,/^}$/" | awk "/^\\treplicas-test-010 {$/{flag=1;next}/^\\t}$/{flag=0}flag" | grep -e "create-service" | sed -e "s/^create-service: //g" -e "s/ ms .*$//g" | ministat -n
 x <stdin>
     N           Min           Max        Median           Avg        Stddev
-x  30             4            63             7           9.3     10.524684
+x  50             7            63            33         29.12     16.149354
 
 user@debian:kube-nftlb# cat resources/filtered-results.txt | awk "/^kube-proxy {$/,/^}$/" | awk "/^\\treplicas-test-010 {$/{flag=1;next}/^\\t}$/{flag=0}flag" | grep -e "create-service" | sed -e "s/^create-service: //g" -e "s/ ms .*$//g" | ministat -n
 x <stdin>
     N           Min           Max        Median           Avg        Stddev
-x  30          1885          4305          2370     2657.0667     665.77494
+x  50           121          1084           138         179.4      173.5475
 ```
 
-`kube-nftlb` is **285,70** times faster on average than `kube-proxy` in this case.
+`kube-nftlb` is **6,16** times faster on average than `kube-proxy` in this case.
 
 - 50 endpoints
 
@@ -568,15 +568,15 @@ x  30          1885          4305          2370     2657.0667     665.77494
 user@debian:kube-nftlb# cat resources/filtered-results.txt | awk "/^kube-nftlb {$/,/^}$/" | awk "/^\\treplicas-test-050 {$/{flag=1;next}/^\\t}$/{flag=0}flag" | grep -e "create-service" | sed -e "s/^create-service: //g" -e "s/ ms .*$//g" | ministat -n
 x <stdin>
     N           Min           Max        Median           Avg        Stddev
-x  30             5           275            24     35.066667     47.712453
+x  50             7            18             9          9.96     2.4240294
 
 user@debian:kube-nftlb# cat resources/filtered-results.txt | awk "/^kube-proxy {$/,/^}$/" | awk "/^\\treplicas-test-050 {$/{flag=1;next}/^\\t}$/{flag=0}flag" | grep -e "create-service" | sed -e "s/^create-service: //g" -e "s/ ms .*$//g" | ministat -n
 x <stdin>
     N           Min           Max        Median           Avg        Stddev
-x  30         12098         22600         15313     15679.133     2175.9727
+x  50            83           196           152        152.72     15.130777
 ```
 
-`kube-nftlb` is **447,12** times faster on average than `kube-proxy` in this case.
+`kube-nftlb` is **15,33** times faster on average than `kube-proxy` in this case.
 
 - 100 endpoints
 
@@ -584,15 +584,15 @@ x  30         12098         22600         15313     15679.133     2175.9727
 user@debian:kube-nftlb# cat resources/filtered-results.txt | awk "/^kube-nftlb {$/,/^}$/" | awk "/^\\treplicas-test-100 {$/{flag=1;next}/^\\t}$/{flag=0}flag" | grep -e "create-service" | sed -e "s/^create-service: //g" -e "s/ ms .*$//g" | ministat -n
 x <stdin>
     N           Min           Max        Median           Avg        Stddev
-x  30             6           317            54     79.033333     75.623607
+x  50            11          1073            36         73.88     152.00532
 
 user@debian:kube-nftlb# cat resources/filtered-results.txt | awk "/^kube-proxy {$/,/^}$/" | awk "/^\\treplicas-test-100 {$/{flag=1;next}/^\\t}$/{flag=0}flag" | grep -e "create-service" | sed -e "s/^create-service: //g" -e "s/ ms .*$//g" | ministat -n
 x <stdin>
     N           Min           Max        Median           Avg        Stddev
-x  30         27553         40096         30742       30744.7     2418.6873
+x  50           121          1073           190        235.74     181.18226
 ```
 
-`kube-nftlb` is **389** times faster on average than `kube-proxy` in this case.
+`kube-nftlb` is **3,19** times faster on average than `kube-proxy` in this case.
 
 **Deleting a Service**
 
@@ -602,15 +602,15 @@ x  30         27553         40096         30742       30744.7     2418.6873
 user@debian:kube-nftlb# cat resources/filtered-results.txt | awk "/^kube-nftlb {$/,/^}$/" | awk "/^\\treplicas-test-010 {$/{flag=1;next}/^\\t}$/{flag=0}flag" | grep -e "delete-service" | sed -e "s/^delete-service: //g" -e "s/ ms .*$//g" | ministat -n
 x <stdin>
     N           Min           Max        Median           Avg        Stddev
-x  30             4            10             5     5.1333333     1.0742546
+x  50             7            12            10          9.82    0.87341694
 
 user@debian:kube-nftlb# cat resources/filtered-results.txt | awk "/^kube-proxy {$/,/^}$/" | awk "/^\\treplicas-test-010 {$/{flag=1;next}/^\\t}$/{flag=0}flag" | grep -e "delete-service" | sed -e "s/^delete-service: //g" -e "s/ ms .*$//g" | ministat -n
 x <stdin>
     N           Min           Max        Median           Avg        Stddev
-x  30           381           646           396         420.2     59.218124
+x  50            21           974           941        900.92     183.39484
 ```
 
-`kube-nftlb` is **81,85** times faster on average than `kube-proxy` in this case.
+`kube-nftlb` is **91,74** times faster on average than `kube-proxy` in this case.
 
 - 50 endpoints
 
@@ -618,15 +618,15 @@ x  30           381           646           396         420.2     59.218124
 user@debian:kube-nftlb# cat resources/filtered-results.txt | awk "/^kube-nftlb {$/,/^}$/" | awk "/^\\treplicas-test-050 {$/{flag=1;next}/^\\t}$/{flag=0}flag" | grep -e "delete-service" | sed -e "s/^delete-service: //g" -e "s/ ms .*$//g" | ministat -n
 x <stdin>
     N           Min           Max        Median           Avg        Stddev
-x  30             4            19             5           6.2     3.6141484
+x  50             7            17            10          9.76     1.5059067
 
 user@debian:kube-nftlb# cat resources/filtered-results.txt | awk "/^kube-proxy {$/,/^}$/" | awk "/^\\treplicas-test-050 {$/{flag=1;next}/^\\t}$/{flag=0}flag" | grep -e "delete-service" | sed -e "s/^delete-service: //g" -e "s/ ms .*$//g" | ministat -n
 x <stdin>
     N           Min           Max        Median           Avg        Stddev
-x  30           730          1499           786     815.23333     138.76442
+x  50           658           996           967        960.56     46.946413
 ```
 
-`kube-nftlb` is **131,48** times faster on average than `kube-proxy` in this case.
+`kube-nftlb` is **98,41** times faster on average than `kube-proxy` in this case.
 
 - 100 endpoints
 
@@ -634,15 +634,15 @@ x  30           730          1499           786     815.23333     138.76442
 user@debian:kube-nftlb# cat resources/filtered-results.txt | awk "/^kube-nftlb {$/,/^}$/" | awk "/^\\treplicas-test-100 {$/{flag=1;next}/^\\t}$/{flag=0}flag" | grep -e "delete-service" | sed -e "s/^delete-service: //g" -e "s/ ms .*$//g" | ministat -n
 x <stdin>
     N           Min           Max        Median           Avg        Stddev
-x  30             4            39             5     6.9666667     6.8455036
+x  50             7            23            10         10.38     2.8348415
 
 user@debian:kube-nftlb# cat resources/filtered-results.txt | awk "/^kube-proxy {$/,/^}$/" | awk "/^\\treplicas-test-100 {$/{flag=1;next}/^\\t}$/{flag=0}flag" | grep -e "delete-service" | sed -e "s/^delete-service: //g" -e "s/ ms .*$//g" | ministat -n
 x <stdin>
     N           Min           Max        Median           Avg        Stddev
-x  30           139          1634          1278     1253.3333     229.83807
+x  50            21          1301          1007       1027.08     165.96924
 ```
 
-`kube-nftlb` is **179,9** times faster on average than `kube-proxy` in this case.
+`kube-nftlb` is **98,94** times faster on average than `kube-proxy` in this case.
 
 ### Charts: time by endpoints number
 

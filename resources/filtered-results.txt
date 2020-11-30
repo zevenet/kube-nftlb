@@ -1,840 +1,1400 @@
 kube-nftlb {
 	replicas-test-010 {
-create-service: 6 ms (18 rules counted)
-delete-service: 4 ms (16 rules counted)
+create-service: 15 ms (17 rules counted)
+delete-service: 11 ms (15 rules counted)
 	}
 	replicas-test-050 {
-create-service: 26 ms (18 rules counted)
-delete-service: 5 ms (16 rules counted)
+create-service: 8 ms (17 rules counted)
+delete-service: 10 ms (15 rules counted)
 	}
 	replicas-test-100 {
-create-service: 109 ms (18 rules counted)
-delete-service: 9 ms (16 rules counted)
+create-service: 37 ms (17 rules counted)
+delete-service: 10 ms (15 rules counted)
 	}
 }
 kube-proxy {
 	replicas-test-010 {
-create-service: 3541 ms (81 rules counted)
-delete-service: 389 ms (50 rules counted)
+create-service: 558 ms (84 rules counted)
+delete-service: 773 ms (53 rules counted)
 	}
 	replicas-test-050 {
-create-service: 15580 ms (201 rules counted)
-delete-service: 757 ms (50 rules counted)
+create-service: 153 ms (204 rules counted)
+delete-service: 982 ms (53 rules counted)
 	}
 	replicas-test-100 {
-create-service: 32034 ms (351 rules counted)
-delete-service: 1337 ms (50 rules counted)
+create-service: 181 ms (354 rules counted)
+delete-service: 989 ms (53 rules counted)
 	}
 }
 kube-nftlb {
 	replicas-test-010 {
-create-service: 8 ms (18 rules counted)
-delete-service: 6 ms (16 rules counted)
+create-service: 22 ms (17 rules counted)
+delete-service: 9 ms (15 rules counted)
 	}
 	replicas-test-050 {
-create-service: 24 ms (18 rules counted)
-delete-service: 5 ms (16 rules counted)
+create-service: 10 ms (17 rules counted)
+delete-service: 9 ms (15 rules counted)
 	}
 	replicas-test-100 {
-create-service: 57 ms (18 rules counted)
-delete-service: 5 ms (16 rules counted)
+create-service: 22 ms (17 rules counted)
+delete-service: 10 ms (15 rules counted)
 	}
 }
 kube-proxy {
 	replicas-test-010 {
-create-service: 2002 ms (81 rules counted)
-delete-service: 394 ms (50 rules counted)
+create-service: 835 ms (84 rules counted)
+delete-service: 21 ms (53 rules counted)
 	}
 	replicas-test-050 {
-create-service: 13048 ms (201 rules counted)
-delete-service: 772 ms (50 rules counted)
+create-service: 159 ms (204 rules counted)
+delete-service: 989 ms (53 rules counted)
 	}
 	replicas-test-100 {
-create-service: 32097 ms (351 rules counted)
-delete-service: 1314 ms (50 rules counted)
+create-service: 284 ms (354 rules counted)
+delete-service: 1005 ms (53 rules counted)
 	}
 }
 kube-nftlb {
 	replicas-test-010 {
-create-service: 6 ms (18 rules counted)
-delete-service: 5 ms (16 rules counted)
+create-service: 46 ms (17 rules counted)
+delete-service: 10 ms (15 rules counted)
 	}
 	replicas-test-050 {
-create-service: 22 ms (18 rules counted)
-delete-service: 5 ms (16 rules counted)
+create-service: 9 ms (17 rules counted)
+delete-service: 10 ms (15 rules counted)
 	}
 	replicas-test-100 {
-create-service: 6 ms (18 rules counted)
-delete-service: 5 ms (16 rules counted)
+create-service: 28 ms (17 rules counted)
+delete-service: 9 ms (15 rules counted)
 	}
 }
 kube-proxy {
 	replicas-test-010 {
-create-service: 3541 ms (81 rules counted)
-delete-service: 389 ms (50 rules counted)
+create-service: 138 ms (84 rules counted)
+delete-service: 953 ms (53 rules counted)
 	}
 	replicas-test-050 {
-create-service: 14876 ms (201 rules counted)
-delete-service: 746 ms (50 rules counted)
+create-service: 140 ms (204 rules counted)
+delete-service: 984 ms (53 rules counted)
 	}
 	replicas-test-100 {
-create-service: 31074 ms (351 rules counted)
-delete-service: 1187 ms (50 rules counted)
+create-service: 190 ms (354 rules counted)
+delete-service: 1017 ms (53 rules counted)
 	}
 }
 kube-nftlb {
 	replicas-test-010 {
-create-service: 11 ms (18 rules counted)
-delete-service: 5 ms (16 rules counted)
+create-service: 41 ms (17 rules counted)
+delete-service: 10 ms (15 rules counted)
 	}
 	replicas-test-050 {
-create-service: 21 ms (18 rules counted)
-delete-service: 9 ms (16 rules counted)
+create-service: 17 ms (17 rules counted)
+delete-service: 9 ms (15 rules counted)
 	}
 	replicas-test-100 {
-create-service: 48 ms (18 rules counted)
-delete-service: 5 ms (16 rules counted)
+create-service: 26 ms (17 rules counted)
+delete-service: 16 ms (15 rules counted)
 	}
 }
 kube-proxy {
 	replicas-test-010 {
-create-service: 2398 ms (81 rules counted)
-delete-service: 406 ms (50 rules counted)
+create-service: 126 ms (84 rules counted)
+delete-service: 940 ms (53 rules counted)
 	}
 	replicas-test-050 {
-create-service: 14873 ms (201 rules counted)
-delete-service: 781 ms (50 rules counted)
+create-service: 156 ms (204 rules counted)
+delete-service: 964 ms (53 rules counted)
 	}
 	replicas-test-100 {
-create-service: 30113 ms (351 rules counted)
-delete-service: 1268 ms (50 rules counted)
+create-service: 197 ms (354 rules counted)
+delete-service: 998 ms (53 rules counted)
 	}
 }
 kube-nftlb {
 	replicas-test-010 {
-create-service: 5 ms (18 rules counted)
-delete-service: 5 ms (16 rules counted)
+create-service: 23 ms (17 rules counted)
+delete-service: 9 ms (15 rules counted)
 	}
 	replicas-test-050 {
-create-service: 20 ms (18 rules counted)
-delete-service: 4 ms (16 rules counted)
+create-service: 9 ms (17 rules counted)
+delete-service: 8 ms (15 rules counted)
 	}
 	replicas-test-100 {
-create-service: 263 ms (18 rules counted)
-delete-service: 18 ms (16 rules counted)
+create-service: 196 ms (17 rules counted)
+delete-service: 9 ms (15 rules counted)
 	}
 }
 kube-proxy {
 	replicas-test-010 {
-create-service: 1956 ms (81 rules counted)
-delete-service: 386 ms (50 rules counted)
+create-service: 139 ms (84 rules counted)
+delete-service: 945 ms (53 rules counted)
 	}
 	replicas-test-050 {
-create-service: 16320 ms (201 rules counted)
-delete-service: 750 ms (50 rules counted)
+create-service: 148 ms (204 rules counted)
+delete-service: 965 ms (53 rules counted)
 	}
 	replicas-test-100 {
-create-service: 29874 ms (351 rules counted)
-delete-service: 1201 ms (50 rules counted)
+create-service: 141 ms (354 rules counted)
+delete-service: 1103 ms (53 rules counted)
 	}
 }
 kube-nftlb {
 	replicas-test-010 {
-create-service: 9 ms (18 rules counted)
-delete-service: 5 ms (16 rules counted)
+create-service: 46 ms (17 rules counted)
+delete-service: 10 ms (15 rules counted)
 	}
 	replicas-test-050 {
-create-service: 25 ms (18 rules counted)
-delete-service: 5 ms (16 rules counted)
+create-service: 8 ms (17 rules counted)
+delete-service: 11 ms (15 rules counted)
 	}
 	replicas-test-100 {
-create-service: 46 ms (18 rules counted)
-delete-service: 5 ms (16 rules counted)
+create-service: 22 ms (17 rules counted)
+delete-service: 11 ms (15 rules counted)
 	}
 }
 kube-proxy {
 	replicas-test-010 {
-create-service: 2148 ms (81 rules counted)
-delete-service: 392 ms (50 rules counted)
+create-service: 146 ms (84 rules counted)
+delete-service: 923 ms (53 rules counted)
 	}
 	replicas-test-050 {
-create-service: 15313 ms (201 rules counted)
-delete-service: 730 ms (50 rules counted)
+create-service: 196 ms (204 rules counted)
+delete-service: 965 ms (53 rules counted)
 	}
 	replicas-test-100 {
-create-service: 30485 ms (351 rules counted)
-delete-service: 1197 ms (50 rules counted)
+create-service: 140 ms (354 rules counted)
+delete-service: 1192 ms (53 rules counted)
 	}
 }
 kube-nftlb {
 	replicas-test-010 {
-create-service: 5 ms (18 rules counted)
-delete-service: 5 ms (16 rules counted)
+create-service: 9 ms (17 rules counted)
+delete-service: 10 ms (15 rules counted)
 	}
 	replicas-test-050 {
-create-service: 21 ms (18 rules counted)
-delete-service: 5 ms (16 rules counted)
+create-service: 8 ms (17 rules counted)
+delete-service: 10 ms (15 rules counted)
 	}
 	replicas-test-100 {
-create-service: 59 ms (18 rules counted)
-delete-service: 4 ms (16 rules counted)
+create-service: 22 ms (17 rules counted)
+delete-service: 9 ms (15 rules counted)
 	}
 }
 kube-proxy {
 	replicas-test-010 {
-create-service: 3248 ms (81 rules counted)
-delete-service: 387 ms (50 rules counted)
+create-service: 151 ms (84 rules counted)
+delete-service: 924 ms (53 rules counted)
 	}
 	replicas-test-050 {
-create-service: 14101 ms (201 rules counted)
-delete-service: 743 ms (50 rules counted)
+create-service: 159 ms (204 rules counted)
+delete-service: 923 ms (53 rules counted)
 	}
 	replicas-test-100 {
-create-service: 28653 ms (351 rules counted)
-delete-service: 1225 ms (50 rules counted)
+create-service: 146 ms (354 rules counted)
+delete-service: 981 ms (53 rules counted)
 	}
 }
 kube-nftlb {
 	replicas-test-010 {
-create-service: 5 ms (18 rules counted)
-delete-service: 5 ms (16 rules counted)
+create-service: 13 ms (17 rules counted)
+delete-service: 9 ms (15 rules counted)
 	}
 	replicas-test-050 {
-create-service: 24 ms (18 rules counted)
-delete-service: 5 ms (16 rules counted)
+create-service: 8 ms (17 rules counted)
+delete-service: 10 ms (15 rules counted)
 	}
 	replicas-test-100 {
-create-service: 54 ms (18 rules counted)
-delete-service: 5 ms (16 rules counted)
+create-service: 27 ms (17 rules counted)
+delete-service: 9 ms (15 rules counted)
 	}
 }
 kube-proxy {
 	replicas-test-010 {
-create-service: 2204 ms (81 rules counted)
-delete-service: 406 ms (50 rules counted)
+create-service: 136 ms (84 rules counted)
+delete-service: 945 ms (53 rules counted)
 	}
 	replicas-test-050 {
-create-service: 15324 ms (201 rules counted)
-delete-service: 750 ms (50 rules counted)
+create-service: 151 ms (204 rules counted)
+delete-service: 974 ms (53 rules counted)
 	}
 	replicas-test-100 {
-create-service: 31566 ms (351 rules counted)
-delete-service: 1278 ms (50 rules counted)
+create-service: 185 ms (354 rules counted)
+delete-service: 1001 ms (53 rules counted)
 	}
 }
 kube-nftlb {
 	replicas-test-010 {
-create-service: 5 ms (18 rules counted)
-delete-service: 5 ms (16 rules counted)
+create-service: 63 ms (17 rules counted)
+delete-service: 10 ms (15 rules counted)
 	}
 	replicas-test-050 {
-create-service: 23 ms (18 rules counted)
-delete-service: 5 ms (16 rules counted)
+create-service: 11 ms (17 rules counted)
+delete-service: 9 ms (15 rules counted)
 	}
 	replicas-test-100 {
-create-service: 52 ms (18 rules counted)
-delete-service: 39 ms (16 rules counted)
+create-service: 14 ms (17 rules counted)
+delete-service: 11 ms (15 rules counted)
 	}
 }
 kube-proxy {
 	replicas-test-010 {
-create-service: 2158 ms (81 rules counted)
-delete-service: 386 ms (50 rules counted)
+create-service: 154 ms (84 rules counted)
+delete-service: 904 ms (53 rules counted)
 	}
 	replicas-test-050 {
-create-service: 14744 ms (201 rules counted)
-delete-service: 745 ms (50 rules counted)
+create-service: 157 ms (204 rules counted)
+delete-service: 924 ms (53 rules counted)
 	}
 	replicas-test-100 {
-create-service: 27553 ms (351 rules counted)
-delete-service: 1212 ms (50 rules counted)
+create-service: 228 ms (354 rules counted)
+delete-service: 1013 ms (53 rules counted)
 	}
 }
 kube-nftlb {
 	replicas-test-010 {
-create-service: 8 ms (18 rules counted)
-delete-service: 5 ms (16 rules counted)
+create-service: 51 ms (17 rules counted)
+delete-service: 10 ms (15 rules counted)
 	}
 	replicas-test-050 {
-create-service: 24 ms (18 rules counted)
-delete-service: 19 ms (16 rules counted)
+create-service: 9 ms (17 rules counted)
+delete-service: 9 ms (15 rules counted)
 	}
 	replicas-test-100 {
-create-service: 51 ms (18 rules counted)
-delete-service: 4 ms (16 rules counted)
+create-service: 127 ms (17 rules counted)
+delete-service: 10 ms (15 rules counted)
 	}
 }
 kube-proxy {
 	replicas-test-010 {
-create-service: 2370 ms (81 rules counted)
-delete-service: 381 ms (50 rules counted)
+create-service: 138 ms (84 rules counted)
+delete-service: 929 ms (53 rules counted)
 	}
 	replicas-test-050 {
-create-service: 15184 ms (201 rules counted)
-delete-service: 786 ms (50 rules counted)
+create-service: 153 ms (204 rules counted)
+delete-service: 946 ms (53 rules counted)
 	}
 	replicas-test-100 {
-create-service: 28272 ms (351 rules counted)
-delete-service: 1297 ms (50 rules counted)
+create-service: 179 ms (354 rules counted)
+delete-service: 992 ms (53 rules counted)
 	}
 }
 kube-nftlb {
 	replicas-test-010 {
-create-service: 5 ms (18 rules counted)
-delete-service: 5 ms (16 rules counted)
+create-service: 24 ms (17 rules counted)
+delete-service: 7 ms (15 rules counted)
 	}
 	replicas-test-050 {
-create-service: 21 ms (18 rules counted)
-delete-service: 5 ms (16 rules counted)
+create-service: 9 ms (17 rules counted)
+delete-service: 9 ms (15 rules counted)
 	}
 	replicas-test-100 {
-create-service: 109 ms (18 rules counted)
-delete-service: 6 ms (16 rules counted)
+create-service: 221 ms (17 rules counted)
+delete-service: 7 ms (15 rules counted)
 	}
 }
 kube-proxy {
 	replicas-test-010 {
-create-service: 3467 ms (81 rules counted)
-delete-service: 440 ms (50 rules counted)
+create-service: 156 ms (84 rules counted)
+delete-service: 945 ms (53 rules counted)
 	}
 	replicas-test-050 {
-create-service: 13549 ms (201 rules counted)
-delete-service: 790 ms (50 rules counted)
+create-service: 145 ms (204 rules counted)
+delete-service: 974 ms (53 rules counted)
 	}
 	replicas-test-100 {
-create-service: 29683 ms (351 rules counted)
-delete-service: 1337 ms (50 rules counted)
+create-service: 125 ms (354 rules counted)
+delete-service: 1194 ms (53 rules counted)
 	}
 }
 kube-nftlb {
 	replicas-test-010 {
-create-service: 4 ms (18 rules counted)
-delete-service: 5 ms (16 rules counted)
+create-service: 47 ms (17 rules counted)
+delete-service: 9 ms (15 rules counted)
 	}
 	replicas-test-050 {
-create-service: 30 ms (18 rules counted)
-delete-service: 5 ms (16 rules counted)
+create-service: 18 ms (17 rules counted)
+delete-service: 11 ms (15 rules counted)
 	}
 	replicas-test-100 {
-create-service: 45 ms (18 rules counted)
-delete-service: 5 ms (16 rules counted)
+create-service: 89 ms (17 rules counted)
+delete-service: 9 ms (15 rules counted)
 	}
 }
 kube-proxy {
 	replicas-test-010 {
-create-service: 3382 ms (81 rules counted)
-delete-service: 385 ms (50 rules counted)
+create-service: 138 ms (84 rules counted)
+delete-service: 966 ms (53 rules counted)
 	}
 	replicas-test-050 {
-create-service: 15533 ms (201 rules counted)
-delete-service: 757 ms (50 rules counted)
+create-service: 170 ms (204 rules counted)
+delete-service: 967 ms (53 rules counted)
 	}
 	replicas-test-100 {
-create-service: 29532 ms (351 rules counted)
-delete-service: 1192 ms (50 rules counted)
+create-service: 306 ms (354 rules counted)
+delete-service: 1007 ms (53 rules counted)
 	}
 }
 kube-nftlb {
 	replicas-test-010 {
-create-service: 6 ms (18 rules counted)
-delete-service: 4 ms (16 rules counted)
+create-service: 47 ms (17 rules counted)
+delete-service: 10 ms (15 rules counted)
 	}
 	replicas-test-050 {
-create-service: 275 ms (18 rules counted)
-delete-service: 16 ms (16 rules counted)
+create-service: 14 ms (17 rules counted)
+delete-service: 10 ms (15 rules counted)
 	}
 	replicas-test-100 {
-create-service: 13 ms (18 rules counted)
-delete-service: 5 ms (16 rules counted)
+create-service: 1073 ms (17 rules counted)
+delete-service: 9 ms (15 rules counted)
 	}
 }
 kube-proxy {
 	replicas-test-010 {
-create-service: 2244 ms (81 rules counted)
-delete-service: 386 ms (50 rules counted)
+create-service: 144 ms (84 rules counted)
+delete-service: 955 ms (53 rules counted)
 	}
 	replicas-test-050 {
-create-service: 16061 ms (201 rules counted)
-delete-service: 760 ms (50 rules counted)
+create-service: 149 ms (204 rules counted)
+delete-service: 993 ms (53 rules counted)
 	}
 	replicas-test-100 {
-create-service: 28211 ms (351 rules counted)
-delete-service: 1204 ms (50 rules counted)
+create-service: 388 ms (354 rules counted)
+delete-service: 1072 ms (53 rules counted)
 	}
 }
 kube-nftlb {
 	replicas-test-010 {
-create-service: 13 ms (18 rules counted)
-delete-service: 6 ms (16 rules counted)
+create-service: 9 ms (17 rules counted)
+delete-service: 10 ms (15 rules counted)
 	}
 	replicas-test-050 {
-create-service: 22 ms (18 rules counted)
-delete-service: 5 ms (16 rules counted)
+create-service: 9 ms (17 rules counted)
+delete-service: 11 ms (15 rules counted)
 	}
 	replicas-test-100 {
-create-service: 317 ms (18 rules counted)
-delete-service: 5 ms (16 rules counted)
+create-service: 15 ms (17 rules counted)
+delete-service: 8 ms (15 rules counted)
 	}
 }
 kube-proxy {
 	replicas-test-010 {
-create-service: 2034 ms (81 rules counted)
-delete-service: 416 ms (50 rules counted)
+create-service: 136 ms (84 rules counted)
+delete-service: 935 ms (53 rules counted)
 	}
 	replicas-test-050 {
-create-service: 15470 ms (201 rules counted)
-delete-service: 815 ms (50 rules counted)
+create-service: 151 ms (204 rules counted)
+delete-service: 943 ms (53 rules counted)
 	}
 	replicas-test-100 {
-create-service: 31096 ms (351 rules counted)
-delete-service: 1316 ms (50 rules counted)
+create-service: 175 ms (354 rules counted)
+delete-service: 997 ms (53 rules counted)
 	}
 }
 kube-nftlb {
 	replicas-test-010 {
-create-service: 7 ms (18 rules counted)
-delete-service: 5 ms (16 rules counted)
+create-service: 9 ms (17 rules counted)
+delete-service: 10 ms (15 rules counted)
 	}
 	replicas-test-050 {
-create-service: 5 ms (18 rules counted)
-delete-service: 5 ms (16 rules counted)
+create-service: 11 ms (17 rules counted)
+delete-service: 8 ms (15 rules counted)
 	}
 	replicas-test-100 {
-create-service: 55 ms (18 rules counted)
-delete-service: 4 ms (16 rules counted)
+create-service: 19 ms (17 rules counted)
+delete-service: 9 ms (15 rules counted)
 	}
 }
 kube-proxy {
 	replicas-test-010 {
-create-service: 2280 ms (81 rules counted)
-delete-service: 411 ms (50 rules counted)
+create-service: 121 ms (84 rules counted)
+delete-service: 948 ms (53 rules counted)
 	}
 	replicas-test-050 {
-create-service: 14560 ms (201 rules counted)
-delete-service: 769 ms (50 rules counted)
+create-service: 151 ms (204 rules counted)
+delete-service: 965 ms (53 rules counted)
 	}
 	replicas-test-100 {
-create-service: 29237 ms (351 rules counted)
-delete-service: 1353 ms (50 rules counted)
+create-service: 121 ms (354 rules counted)
+delete-service: 1115 ms (53 rules counted)
 	}
 }
 kube-nftlb {
 	replicas-test-010 {
-create-service: 7 ms (18 rules counted)
-delete-service: 5 ms (16 rules counted)
+create-service: 39 ms (17 rules counted)
+delete-service: 11 ms (15 rules counted)
 	}
 	replicas-test-050 {
-create-service: 85 ms (18 rules counted)
-delete-service: 14 ms (16 rules counted)
+create-service: 10 ms (17 rules counted)
+delete-service: 9 ms (15 rules counted)
 	}
 	replicas-test-100 {
-create-service: 98 ms (18 rules counted)
-delete-service: 5 ms (16 rules counted)
+create-service: 11 ms (17 rules counted)
+delete-service: 7 ms (15 rules counted)
 	}
 }
 kube-proxy {
 	replicas-test-010 {
-create-service: 3380 ms (81 rules counted)
-delete-service: 433 ms (50 rules counted)
+create-service: 133 ms (84 rules counted)
+delete-service: 947 ms (53 rules counted)
 	}
 	replicas-test-050 {
-create-service: 16063 ms (201 rules counted)
-delete-service: 808 ms (50 rules counted)
+create-service: 152 ms (204 rules counted)
+delete-service: 956 ms (53 rules counted)
 	}
 	replicas-test-100 {
-create-service: 31542 ms (351 rules counted)
-delete-service: 1389 ms (50 rules counted)
+create-service: 261 ms (354 rules counted)
+delete-service: 979 ms (53 rules counted)
 	}
 }
 kube-nftlb {
 	replicas-test-010 {
-create-service: 10 ms (18 rules counted)
-delete-service: 5 ms (16 rules counted)
+create-service: 12 ms (17 rules counted)
+delete-service: 10 ms (15 rules counted)
 	}
 	replicas-test-050 {
-create-service: 26 ms (18 rules counted)
-delete-service: 5 ms (16 rules counted)
+create-service: 9 ms (17 rules counted)
+delete-service: 8 ms (15 rules counted)
 	}
 	replicas-test-100 {
-create-service: 54 ms (18 rules counted)
-delete-service: 4 ms (16 rules counted)
+create-service: 22 ms (17 rules counted)
+delete-service: 10 ms (15 rules counted)
 	}
 }
 kube-proxy {
 	replicas-test-010 {
-create-service: 2264 ms (81 rules counted)
-delete-service: 386 ms (50 rules counted)
+create-service: 134 ms (84 rules counted)
+delete-service: 926 ms (53 rules counted)
 	}
 	replicas-test-050 {
-create-service: 14576 ms (201 rules counted)
-delete-service: 826 ms (50 rules counted)
+create-service: 147 ms (204 rules counted)
+delete-service: 991 ms (53 rules counted)
 	}
 	replicas-test-100 {
-create-service: 30067 ms (351 rules counted)
-delete-service: 1247 ms (50 rules counted)
+create-service: 226 ms (354 rules counted)
+delete-service: 985 ms (53 rules counted)
 	}
 }
 kube-nftlb {
 	replicas-test-010 {
-create-service: 7 ms (18 rules counted)
-delete-service: 5 ms (16 rules counted)
+create-service: 33 ms (17 rules counted)
+delete-service: 11 ms (15 rules counted)
 	}
 	replicas-test-050 {
-create-service: 23 ms (18 rules counted)
-delete-service: 5 ms (16 rules counted)
+create-service: 11 ms (17 rules counted)
+delete-service: 9 ms (15 rules counted)
 	}
 	replicas-test-100 {
-create-service: 49 ms (18 rules counted)
-delete-service: 4 ms (16 rules counted)
+create-service: 21 ms (17 rules counted)
+delete-service: 9 ms (15 rules counted)
 	}
 }
 kube-proxy {
 	replicas-test-010 {
-create-service: 3119 ms (81 rules counted)
-delete-service: 398 ms (50 rules counted)
+create-service: 149 ms (84 rules counted)
+delete-service: 931 ms (53 rules counted)
 	}
 	replicas-test-050 {
-create-service: 20026 ms (201 rules counted)
-delete-service: 1499 ms (50 rules counted)
+create-service: 153 ms (204 rules counted)
+delete-service: 963 ms (53 rules counted)
 	}
 	replicas-test-100 {
-create-service: 30906 ms (351 rules counted)
-delete-service: 1209 ms (50 rules counted)
+create-service: 201 ms (354 rules counted)
+delete-service: 995 ms (53 rules counted)
 	}
 }
 kube-nftlb {
 	replicas-test-010 {
-create-service: 7 ms (18 rules counted)
-delete-service: 5 ms (16 rules counted)
+create-service: 45 ms (17 rules counted)
+delete-service: 9 ms (15 rules counted)
 	}
 	replicas-test-050 {
-create-service: 44 ms (18 rules counted)
-delete-service: 5 ms (16 rules counted)
+create-service: 10 ms (17 rules counted)
+delete-service: 9 ms (15 rules counted)
 	}
 	replicas-test-100 {
-create-service: 63 ms (18 rules counted)
-delete-service: 5 ms (16 rules counted)
+create-service: 22 ms (17 rules counted)
+delete-service: 11 ms (15 rules counted)
 	}
 }
 kube-proxy {
 	replicas-test-010 {
-create-service: 2844 ms (81 rules counted)
-delete-service: 555 ms (50 rules counted)
+create-service: 128 ms (84 rules counted)
+delete-service: 949 ms (53 rules counted)
 	}
 	replicas-test-050 {
-create-service: 22600 ms (201 rules counted)
-delete-service: 807 ms (50 rules counted)
+create-service: 152 ms (204 rules counted)
+delete-service: 996 ms (53 rules counted)
 	}
 	replicas-test-100 {
-create-service: 33323 ms (351 rules counted)
-delete-service: 1257 ms (50 rules counted)
+create-service: 172 ms (354 rules counted)
+delete-service: 1156 ms (53 rules counted)
 	}
 }
 kube-nftlb {
 	replicas-test-010 {
-create-service: 7 ms (18 rules counted)
-delete-service: 5 ms (16 rules counted)
+create-service: 8 ms (17 rules counted)
+delete-service: 9 ms (15 rules counted)
 	}
 	replicas-test-050 {
-create-service: 16 ms (18 rules counted)
-delete-service: 4 ms (16 rules counted)
+create-service: 12 ms (17 rules counted)
+delete-service: 9 ms (15 rules counted)
 	}
 	replicas-test-100 {
-create-service: 46 ms (18 rules counted)
-delete-service: 5 ms (16 rules counted)
+create-service: 56 ms (17 rules counted)
+delete-service: 9 ms (15 rules counted)
 	}
 }
 kube-proxy {
 	replicas-test-010 {
-create-service: 2144 ms (81 rules counted)
-delete-service: 389 ms (50 rules counted)
+create-service: 146 ms (84 rules counted)
+delete-service: 939 ms (53 rules counted)
 	}
 	replicas-test-050 {
-create-service: 12098 ms (201 rules counted)
-delete-service: 818 ms (50 rules counted)
+create-service: 149 ms (204 rules counted)
+delete-service: 966 ms (53 rules counted)
 	}
 	replicas-test-100 {
-create-service: 29651 ms (351 rules counted)
-delete-service: 139 ms (50 rules counted)
+create-service: 279 ms (354 rules counted)
+delete-service: 995 ms (53 rules counted)
 	}
 }
 kube-nftlb {
 	replicas-test-010 {
-create-service: 15 ms (18 rules counted)
-delete-service: 5 ms (16 rules counted)
+create-service: 47 ms (17 rules counted)
+delete-service: 9 ms (15 rules counted)
 	}
 	replicas-test-050 {
-create-service: 24 ms (18 rules counted)
-delete-service: 5 ms (16 rules counted)
+create-service: 10 ms (17 rules counted)
+delete-service: 10 ms (15 rules counted)
 	}
 	replicas-test-100 {
-create-service: 297 ms (18 rules counted)
-delete-service: 16 ms (16 rules counted)
+create-service: 27 ms (17 rules counted)
+delete-service: 10 ms (15 rules counted)
 	}
 }
 kube-proxy {
 	replicas-test-010 {
-create-service: 4305 ms (81 rules counted)
-delete-service: 396 ms (50 rules counted)
+create-service: 131 ms (84 rules counted)
+delete-service: 934 ms (53 rules counted)
 	}
 	replicas-test-050 {
-create-service: 13451 ms (201 rules counted)
-delete-service: 821 ms (50 rules counted)
+create-service: 179 ms (204 rules counted)
+delete-service: 951 ms (53 rules counted)
 	}
 	replicas-test-100 {
-create-service: 27642 ms (351 rules counted)
-delete-service: 1205 ms (50 rules counted)
+create-service: 265 ms (354 rules counted)
+delete-service: 21 ms (53 rules counted)
 	}
 }
 kube-nftlb {
 	replicas-test-010 {
-create-service: 63 ms (18 rules counted)
-delete-service: 10 ms (16 rules counted)
+create-service: 40 ms (17 rules counted)
+delete-service: 11 ms (15 rules counted)
 	}
 	replicas-test-050 {
-create-service: 42 ms (18 rules counted)
-delete-service: 5 ms (16 rules counted)
+create-service: 9 ms (17 rules counted)
+delete-service: 14 ms (15 rules counted)
 	}
 	replicas-test-100 {
-create-service: 57 ms (18 rules counted)
-delete-service: 5 ms (16 rules counted)
+create-service: 18 ms (17 rules counted)
+delete-service: 11 ms (15 rules counted)
 	}
 }
 kube-proxy {
 	replicas-test-010 {
-create-service: 2379 ms (81 rules counted)
-delete-service: 458 ms (50 rules counted)
+create-service: 135 ms (84 rules counted)
+delete-service: 935 ms (53 rules counted)
 	}
 	replicas-test-050 {
-create-service: 16076 ms (201 rules counted)
-delete-service: 844 ms (50 rules counted)
+create-service: 140 ms (204 rules counted)
+delete-service: 971 ms (53 rules counted)
 	}
 	replicas-test-100 {
-create-service: 29411 ms (351 rules counted)
-delete-service: 1390 ms (50 rules counted)
+create-service: 199 ms (354 rules counted)
+delete-service: 1017 ms (53 rules counted)
 	}
 }
 kube-nftlb {
 	replicas-test-010 {
-create-service: 8 ms (18 rules counted)
-delete-service: 6 ms (16 rules counted)
+create-service: 10 ms (17 rules counted)
+delete-service: 10 ms (15 rules counted)
 	}
 	replicas-test-050 {
-create-service: 6 ms (18 rules counted)
-delete-service: 7 ms (16 rules counted)
+create-service: 16 ms (17 rules counted)
+delete-service: 17 ms (15 rules counted)
 	}
 	replicas-test-100 {
-create-service: 48 ms (18 rules counted)
-delete-service: 7 ms (16 rules counted)
+create-service: 64 ms (17 rules counted)
+delete-service: 13 ms (15 rules counted)
 	}
 }
 kube-proxy {
 	replicas-test-010 {
-create-service: 2081 ms (81 rules counted)
-delete-service: 396 ms (50 rules counted)
+create-service: 143 ms (84 rules counted)
+delete-service: 922 ms (53 rules counted)
 	}
 	replicas-test-050 {
-create-service: 16501 ms (201 rules counted)
-delete-service: 803 ms (50 rules counted)
+create-service: 155 ms (204 rules counted)
+delete-service: 967 ms (53 rules counted)
 	}
 	replicas-test-100 {
-create-service: 28261 ms (351 rules counted)
-delete-service: 1403 ms (50 rules counted)
+create-service: 153 ms (354 rules counted)
+delete-service: 1169 ms (53 rules counted)
 	}
 }
 kube-nftlb {
 	replicas-test-010 {
-create-service: 6 ms (18 rules counted)
-delete-service: 4 ms (16 rules counted)
+create-service: 29 ms (17 rules counted)
+delete-service: 10 ms (15 rules counted)
 	}
 	replicas-test-050 {
-create-service: 22 ms (18 rules counted)
-delete-service: 5 ms (16 rules counted)
+create-service: 9 ms (17 rules counted)
+delete-service: 10 ms (15 rules counted)
 	}
 	replicas-test-100 {
-create-service: 51 ms (18 rules counted)
-delete-service: 5 ms (16 rules counted)
+create-service: 50 ms (17 rules counted)
+delete-service: 10 ms (15 rules counted)
 	}
 }
 kube-proxy {
 	replicas-test-010 {
-create-service: 2464 ms (81 rules counted)
-delete-service: 446 ms (50 rules counted)
+create-service: 145 ms (84 rules counted)
+delete-service: 946 ms (53 rules counted)
 	}
 	replicas-test-050 {
-create-service: 19495 ms (201 rules counted)
-delete-service: 1008 ms (50 rules counted)
+create-service: 158 ms (204 rules counted)
+delete-service: 955 ms (53 rules counted)
 	}
 	replicas-test-100 {
-create-service: 40096 ms (351 rules counted)
-delete-service: 1634 ms (50 rules counted)
+create-service: 1073 ms (354 rules counted)
+delete-service: 1301 ms (53 rules counted)
 	}
 }
 kube-nftlb {
 	replicas-test-010 {
-create-service: 5 ms (18 rules counted)
-delete-service: 5 ms (16 rules counted)
+create-service: 45 ms (17 rules counted)
+delete-service: 11 ms (15 rules counted)
 	}
 	replicas-test-050 {
-create-service: 27 ms (18 rules counted)
-delete-service: 5 ms (16 rules counted)
+create-service: 9 ms (17 rules counted)
+delete-service: 11 ms (15 rules counted)
 	}
 	replicas-test-100 {
-create-service: 50 ms (18 rules counted)
-delete-service: 5 ms (16 rules counted)
+create-service: 153 ms (17 rules counted)
+delete-service: 10 ms (15 rules counted)
 	}
 }
 kube-proxy {
 	replicas-test-010 {
-create-service: 3788 ms (81 rules counted)
-delete-service: 523 ms (50 rules counted)
+create-service: 1084 ms (84 rules counted)
+delete-service: 22 ms (53 rules counted)
 	}
 	replicas-test-050 {
-create-service: 16157 ms (201 rules counted)
-delete-service: 784 ms (50 rules counted)
+create-service: 194 ms (204 rules counted)
+delete-service: 968 ms (53 rules counted)
 	}
 	replicas-test-100 {
-create-service: 31528 ms (351 rules counted)
-delete-service: 1267 ms (50 rules counted)
+create-service: 172 ms (354 rules counted)
+delete-service: 1013 ms (53 rules counted)
 	}
 }
 kube-nftlb {
 	replicas-test-010 {
-create-service: 6 ms (18 rules counted)
-delete-service: 5 ms (16 rules counted)
+create-service: 37 ms (17 rules counted)
+delete-service: 9 ms (15 rules counted)
 	}
 	replicas-test-050 {
-create-service: 22 ms (18 rules counted)
-delete-service: 4 ms (16 rules counted)
+create-service: 11 ms (17 rules counted)
+delete-service: 10 ms (15 rules counted)
 	}
 	replicas-test-100 {
-create-service: 52 ms (18 rules counted)
-delete-service: 4 ms (16 rules counted)
+create-service: 117 ms (17 rules counted)
+delete-service: 10 ms (15 rules counted)
 	}
 }
 kube-proxy {
 	replicas-test-010 {
-create-service: 2310 ms (81 rules counted)
-delete-service: 457 ms (50 rules counted)
+create-service: 136 ms (84 rules counted)
+delete-service: 965 ms (53 rules counted)
 	}
 	replicas-test-050 {
-create-service: 15054 ms (201 rules counted)
-delete-service: 802 ms (50 rules counted)
+create-service: 159 ms (204 rules counted)
+delete-service: 981 ms (53 rules counted)
 	}
 	replicas-test-100 {
-create-service: 31446 ms (351 rules counted)
-delete-service: 1217 ms (50 rules counted)
+create-service: 1063 ms (354 rules counted)
+delete-service: 1176 ms (53 rules counted)
 	}
 }
 kube-nftlb {
 	replicas-test-010 {
-create-service: 7 ms (18 rules counted)
-delete-service: 6 ms (16 rules counted)
+create-service: 27 ms (17 rules counted)
+delete-service: 9 ms (15 rules counted)
 	}
 	replicas-test-050 {
-create-service: 60 ms (18 rules counted)
-delete-service: 5 ms (16 rules counted)
+create-service: 9 ms (17 rules counted)
+delete-service: 9 ms (15 rules counted)
 	}
 	replicas-test-100 {
-create-service: 49 ms (18 rules counted)
-delete-service: 5 ms (16 rules counted)
+create-service: 36 ms (17 rules counted)
+delete-service: 21 ms (15 rules counted)
 	}
 }
 kube-proxy {
 	replicas-test-010 {
-create-service: 3374 ms (81 rules counted)
-delete-service: 395 ms (50 rules counted)
+create-service: 151 ms (84 rules counted)
+delete-service: 938 ms (53 rules counted)
 	}
 	replicas-test-050 {
-create-service: 19444 ms (201 rules counted)
-delete-service: 823 ms (50 rules counted)
+create-service: 158 ms (204 rules counted)
+delete-service: 982 ms (53 rules counted)
 	}
 	replicas-test-100 {
-create-service: 30742 ms (351 rules counted)
-delete-service: 1309 ms (50 rules counted)
+create-service: 168 ms (354 rules counted)
+delete-service: 1136 ms (53 rules counted)
 	}
 }
 kube-nftlb {
 	replicas-test-010 {
-create-service: 7 ms (18 rules counted)
-delete-service: 4 ms (16 rules counted)
+create-service: 23 ms (17 rules counted)
+delete-service: 10 ms (15 rules counted)
 	}
 	replicas-test-050 {
-create-service: 25 ms (18 rules counted)
-delete-service: 5 ms (16 rules counted)
+create-service: 9 ms (17 rules counted)
+delete-service: 10 ms (15 rules counted)
 	}
 	replicas-test-100 {
-create-service: 54 ms (18 rules counted)
-delete-service: 6 ms (16 rules counted)
+create-service: 152 ms (17 rules counted)
+delete-service: 8 ms (15 rules counted)
 	}
 }
 kube-proxy {
 	replicas-test-010 {
-create-service: 1885 ms (81 rules counted)
-delete-service: 646 ms (50 rules counted)
+create-service: 142 ms (84 rules counted)
+delete-service: 947 ms (53 rules counted)
 	}
 	replicas-test-050 {
-create-service: 14613 ms (201 rules counted)
-delete-service: 820 ms (50 rules counted)
+create-service: 156 ms (204 rules counted)
+delete-service: 969 ms (53 rules counted)
 	}
 	replicas-test-100 {
-create-service: 31875 ms (351 rules counted)
-delete-service: 1312 ms (50 rules counted)
+create-service: 149 ms (354 rules counted)
+delete-service: 998 ms (53 rules counted)
 	}
 }
 kube-nftlb {
 	replicas-test-010 {
-create-service: 15 ms (18 rules counted)
-delete-service: 4 ms (16 rules counted)
+create-service: 36 ms (17 rules counted)
+delete-service: 10 ms (15 rules counted)
 	}
 	replicas-test-050 {
-create-service: 30 ms (18 rules counted)
-delete-service: 5 ms (16 rules counted)
+create-service: 8 ms (17 rules counted)
+delete-service: 10 ms (15 rules counted)
 	}
 	replicas-test-100 {
-create-service: 70 ms (18 rules counted)
-delete-service: 4 ms (16 rules counted)
+create-service: 103 ms (17 rules counted)
+delete-service: 12 ms (15 rules counted)
 	}
 }
 kube-proxy {
 	replicas-test-010 {
-create-service: 2205 ms (81 rules counted)
-delete-service: 387 ms (50 rules counted)
+create-service: 148 ms (84 rules counted)
+delete-service: 941 ms (53 rules counted)
 	}
 	replicas-test-050 {
-create-service: 14588 ms (201 rules counted)
-delete-service: 781 ms (50 rules counted)
+create-service: 154 ms (204 rules counted)
+delete-service: 991 ms (53 rules counted)
 	}
 	replicas-test-100 {
-create-service: 31811 ms (351 rules counted)
-delete-service: 1334 ms (50 rules counted)
+create-service: 145 ms (354 rules counted)
+delete-service: 1003 ms (53 rules counted)
 	}
 }
 kube-nftlb {
 	replicas-test-010 {
-create-service: 6 ms (18 rules counted)
-delete-service: 5 ms (16 rules counted)
+create-service: 44 ms (17 rules counted)
+delete-service: 9 ms (15 rules counted)
 	}
 	replicas-test-050 {
-create-service: 17 ms (18 rules counted)
-delete-service: 4 ms (16 rules counted)
+create-service: 10 ms (17 rules counted)
+delete-service: 10 ms (15 rules counted)
 	}
 	replicas-test-100 {
-create-service: 49 ms (18 rules counted)
-delete-service: 5 ms (16 rules counted)
+create-service: 65 ms (17 rules counted)
+delete-service: 10 ms (15 rules counted)
 	}
 }
 kube-proxy {
 	replicas-test-010 {
-create-service: 2197 ms (81 rules counted)
-delete-service: 387 ms (50 rules counted)
+create-service: 151 ms (84 rules counted)
+delete-service: 955 ms (53 rules counted)
 	}
 	replicas-test-050 {
-create-service: 15096 ms (201 rules counted)
-delete-service: 762 ms (50 rules counted)
+create-service: 150 ms (204 rules counted)
+delete-service: 986 ms (53 rules counted)
 	}
 	replicas-test-100 {
-create-service: 34560 ms (351 rules counted)
-delete-service: 1370 ms (50 rules counted)
+create-service: 152 ms (354 rules counted)
+delete-service: 1023 ms (53 rules counted)
+	}
+}
+kube-nftlb {
+	replicas-test-010 {
+create-service: 41 ms (17 rules counted)
+delete-service: 10 ms (15 rules counted)
+	}
+	replicas-test-050 {
+create-service: 9 ms (17 rules counted)
+delete-service: 9 ms (15 rules counted)
+	}
+	replicas-test-100 {
+create-service: 59 ms (17 rules counted)
+delete-service: 11 ms (15 rules counted)
+	}
+}
+kube-proxy {
+	replicas-test-010 {
+create-service: 136 ms (84 rules counted)
+delete-service: 925 ms (53 rules counted)
+	}
+	replicas-test-050 {
+create-service: 152 ms (204 rules counted)
+delete-service: 962 ms (53 rules counted)
+	}
+	replicas-test-100 {
+create-service: 123 ms (354 rules counted)
+delete-service: 1162 ms (53 rules counted)
+	}
+}
+kube-nftlb {
+	replicas-test-010 {
+create-service: 11 ms (17 rules counted)
+delete-service: 10 ms (15 rules counted)
+	}
+	replicas-test-050 {
+create-service: 8 ms (17 rules counted)
+delete-service: 10 ms (15 rules counted)
+	}
+	replicas-test-100 {
+create-service: 70 ms (17 rules counted)
+delete-service: 12 ms (15 rules counted)
+	}
+}
+kube-proxy {
+	replicas-test-010 {
+create-service: 152 ms (84 rules counted)
+delete-service: 946 ms (53 rules counted)
+	}
+	replicas-test-050 {
+create-service: 136 ms (204 rules counted)
+delete-service: 954 ms (53 rules counted)
+	}
+	replicas-test-100 {
+create-service: 318 ms (354 rules counted)
+delete-service: 982 ms (53 rules counted)
+	}
+}
+kube-nftlb {
+	replicas-test-010 {
+create-service: 8 ms (17 rules counted)
+delete-service: 9 ms (15 rules counted)
+	}
+	replicas-test-050 {
+create-service: 7 ms (17 rules counted)
+delete-service: 10 ms (15 rules counted)
+	}
+	replicas-test-100 {
+create-service: 61 ms (17 rules counted)
+delete-service: 12 ms (15 rules counted)
+	}
+}
+kube-proxy {
+	replicas-test-010 {
+create-service: 121 ms (84 rules counted)
+delete-service: 942 ms (53 rules counted)
+	}
+	replicas-test-050 {
+create-service: 154 ms (204 rules counted)
+delete-service: 972 ms (53 rules counted)
+	}
+	replicas-test-100 {
+create-service: 270 ms (354 rules counted)
+delete-service: 1011 ms (53 rules counted)
+	}
+}
+kube-nftlb {
+	replicas-test-010 {
+create-service: 47 ms (17 rules counted)
+delete-service: 10 ms (15 rules counted)
+	}
+	replicas-test-050 {
+create-service: 10 ms (17 rules counted)
+delete-service: 10 ms (15 rules counted)
+	}
+	replicas-test-100 {
+create-service: 23 ms (17 rules counted)
+delete-service: 10 ms (15 rules counted)
+	}
+}
+kube-proxy {
+	replicas-test-010 {
+create-service: 127 ms (84 rules counted)
+delete-service: 970 ms (53 rules counted)
+	}
+	replicas-test-050 {
+create-service: 83 ms (204 rules counted)
+delete-service: 658 ms (53 rules counted)
+	}
+	replicas-test-100 {
+create-service: 190 ms (354 rules counted)
+delete-service: 995 ms (53 rules counted)
+	}
+}
+kube-nftlb {
+	replicas-test-010 {
+create-service: 29 ms (17 rules counted)
+delete-service: 10 ms (15 rules counted)
+	}
+	replicas-test-050 {
+create-service: 12 ms (17 rules counted)
+delete-service: 10 ms (15 rules counted)
+	}
+	replicas-test-100 {
+create-service: 11 ms (17 rules counted)
+delete-service: 10 ms (15 rules counted)
+	}
+}
+kube-proxy {
+	replicas-test-010 {
+create-service: 152 ms (84 rules counted)
+delete-service: 925 ms (53 rules counted)
+	}
+	replicas-test-050 {
+create-service: 155 ms (204 rules counted)
+delete-service: 962 ms (53 rules counted)
+	}
+	replicas-test-100 {
+create-service: 198 ms (354 rules counted)
+delete-service: 1010 ms (53 rules counted)
+	}
+}
+kube-nftlb {
+	replicas-test-010 {
+create-service: 10 ms (17 rules counted)
+delete-service: 10 ms (15 rules counted)
+	}
+	replicas-test-050 {
+create-service: 8 ms (17 rules counted)
+delete-service: 9 ms (15 rules counted)
+	}
+	replicas-test-100 {
+create-service: 78 ms (17 rules counted)
+delete-service: 11 ms (15 rules counted)
+	}
+}
+kube-proxy {
+	replicas-test-010 {
+create-service: 128 ms (84 rules counted)
+delete-service: 974 ms (53 rules counted)
+	}
+	replicas-test-050 {
+create-service: 154 ms (204 rules counted)
+delete-service: 986 ms (53 rules counted)
+	}
+	replicas-test-100 {
+create-service: 178 ms (354 rules counted)
+delete-service: 1016 ms (53 rules counted)
+	}
+}
+kube-nftlb {
+	replicas-test-010 {
+create-service: 7 ms (17 rules counted)
+delete-service: 11 ms (15 rules counted)
+	}
+	replicas-test-050 {
+create-service: 8 ms (17 rules counted)
+delete-service: 11 ms (15 rules counted)
+	}
+	replicas-test-100 {
+create-service: 61 ms (17 rules counted)
+delete-service: 11 ms (15 rules counted)
+	}
+}
+kube-proxy {
+	replicas-test-010 {
+create-service: 128 ms (84 rules counted)
+delete-service: 946 ms (53 rules counted)
+	}
+	replicas-test-050 {
+create-service: 149 ms (204 rules counted)
+delete-service: 938 ms (53 rules counted)
+	}
+	replicas-test-100 {
+create-service: 178 ms (354 rules counted)
+delete-service: 1017 ms (53 rules counted)
+	}
+}
+kube-nftlb {
+	replicas-test-010 {
+create-service: 45 ms (17 rules counted)
+delete-service: 11 ms (15 rules counted)
+	}
+	replicas-test-050 {
+create-service: 10 ms (17 rules counted)
+delete-service: 9 ms (15 rules counted)
+	}
+	replicas-test-100 {
+create-service: 34 ms (17 rules counted)
+delete-service: 10 ms (15 rules counted)
+	}
+}
+kube-proxy {
+	replicas-test-010 {
+create-service: 134 ms (84 rules counted)
+delete-service: 926 ms (53 rules counted)
+	}
+	replicas-test-050 {
+create-service: 157 ms (204 rules counted)
+delete-service: 944 ms (53 rules counted)
+	}
+	replicas-test-100 {
+create-service: 248 ms (354 rules counted)
+delete-service: 988 ms (53 rules counted)
+	}
+}
+kube-nftlb {
+	replicas-test-010 {
+create-service: 13 ms (17 rules counted)
+delete-service: 10 ms (15 rules counted)
+	}
+	replicas-test-050 {
+create-service: 10 ms (17 rules counted)
+delete-service: 9 ms (15 rules counted)
+	}
+	replicas-test-100 {
+create-service: 40 ms (17 rules counted)
+delete-service: 9 ms (15 rules counted)
+	}
+}
+kube-proxy {
+	replicas-test-010 {
+create-service: 132 ms (84 rules counted)
+delete-service: 928 ms (53 rules counted)
+	}
+	replicas-test-050 {
+create-service: 149 ms (204 rules counted)
+delete-service: 970 ms (53 rules counted)
+	}
+	replicas-test-100 {
+create-service: 259 ms (354 rules counted)
+delete-service: 1006 ms (53 rules counted)
+	}
+}
+kube-nftlb {
+	replicas-test-010 {
+create-service: 52 ms (17 rules counted)
+delete-service: 10 ms (15 rules counted)
+	}
+	replicas-test-050 {
+create-service: 8 ms (17 rules counted)
+delete-service: 10 ms (15 rules counted)
+	}
+	replicas-test-100 {
+create-service: 95 ms (17 rules counted)
+delete-service: 10 ms (15 rules counted)
+	}
+}
+kube-proxy {
+	replicas-test-010 {
+create-service: 141 ms (84 rules counted)
+delete-service: 924 ms (53 rules counted)
+	}
+	replicas-test-050 {
+create-service: 155 ms (204 rules counted)
+delete-service: 976 ms (53 rules counted)
+	}
+	replicas-test-100 {
+create-service: 169 ms (354 rules counted)
+delete-service: 994 ms (53 rules counted)
+	}
+}
+kube-nftlb {
+	replicas-test-010 {
+create-service: 13 ms (17 rules counted)
+delete-service: 11 ms (15 rules counted)
+	}
+	replicas-test-050 {
+create-service: 9 ms (17 rules counted)
+delete-service: 7 ms (15 rules counted)
+	}
+	replicas-test-100 {
+create-service: 12 ms (17 rules counted)
+delete-service: 9 ms (15 rules counted)
+	}
+}
+kube-proxy {
+	replicas-test-010 {
+create-service: 141 ms (84 rules counted)
+delete-service: 940 ms (53 rules counted)
+	}
+	replicas-test-050 {
+create-service: 148 ms (204 rules counted)
+delete-service: 982 ms (53 rules counted)
+	}
+	replicas-test-100 {
+create-service: 178 ms (354 rules counted)
+delete-service: 1167 ms (53 rules counted)
+	}
+}
+kube-nftlb {
+	replicas-test-010 {
+create-service: 8 ms (17 rules counted)
+delete-service: 10 ms (15 rules counted)
+	}
+	replicas-test-050 {
+create-service: 9 ms (17 rules counted)
+delete-service: 9 ms (15 rules counted)
+	}
+	replicas-test-100 {
+create-service: 21 ms (17 rules counted)
+delete-service: 10 ms (15 rules counted)
+	}
+}
+kube-proxy {
+	replicas-test-010 {
+create-service: 148 ms (84 rules counted)
+delete-service: 938 ms (53 rules counted)
+	}
+	replicas-test-050 {
+create-service: 132 ms (204 rules counted)
+delete-service: 984 ms (53 rules counted)
+	}
+	replicas-test-100 {
+create-service: 272 ms (354 rules counted)
+delete-service: 993 ms (53 rules counted)
+	}
+}
+kube-nftlb {
+	replicas-test-010 {
+create-service: 36 ms (17 rules counted)
+delete-service: 9 ms (15 rules counted)
+	}
+	replicas-test-050 {
+create-service: 11 ms (17 rules counted)
+delete-service: 10 ms (15 rules counted)
+	}
+	replicas-test-100 {
+create-service: 13 ms (17 rules counted)
+delete-service: 8 ms (15 rules counted)
+	}
+}
+kube-proxy {
+	replicas-test-010 {
+create-service: 125 ms (84 rules counted)
+delete-service: 939 ms (53 rules counted)
+	}
+	replicas-test-050 {
+create-service: 151 ms (204 rules counted)
+delete-service: 973 ms (53 rules counted)
+	}
+	replicas-test-100 {
+create-service: 128 ms (354 rules counted)
+delete-service: 1160 ms (53 rules counted)
+	}
+}
+kube-nftlb {
+	replicas-test-010 {
+create-service: 41 ms (17 rules counted)
+delete-service: 12 ms (15 rules counted)
+	}
+	replicas-test-050 {
+create-service: 8 ms (17 rules counted)
+delete-service: 9 ms (15 rules counted)
+	}
+	replicas-test-100 {
+create-service: 28 ms (17 rules counted)
+delete-service: 23 ms (15 rules counted)
+	}
+}
+kube-proxy {
+	replicas-test-010 {
+create-service: 127 ms (84 rules counted)
+delete-service: 945 ms (53 rules counted)
+	}
+	replicas-test-050 {
+create-service: 151 ms (204 rules counted)
+delete-service: 961 ms (53 rules counted)
+	}
+	replicas-test-100 {
+create-service: 232 ms (354 rules counted)
+delete-service: 1007 ms (53 rules counted)
+	}
+}
+kube-nftlb {
+	replicas-test-010 {
+create-service: 15 ms (17 rules counted)
+delete-service: 9 ms (15 rules counted)
+	}
+	replicas-test-050 {
+create-service: 8 ms (17 rules counted)
+delete-service: 11 ms (15 rules counted)
+	}
+	replicas-test-100 {
+create-service: 40 ms (17 rules counted)
+delete-service: 10 ms (15 rules counted)
+	}
+}
+kube-proxy {
+	replicas-test-010 {
+create-service: 150 ms (84 rules counted)
+delete-service: 922 ms (53 rules counted)
+	}
+	replicas-test-050 {
+create-service: 151 ms (204 rules counted)
+delete-service: 951 ms (53 rules counted)
+	}
+	replicas-test-100 {
+create-service: 210 ms (354 rules counted)
+delete-service: 917 ms (53 rules counted)
+	}
+}
+kube-nftlb {
+	replicas-test-010 {
+create-service: 45 ms (17 rules counted)
+delete-service: 8 ms (15 rules counted)
+	}
+	replicas-test-050 {
+create-service: 8 ms (17 rules counted)
+delete-service: 10 ms (15 rules counted)
+	}
+	replicas-test-100 {
+create-service: 24 ms (17 rules counted)
+delete-service: 10 ms (15 rules counted)
+	}
+}
+kube-proxy {
+	replicas-test-010 {
+create-service: 135 ms (84 rules counted)
+delete-service: 954 ms (53 rules counted)
+	}
+	replicas-test-050 {
+create-service: 151 ms (204 rules counted)
+delete-service: 938 ms (53 rules counted)
+	}
+	replicas-test-100 {
+create-service: 129 ms (354 rules counted)
+delete-service: 1152 ms (53 rules counted)
+	}
+}
+kube-nftlb {
+	replicas-test-010 {
+create-service: 9 ms (17 rules counted)
+delete-service: 9 ms (15 rules counted)
+	}
+	replicas-test-050 {
+create-service: 8 ms (17 rules counted)
+delete-service: 9 ms (15 rules counted)
+	}
+	replicas-test-100 {
+create-service: 57 ms (17 rules counted)
+delete-service: 9 ms (15 rules counted)
+	}
+}
+kube-proxy {
+	replicas-test-010 {
+create-service: 130 ms (84 rules counted)
+delete-service: 946 ms (53 rules counted)
+	}
+	replicas-test-050 {
+create-service: 151 ms (204 rules counted)
+delete-service: 964 ms (53 rules counted)
+	}
+	replicas-test-100 {
+create-service: 208 ms (354 rules counted)
+delete-service: 1003 ms (53 rules counted)
+	}
+}
+kube-nftlb {
+	replicas-test-010 {
+create-service: 35 ms (17 rules counted)
+delete-service: 10 ms (15 rules counted)
+	}
+	replicas-test-050 {
+create-service: 15 ms (17 rules counted)
+delete-service: 8 ms (15 rules counted)
+	}
+	replicas-test-100 {
+create-service: 12 ms (17 rules counted)
+delete-service: 8 ms (15 rules counted)
+	}
+}
+kube-proxy {
+	replicas-test-010 {
+create-service: 145 ms (84 rules counted)
+delete-service: 941 ms (53 rules counted)
+	}
+	replicas-test-050 {
+create-service: 144 ms (204 rules counted)
+delete-service: 991 ms (53 rules counted)
+	}
+	replicas-test-100 {
+create-service: 292 ms (354 rules counted)
+delete-service: 1006 ms (53 rules counted)
+	}
+}
+kube-nftlb {
+	replicas-test-010 {
+create-service: 42 ms (17 rules counted)
+delete-service: 10 ms (15 rules counted)
+	}
+	replicas-test-050 {
+create-service: 13 ms (17 rules counted)
+delete-service: 10 ms (15 rules counted)
+	}
+	replicas-test-100 {
+create-service: 22 ms (17 rules counted)
+delete-service: 10 ms (15 rules counted)
+	}
+}
+kube-proxy {
+	replicas-test-010 {
+create-service: 122 ms (84 rules counted)
+delete-service: 952 ms (53 rules counted)
+	}
+	replicas-test-050 {
+create-service: 167 ms (204 rules counted)
+delete-service: 950 ms (53 rules counted)
+	}
+	replicas-test-100 {
+create-service: 179 ms (354 rules counted)
+delete-service: 1132 ms (53 rules counted)
+	}
+}
+kube-nftlb {
+	replicas-test-010 {
+create-service: 9 ms (17 rules counted)
+delete-service: 10 ms (15 rules counted)
+	}
+	replicas-test-050 {
+create-service: 9 ms (17 rules counted)
+delete-service: 9 ms (15 rules counted)
+	}
+	replicas-test-100 {
+create-service: 78 ms (17 rules counted)
+delete-service: 9 ms (15 rules counted)
+	}
+}
+kube-proxy {
+	replicas-test-010 {
+create-service: 124 ms (84 rules counted)
+delete-service: 960 ms (53 rules counted)
+	}
+	replicas-test-050 {
+create-service: 152 ms (204 rules counted)
+delete-service: 961 ms (53 rules counted)
+	}
+	replicas-test-100 {
+create-service: 164 ms (354 rules counted)
+delete-service: 993 ms (53 rules counted)
 	}
 }
